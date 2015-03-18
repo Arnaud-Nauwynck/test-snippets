@@ -65,7 +65,7 @@ public final class DataCenter {
         for (int i = 0; i < serversCount; i++) {
             int capacity = serversDatas.get(i).capacity;
             int size = serversDatas.get(i).size;
-            RemainingServerTypeCountPerServerType sl = getServerType(capacity, size);
+            RemainingServerTypeCountPerServerType sl = getOrCreateCountPerServerType(capacity, size);
             ServerType st = sl.serverType;
             serverOccs[i] = new ServerOcc(i, st);
             sl.initAddServerOcc(serverOccs[i]);
@@ -74,7 +74,7 @@ public final class DataCenter {
 
     // ------------------------------------------------------------------------
 
-    public RemainingServerTypeCountPerServerType getServerType(int cap, int size) {
+    public RemainingServerTypeCountPerServerType getOrCreateCountPerServerType(int cap, int size) {
         ServerType key = new ServerType(cap, size);
         RemainingServerTypeCountPerServerType res = countPerServerTypes.get(key);
         if (res == null) {

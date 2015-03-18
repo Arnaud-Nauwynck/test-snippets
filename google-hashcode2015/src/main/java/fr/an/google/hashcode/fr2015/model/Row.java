@@ -13,8 +13,8 @@ import fr.an.google.hashcode.fr2015.model.occ.SlotSequenceOcc;
 
 public final class Row {
 
-	private final int id;
-	private final int rowSize;
+	public final int id;
+	private final int rowSize; // useless in solving ... cf usableCount instead 
 
 	
 	int assignedTotalCapacity;
@@ -41,10 +41,14 @@ public final class Row {
         public void assignIncr(ServerType st, int stCount) {
             remainingCount -= stCount;
         }
+
+        public int getRemainingCount() {
+            return remainingCount;
+        }
         
 	}
 	
-	private final Map<Integer,RowRemainingSpacesCountPerSpaceType> slotSequenceTypeCountPerSize = 
+	private final Map<Integer,RowRemainingSpacesCountPerSpaceType> spaceTypeCountPerSize = 
 	        new TreeMap<Integer,RowRemainingSpacesCountPerSpaceType>(Collections.reverseOrder());
 	
 	// useless in solving, only to print solution (cf SlotSequenceType)
@@ -83,6 +87,7 @@ public final class Row {
                     slotSeqOccs.add(slotSeqOcc);
                     
                     countPerSpaceType.initAddOcc(slotSeqOcc); // => incr remainingCount
+                    unassignedTotalRemainingSize += seqSize;
                 }
             }
         }
@@ -92,17 +97,17 @@ public final class Row {
 
 	
 	private RowRemainingSpacesCountPerSpaceType getOrCreateCountPerSpaceType(int seqSize) {
-	    RowRemainingSpacesCountPerSpaceType res = slotSequenceTypeCountPerSize.get(seqSize);
+	    RowRemainingSpacesCountPerSpaceType res = spaceTypeCountPerSize.get(seqSize);
 	    if (res == null) {
 	        RowSpaceType rowSpaceType = new RowSpaceType(this, seqSize);
 	        res = new RowRemainingSpacesCountPerSpaceType(rowSpaceType);
-	        slotSequenceTypeCountPerSize.put(seqSize, res);
+	        spaceTypeCountPerSize.put(seqSize, res);
 	    }
 	    return res;
 	}
 
     
-    public void assignIncrServerTypeToSlotSeqType(ServerType st, int stCount, int spaceSize) {
+    public void assignIncrServerTypeToSlotSeqType(int spaceSize, ServerType st, int stCount) {
         RowRemainingSpacesCountPerSpaceType count = getOrCreateCountPerSpaceType(spaceSize);
         count.assignIncr(st, stCount);
 
@@ -132,7 +137,23 @@ public final class Row {
 		return rowSize;
 	}
 	
-	public List<SlotSequenceOcc> getSlotSeqOccs() {
+	public int getAssignedTotalCapacity() {
+        return assignedTotalCapacity;
+    }
+
+    public int getUnassignedTotalRemainingSize() {
+        return unassignedTotalRemainingSize;
+    }
+
+    public Map<Integer, RowRemainingSpacesCountPerSpaceType> getSpaceTypeCountPerSize() {
+        return spaceTypeCountPerSize;
+    }
+    public RowRemainingSpacesCountPerSpaceType getSpaceTypeCountOrNull(int size) {
+        return spaceTypeCountPerSize.get(size);
+    }
+
+    
+    public List<SlotSequenceOcc> getSlotSeqOccs() {
         return slotSeqOccs;
     }
 
