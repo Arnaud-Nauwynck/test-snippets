@@ -79,8 +79,7 @@ public class DataCenterAssignementsDumper {
 
     public void dumpRow(Row r) {
         out.println("Row[" + r.id + "] unassigned remainingSize:" + r.getUnassignedTotalRemainingSize() + "");
-        Map<Integer, RowRemainingSpacesCountPerSpaceType> spaceCountPerSize = r.getSpaceTypeCountPerSize();
-        for(RowRemainingSpacesCountPerSpaceType spaceCount : spaceCountPerSize.values()) {
+        for(RowRemainingSpacesCountPerSpaceType spaceCount : r.getSpaceTypeCountPerSizeArray()) {
             if (spaceCount.getRemainingCount() == 0) continue;
             out.println("spaceCount[" + spaceCount.rowSpaceType.size + "] : remainingCount=" + spaceCount.getRemainingCount());
         }

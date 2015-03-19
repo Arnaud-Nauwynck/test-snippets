@@ -24,6 +24,9 @@ public final class DataCenter {
 	private TreeMap<ServerType,RemainingServerTypeCountPerServerType> countPerServerTypes = 
 	        new TreeMap<ServerType,RemainingServerTypeCountPerServerType>(ServerType.BY_EFF_COMP);
 	
+	private final ServerType[] serverTypes; // = countPerServerTypes.keySet().toArray
+    private final RemainingServerTypeCountPerServerType[] countPerServerTypesArray; // = countPerServerTypes.values().toArray
+	
 	// useless in solving, only to print solution
 	private final ServerOcc[] serverOccs;
 
@@ -65,26 +68,52 @@ public final class DataCenter {
         for (int i = 0; i < serversCount; i++) {
             int capacity = serversDatas.get(i).capacity;
             int size = serversDatas.get(i).size;
-            RemainingServerTypeCountPerServerType sl = getOrCreateCountPerServerType(capacity, size);
+
+            ServerType tmpKey = new ServerType(capacity, size);
+            RemainingServerTypeCountPerServerType sl = getOrCreateCountPerServerType(tmpKey);
             ServerType st = sl.serverType;
             serverOccs[i] = new ServerOcc(i, st);
             sl.initAddServerOcc(serverOccs[i]);
         }
+        
+        this.serverTypes = countPerServerTypes.keySet().toArray(new ServerType[countPerServerTypes.size()]);
+        this.countPerServerTypesArray = countPerServerTypes.values().toArray(new RemainingServerTypeCountPerServerType[countPerServerTypes.size()]);
     }
 
     // ------------------------------------------------------------------------
 
-    public RemainingServerTypeCountPerServerType getOrCreateCountPerServerType(int cap, int size) {
-        ServerType key = new ServerType(cap, size);
-        RemainingServerTypeCountPerServerType res = countPerServerTypes.get(key);
+    // for test only
+    /*pp*/ RemainingServerTypeCountPerServerType getOrCreateCountPerServerType(int capacity, int size) { 
+        return getOrCreateCountPerServerType(new ServerType(capacity, size));
+    }
+    
+    public RemainingServerTypeCountPerServerType getOrCreateCountPerServerType(ServerType st) { 
+        RemainingServerTypeCountPerServerType res = countPerServerTypes.get(st);
         if (res == null) {
-            res = new RemainingServerTypeCountPerServerType(key);
-            countPerServerTypes.put(key, res);
+            res = new RemainingServerTypeCountPerServerType(st);
+            countPerServerTypes.put(st, res);
         }
         return res;
     }
+
+    /** @return memento to pass to undo assign */
+    public void addAssignIncr(ServerType st, int stCount, Group group, Row row, int spaceSize) {
+        assignIncr(st, stCount, group, row, spaceSize);
+        // return memento
+    }
     
+    public void removeAssignIncr(ServerType st, int stCount, Group group, Row row, int spaceSize
+            // , Object undoMemento
+            ) {
+        assignIncr(st, -stCount, group, row, spaceSize);
+    }
     
+    protected void assignIncr(ServerType st, int stCount, Group group, Row row, int spaceSize) {
+        RemainingServerTypeCountPerServerType countPerSt = getOrCreateCountPerServerType(st);
+        countPerSt.assign(stCount);
+        group.incrAssign(row, st, stCount);
+        row.assignIncrServerTypeToSpaceType(spaceSize, st, stCount);
+    }
     
     // ------------------------------------------------------------------------
     
@@ -114,7 +143,15 @@ public final class DataCenter {
 	
 	
 	
-	public Group[] getGroups() {
+	public ServerType[] getServerTypes() {
+        return serverTypes;
+    }
+	
+    public RemainingServerTypeCountPerServerType[] getCountPerServerTypesArray() {
+        return countPerServerTypesArray;
+    }
+
+    public Group[] getGroups() {
 		return groups;
 	}
 	

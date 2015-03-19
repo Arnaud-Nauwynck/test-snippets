@@ -27,5 +27,13 @@ public final class RemainingServerTypeCountPerServerType {
     
     // ------------------------------------------------------------------------
     
+    public void assign(int incr) {
+        count -= incr;
+    }
+
+    public int getCount() {
+        return count;
+    }
+    
     
 }

@@ -28,16 +28,16 @@ public final class Group {
 	    return res;
 	}
 	
-	public void addAssign(Row row, ServerType serverType, int count) {
-	    incrAssign(row, serverType, count);
-	}
-	
-	public void removeAssign(Row row, ServerType serverType, int count) {
-        incrAssign(row, serverType, -count);
-	}
+//	public void addAssign(Row row, ServerType serverType, int count) {
+//	    incrAssign(row, serverType, count);
+//	}
+//	
+//	public void removeAssign(Row row, ServerType serverType, int count) {
+//        incrAssign(row, serverType, -count);
+//	}
 
 	public void incrAssign(Row row, ServerType serverType, int incrServerCount) {
-        totalCapacity -= incrServerCount * serverType.getCapacity();
+        totalCapacity -= incrServerCount * serverType.capacity;
         AssignedServersPerGroupRow sc = getOrCreateServerCountsPerRow(row);
         sc.assignIncrServerCount(serverType, incrServerCount);
 	}
