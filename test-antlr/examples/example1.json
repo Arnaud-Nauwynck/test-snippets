@@ -1,5 +1,7 @@
 {
     "glossary": {
+    	"enable": true,
+    	"id": 123,
         "title": "example glossary",
 		"GlossDiv": {
             "title": "S",
