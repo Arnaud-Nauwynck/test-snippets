@@ -19,7 +19,7 @@ import javax.swing.SwingUtilities;
 
 /**
  * code inspired from http://www.cs.colostate.edu/~anderson/code/Pole.java
- * split into model+ui
+ * split into params + model + ui + noise simulator + kalman filter + ...
  * 
  */
 public class InvertedPendulumSimulatorUI {
@@ -30,21 +30,29 @@ public class InvertedPendulumSimulatorUI {
     private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
     private Future<?> periodicRepaintTimer;
 
+    private InvertedPendulumParams modelParams;
     private InvertedPendulumModel model;
-
+    private AbstractInvertedPendulumKalmanModel kalmanFilterModel;
+    
     // ------------------------------------------------------------------------
 
-    public InvertedPendulumSimulatorUI(InvertedPendulumModel model) {
+    public InvertedPendulumSimulatorUI(InvertedPendulumModel model, AbstractInvertedPendulumKalmanModel kalmanFilter) {
         this.model = model;
+        this.modelParams = model.getParams();
+        this.kalmanFilterModel = kalmanFilter;
         createUI();
     }
 
     public static void main(String[] args) {
         try {
             SwingUtilities.invokeAndWait(() -> {
-                InvertedPendulumModel model = new InvertedPendulumModel();
+                InvertedPendulumParams modelParams = new InvertedPendulumParams();
+                InvertedPendulumModel model = new InvertedPendulumModel(modelParams);
+
+                InvertedPendulumModelMeasureSimulator modelMeasureSimulator = new InvertedPendulumModelMeasureSimulator(model);
+                AbstractInvertedPendulumKalmanModel kalmanFilterModel = new SimpleInvertedPendulumKalmanFilter(modelParams, modelMeasureSimulator);
                 
-                InvertedPendulumSimulatorUI ui = new InvertedPendulumSimulatorUI(model);
+                InvertedPendulumSimulatorUI ui = new InvertedPendulumSimulatorUI(model, kalmanFilterModel);
                 JFrame frame = new JFrame();
                 frame.getContentPane().add(ui.panel);
                 frame.pack();
@@ -52,6 +60,7 @@ public class InvertedPendulumSimulatorUI {
                 
                 model.start();
                 ui.start();
+                kalmanFilterModel.start();
             });
         } catch(Exception ex) {
             System.out.println("Failed ..exiting");
@@ -60,6 +69,9 @@ public class InvertedPendulumSimulatorUI {
     }
     // ------------------------------------------------------------------------
 
+    protected double getModelForceIncr() {
+        return modelParams.getParamForceIncrMag();
+    }
     private void createUI() {
         panel = new JPanel() {
             private static final long serialVersionUID = 1L;
@@ -74,12 +86,12 @@ public class InvertedPendulumSimulatorUI {
         panel.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 if ((e.getModifiers() & InputEvent.BUTTON1_MASK) == InputEvent.BUTTON1_MASK) {
-                    model.incrControlForce(-1);
+                    model.incrControlForce(-getModelForceIncr());
                 } else if ((e.getModifiers() & InputEvent.BUTTON2_MASK) == InputEvent.BUTTON2_MASK) {
                     model.setControlForce(0);
                     // model.resetPole();
                 } else if ((e.getModifiers() & InputEvent.BUTTON3_MASK) == InputEvent.BUTTON3_MASK) {
-                    model.incrControlForce(+1);
+                    model.incrControlForce(getModelForceIncr());
                 }
             }
         });
@@ -89,9 +101,9 @@ public class InvertedPendulumSimulatorUI {
                 // System.out.println("keycode is " + e.getKeyCode() + " id " +
                 // e.getID());
                 if (e.getKeyCode() == KeyEvent.VK_LEFT)
-                    model.incrControlForce(-1);
+                    model.incrControlForce(-getModelForceIncr());
                 else if (e.getKeyCode() == KeyEvent.VK_RIGHT)
-                    model.incrControlForce(+1);
+                    model.incrControlForce(getModelForceIncr());
                 else if (e.getKeyCode() == KeyEvent.VK_DOWN)
                     model.setControlForce(0);
                 else if (e.getKeyChar() == 'r') {
@@ -124,6 +136,7 @@ public class InvertedPendulumSimulatorUI {
     public void paintPendulum(Graphics g2d) {
         Dimension d = panel.getSize();
         Color cartColor = new Color(0, 20, 255);
+        Color estimatedCartColor = new Color(0, 255, 20);
         Color arrowColor = new Color(255, 255, 0);
         Color trackColor = new Color(100, 100, 50);
 
@@ -143,13 +156,13 @@ public class InvertedPendulumSimulatorUI {
         g2d.fillPolygon(pixxs, pixys, 8);
 
         // Draw message
-        String msg = "Left Mouse Button: push left    Right Mouse Button: push right     Middle Button: PANIC";
+        String msg = "Left Mouse Button: push left    Right Mouse Button: push right     Middle Button: release";
         g2d.drawString(msg, 20, d.height - 20);
 
         double pos = model.getPos();
         double angle = model.getAngle();
         
-        double poleLength = model.paramPoleLength();
+        double poleLength = modelParams.paramPoleLength();
         
         // Draw cart.
         g2d.setColor(cartColor);
@@ -160,7 +173,7 @@ public class InvertedPendulumSimulatorUI {
         g2d.drawLine(pixX(d, pos), pixY(d, 0), pixX(d, pos + Math.sin(angle) * poleLength), pixY(d, poleLength * Math.cos(angle)));
 
         // Draw action arrow.
-        double controlForce = model.getControlForce();
+        double controlForce = model.getControlForce() / modelParams.getParamForceIncrMag();
         if (controlForce != 0) {
             int signAction = (controlForce > 0 ? 1 : (controlForce < 0) ? -1 : 0);
             int tipx = pixX(d, pos + 0.2 * controlForce);
@@ -170,6 +183,18 @@ public class InvertedPendulumSimulatorUI {
             g2d.drawLine(tipx, tipy, tipx - 4 * signAction, tipy + 4);
             g2d.drawLine(tipx, tipy, tipx - 4 * signAction, tipy - 4);
         }
+
+        // draw from estimated kalman filter
+        double estimatedPos = kalmanFilterModel.getEstimatedPos();
+        double estimatedAngle = kalmanFilterModel.getEstimatedAngle();
+
+        // Draw cart.
+        g2d.setColor(estimatedCartColor);
+        g2d.fillRect(pixX(d, estimatedPos - 0.2), pixY(d, 0), pixDX(d, 0.4), pixDY(d, -0.2));
+        // Draw pole.
+        g2d.drawLine(pixX(d, estimatedPos), pixY(d, 0), 
+            pixX(d, estimatedPos + Math.sin(estimatedAngle) * poleLength), 
+            pixY(d, poleLength * Math.cos(estimatedAngle)));
 
     }
 

@@ -19,22 +19,16 @@ public class InvertedPendulumModel {
     private static final double cstG = 9.8;
     
     // internal Model parameters
-    public double paramCartMass = 1.;
-    public double paramPoleMass = 0.1;
-    public double paramPoleLength = 1.;
-    public double fricPole = 0.005;
-    // friction... not modeled in observable model..
-    public double fricCart = 0.00005;
+    private InvertedPendulumParams params;
 
     // State
     private double pos, posDot, angle, angleDot;
     
     // Control State 
     // horizontal force to apply on vehicle, using normalized unit in [-1, 1]
-    public double paramForceMag = 10.;
     private double controlForce = 0.0;
     
-    private int delay = 20; // millis;
+    private int delay = 5; // millis;
     private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
     private Future<?> periodicUpdateTimer;
     
@@ -42,7 +36,8 @@ public class InvertedPendulumModel {
     
     // ------------------------------------------------------------------------
 
-    public InvertedPendulumModel() {
+    public InvertedPendulumModel(InvertedPendulumParams params) {
+        this.params = params;
     }
 
     // ------------------------------------------------------------------------
@@ -78,27 +73,32 @@ public class InvertedPendulumModel {
         timeMillis = currTimeMillis;
     }
     
-    public void updateTime(double tau) {
+    public void updateTime(double dt) {
         // Update the state of the pole;
         // First calc derivatives of state variables
-        double force = paramForceMag * controlForce;
         double sinangle = Math.sin(angle);
         double cosangle = Math.cos(angle);
         double angleDotSq = angleDot * angleDot;
+        
+        double paramCartMass  = params.getParamCartMass();
+        double paramPoleMass = params.getParamPoleMass();
         double totalMass = paramCartMass + paramPoleMass;
-        double halfPole = 0.5 * paramPoleLength;
+        double halfPole = 0.5 * params.getParamPoleLength();
         double poleMassLength = halfPole * paramPoleMass;
-
-        double common = (force + poleMassLength * angleDotSq * sinangle - fricCart * (posDot < 0 ? -1 : 0)) / totalMass;
+        double fricCart = params.fricCart;
+        double fricPole = params.fricPole;
+        
+        double common = (controlForce + poleMassLength * angleDotSq * sinangle 
+                - fricCart * (posDot < 0 ? -1 : 0)) / totalMass;
         double angleDDot = (cstG * sinangle - cosangle * common - fricPole * angleDot / poleMassLength)
             / (halfPole * (4. / 3. - paramPoleMass * cosangle * cosangle / totalMass));
         double posDDot = common - poleMassLength * angleDDot * cosangle / totalMass;
 
         // Now update state.
-        pos += posDot * tau;
-        posDot += posDDot * tau;
-        angle += angleDot * tau;
-        angleDot += angleDDot * tau;
+        pos += posDot * dt;
+        posDot += posDDot * dt;
+        angle += angleDot * dt;
+        angleDot += angleDDot * dt;
     }
     
     public void setControlForce(double controlForce) {
@@ -129,25 +129,8 @@ public class InvertedPendulumModel {
         return angleDot;
     }
 
-    public double paramPoleLength() {
-        return paramPoleLength;
+    public InvertedPendulumParams getParams() {
+        return params;
     }
-
-    public double getParamCartMass() {
-        return paramCartMass;
-    }
-
-    public double getParamPoleMass() {
-        return paramPoleMass;
-    }
-
-    public double getParamPoleLength() {
-        return paramPoleLength;
-    }
-
-    public double getParamForceMag() {
-        return paramForceMag;
-    }
-
     
 }
