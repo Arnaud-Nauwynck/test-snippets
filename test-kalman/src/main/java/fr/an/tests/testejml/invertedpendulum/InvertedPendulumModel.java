@@ -5,6 +5,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.ejml.data.DenseMatrix64F;
+
 /**
  * example references:
  * http://ctms.engin.umich.edu/CTMS/index.php?example=InvertedPendulum&section=SystemModeling
@@ -12,6 +14,10 @@ import java.util.concurrent.TimeUnit;
  * http://www.cs.berkeley.edu/~pabbeel/cs287-fa09/readings/Tedrake-Aug09.pdf
  * http://publications.lib.chalmers.se/records/fulltext/99385.pdf
  * http://csuchico-dspace.calstate.edu/bitstream/handle/10211.4/145/4%2022%2009%20Jose%20Miranda.pdf?sequence=1Cuntsultriest
+ * http://www.math.iisc.ernet.in/~ifcam/pendulum.pdf
+ * http://www.profjrwhite.com/system_dynamics/sdyn/s7/s7invp2/s7invp2.html
+ * http://pytrajectory.readthedocs.org/en/master/guide/examples/inv_pendulum_trans.html
+ * http://robotics.ee.uwa.edu.au/theses/2003-Balance-Ooi.pdf
  * 
  */
 public class InvertedPendulumModel {
@@ -23,6 +29,7 @@ public class InvertedPendulumModel {
 
     // State
     private double pos, posDot, angle, angleDot;
+    private DenseMatrix64F state = new DenseMatrix64F(4, 1);
     
     // Control State 
     // horizontal force to apply on vehicle, using normalized unit in [-1, 1]
@@ -89,7 +96,8 @@ public class InvertedPendulumModel {
         double fricPole = params.fricPole;
         
         double common = (controlForce + poleMassLength * angleDotSq * sinangle 
-                - fricCart * (posDot < 0 ? -1 : 0)) / totalMass;
+                - fricCart * (posDot < 0 ? -1 : 0)
+                ) / totalMass;
         double angleDDot = (cstG * sinangle - cosangle * common - fricPole * angleDot / poleMassLength)
             / (halfPole * (4. / 3. - paramPoleMass * cosangle * cosangle / totalMass));
         double posDDot = common - poleMassLength * angleDDot * cosangle / totalMass;
@@ -131,6 +139,14 @@ public class InvertedPendulumModel {
 
     public InvertedPendulumParams getParams() {
         return params;
+    }
+
+    public DenseMatrix64F getState() {
+        state.set(0, posDot);
+        state.set(1, pos);
+        state.set(2, angleDot);
+        state.set(3, angle);
+        return state;
     }
     
 }

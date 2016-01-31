@@ -24,8 +24,8 @@ public class InvertedPendulumModelMeasureSimulator {
         simulatorV_XAngle = new DenseMatrix64F(2,1);
         
         simulatorR_XAngle.setData(new double[] {
-            0.001,  0.0001, //
-            0.0001, 0.001
+            0.00001, 0.00001, //
+            0.00001, 0.00001
         });
     }
     
@@ -44,6 +44,10 @@ public class InvertedPendulumModelMeasureSimulator {
 
     public DenseMatrix64F getSimulatorZ_XAngle() {
         return simulatorZ_XAngle;
+    }
+    
+    public InvertedPendulumModel getModel() {
+        return model;
     }
     
 }

@@ -8,41 +8,58 @@ import org.ejml.equation.Sequence;
 
 /**
  * implementation of HybridKalmanFilter using JEML equation text compilations
+ * 
+ * http://www.idsc.ethz.ch/content/dam/ethz/special-interest/mavt/dynamic-systems-n-control/idsc-dam/Lectures/Recursive-Estimation/Lecture09.pdf
  *
  */
 public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
 
     // system state estimate
-    private DenseMatrix64F x,P;
+    private DenseMatrix64F x,x0,P;
     
     
     private DenseMatrix64F F;
     private DenseMatrix64F G;
     private DenseMatrix64F Q;
     
-    private Equation eq = new Equation();
-
-    // Storage for precompiled code for predict and update
-    Sequence predictXt;
-    Sequence predictXtWithoutU;
-    Sequence predictXtWithU;
-    Sequence predictPt;
+    protected Equation eqt = new Equation();
+    protected Sequence predictXt;
+    protected Sequence predictXtWithoutU;
+    protected Sequence predictXtWithU;
+    protected Sequence predictPt;
     
-    private static class MeasureSetEq {
-        final String name;
-        final int measureSetIndex;
-        DenseMatrix64F zi, Ri;
-        Sequence updateYi,updateKi,updateXi,updatePi;
-        final String aliasHi, aliasRi, aliasZi;
+    protected class MeasureSetEq {
+        protected final String name;
+        protected final int measureSetIndex;
+        protected DenseMatrix64F H;
+        protected DenseMatrix64F R;
+        protected DenseMatrix64F z, y, K;
+        protected Equation eqm = new Equation();
+        protected Sequence updateY,updateK,updateX,updateP;
         
         public MeasureSetEq(int i, String name, int dimZ, int dimR) {
             this.name = name;
             this.measureSetIndex = i;
-            zi = new DenseMatrix64F(dimZ, 1);
-            Ri = new DenseMatrix64F(dimR, dimR);
-            aliasHi = "H" + i;
-            aliasRi = "R" + i;
-            aliasZi = "z" + i;
+            z = new DenseMatrix64F(dimZ, 1);
+            y = new DenseMatrix64F(dimZ, 1);
+            K = new DenseMatrix64F(x.getNumRows(), dimZ);
+            // R = new DenseMatrix64F(dimR, dimR);
+        }
+
+        public DenseMatrix64F getInnovVector() {
+            return y; // eqm.lookup("y");
+        }
+        
+        public DenseMatrix64F getKalmanGain() {
+            return y; // eqm.lookup("y");
+        }
+        
+        public DenseMatrix64F getH() {
+            return H;
+        }
+
+        public DenseMatrix64F getR() {
+            return R;
         }
 
         @Override
@@ -52,7 +69,7 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
         
     }
 
-    private MeasureSetEq[] measureSetEqs = new MeasureSetEq[0]; 
+    protected MeasureSetEq[] measureSetEqs = new MeasureSetEq[0]; 
     
     
     // ------------------------------------------------------------------------
@@ -66,15 +83,16 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
     public void initStateTransition(int dimX, int dimU, int dimW) {
         x = new DenseMatrix64F(dimX, 1);
         P = new DenseMatrix64F(dimX, dimX);
-        eq.alias(x,"x",P,"P");
-        eq.alias(new DenseMatrix64F(dimU, 1), "u"); // zero if not overriden by setControlCommand()
-        aliasDummy("F", "G", "Q");
-        eq.alias(0.001, "dt");
+        x0 = new DenseMatrix64F(dimX, 1);
+        eqt.alias(x,"x",x0,"x0",P,"P");
+        eqt.alias(new DenseMatrix64F(dimU, 1), "u"); // zero if not overriden by setControlCommand()
+        aliasDummy(eqt, "x0", "F", "G", "Q");
+        eqt.alias(0.001, "dt");
         
-        predictXtWithoutU = eq.compile("x = x + F*x*dt");
-        predictXtWithU = eq.compile("x = x + F*x*dt + G*u*dt");
+        predictXtWithoutU = eqt.compile("x = x + F*(x-x0)*dt");
+        predictXtWithU = eqt.compile("x = x + F*(x-x0)*dt + G*u*dt");
         predictXt = predictXtWithoutU; 
-        predictPt = eq.compile("P = P + F*P*F'*dt + Q*dt");
+        predictPt = eqt.compile("P = P + F*P*dt + P*F'*dt + Q*Q'*dt");
     }
 
     @Override
@@ -83,20 +101,30 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
         this.measureSetEqs = Arrays.copyOf(measureSetEqs, i + 1);
         MeasureSetEq m = new MeasureSetEq(i, measureSetName, dimZ, dimV);
         this.measureSetEqs[i] = m;
-        eq.alias(m.zi, "z" + i);
-        eq.alias(m.Ri, "R" + i);
-        aliasDummy("H" + i, "R" + i);
+        Equation eqm = m.eqm;
+        eqm.alias(x, "x");
+        eqm.alias(x0, "x0");
+        eqm.alias(P, "P");
         
-        m.updateYi = eq.compile("y" + i + " = z" + i + " - H" + i + "*x");
-        m.updateKi = eq.compile("K" + i + " = P*H" + i + "'*inv( H" + i + "*P*H" + i + "' + R" + i + " )");
-        m.updateXi = eq.compile("x = x + K" + i + "*y" + i);
-        m.updatePi = eq.compile("P = P-K" + i + "*(H" + i + "*P)");
+        eqm.alias(m.y, "y");
+        eqm.alias(m.K, "K");
+        eqm.alias(m.z, "z");
+        eqm.alias(m.R, "R");
+        aliasDummy(eqm, "H", "R");
+        
+        m.updateY = eqm.compile("y = z - H*(x-x0)");
+        // TODO use pinv() ? 
+        m.updateK = eqm.compile("K = P*H' * pinv( H*P*H' + R*R')");
+        m.updateX = eqm.compile("x = x + K*y");
+        m.updateP = eqm.compile("P = P - K*H*P");
 
         return i;
     }
 
     @Override
-    public void setStateTransition(DenseMatrix64F F, DenseMatrix64F G, DenseMatrix64F Q) {
+    public void setStateTransition(DenseMatrix64F x0, DenseMatrix64F F, DenseMatrix64F G, DenseMatrix64F Q) {
+        if (x0.getNumRows() != x.numRows) throw new IllegalArgumentException();
+        if (x0.getNumCols() != x.numCols) throw new IllegalArgumentException();
         if (x.getNumRows() != F.numRows) throw new IllegalArgumentException();
         if (x.getNumRows() != F.numCols) throw new IllegalArgumentException();
         if (G != null) {
@@ -107,12 +135,13 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
         if (x.getNumRows() != Q.numRows) throw new IllegalArgumentException();
         if (x.getNumRows() != Q.numCols) throw new IllegalArgumentException();
 
+        this.x0 = x0;
         this.F = F;
         this.G = G;
         this.Q = Q;
-        eq.alias(F,"F",Q,"Q");
+        eqt.alias(x0,"x0", F,"F", Q,"Q");
         if (G != null) {
-            eq.alias(G,"G");
+            eqt.alias(G,"G");
             predictXt = predictXtWithU; 
         } else {
             predictXt = predictXtWithoutU; 
@@ -126,8 +155,10 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
     @Override
     public void setNthMeasureTransition(int i, DenseMatrix64F H, DenseMatrix64F R) {
         MeasureSetEq m = this.measureSetEqs[i];
-        eq.alias(m.aliasHi, H);
-        eq.alias(m.aliasRi, R);
+        m.H = H;
+        m.R = R;
+        m.eqm.alias(H, "H");
+        m.eqm.alias(R, "R");
     }
 
     @Override
@@ -138,12 +169,17 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
     
     @Override
     public void setControlCommand(DenseMatrix64F u) {
-        eq.alias("u", u);
+        eqt.alias("u", u);
+    }
+
+    @Override
+    public DenseMatrix64F getControlCommand() {
+        return eqt.lookupMatrix("u");
     }
 
     @Override
     public void predictTimeStep(double dt) {
-        eq.alias(dt, "dt");
+        eqt.alias(dt, "dt");
         predictXt.perform();
         predictPt.perform();
     }
@@ -151,17 +187,22 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
     @Override
     public void updateNthMeasure(int measureIndex, DenseMatrix64F z) {
         MeasureSetEq m = this.measureSetEqs[measureIndex];
-        eq.alias(z, m.aliasZi);
+        m.eqm.alias(z, "z");
 
-        m.updateYi.perform();
-        m.updateKi.perform();
-        m.updateXi.perform();
-        m.updatePi.perform();
+        m.updateY.perform();
+        m.updateK.perform();
+        m.updateX.perform();
+        m.updateP.perform();
     }
 
     @Override
     public DenseMatrix64F getState() {
         return x;
+    }
+
+    @Override
+    public DenseMatrix64F getState0() {
+        return x0;
     }
 
     @Override
@@ -181,7 +222,17 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
         return Q;
     }
 
-    protected void aliasDummy(String... names) {
+    public DenseMatrix64F getNthMeasureH(int measureIndex) {
+        MeasureSetEq m = this.measureSetEqs[measureIndex];
+        return m.H;
+    }
+
+    public DenseMatrix64F getNthMeasureR(int measureIndex) {
+        MeasureSetEq m = this.measureSetEqs[measureIndex];
+        return m.R;
+    }
+
+    protected static void aliasDummy(Equation eq, String... names) {
         for(String name : names) {
             eq.alias(new DenseMatrix64F(1,1), name);
         }

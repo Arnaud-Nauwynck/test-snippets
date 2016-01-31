@@ -2,6 +2,8 @@ package fr.an.tests.testejml.kalman;
 
 import org.ejml.data.DenseMatrix64F;
 
+import fr.an.tests.testejml.kalman.JEMLEqHybridKalmanFilter.MeasureSetEq;
+
 /**
  * <p>
  * This is an interface for a hybrid Kalman filter (= continuous time state / discrete time measures) 
@@ -36,7 +38,7 @@ public interface HybridKalmanFilter {
      * @param Q plant noise.
      * @param H measurement projection matrix.
      */
-    public void setStateTransition( DenseMatrix64F F, DenseMatrix64F G, DenseMatrix64F Q);
+    public void setStateTransition( DenseMatrix64F x0, DenseMatrix64F F, DenseMatrix64F G, DenseMatrix64F Q);
 
     public void setNthMeasureTransition(int measureSetIndex, DenseMatrix64F H, DenseMatrix64F R);
     
@@ -52,6 +54,7 @@ public interface HybridKalmanFilter {
      * @param u the command
      */
     public void setControlCommand( DenseMatrix64F u );
+    public DenseMatrix64F getControlCommand( );
     
     /**
      * Predicts the state of the system forward one time step.
@@ -72,6 +75,8 @@ public interface HybridKalmanFilter {
      * @return The state.
      */
     public DenseMatrix64F getState();
+    
+    public DenseMatrix64F getState0();
 
     /**
      * Returns the estimated state's covariance matrix.
@@ -81,4 +86,12 @@ public interface HybridKalmanFilter {
     public DenseMatrix64F getCovariance();
 
     public boolean isValid();
+    
+
+    public DenseMatrix64F getF();
+    public DenseMatrix64F getG();
+    public DenseMatrix64F getQ();
+    public DenseMatrix64F getNthMeasureH(int measureIndex);
+    public DenseMatrix64F getNthMeasureR(int measureIndex);
+    
 }

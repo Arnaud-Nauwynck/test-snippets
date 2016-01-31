@@ -30,7 +30,6 @@ public abstract class AbstractInvertedPendulumKalmanModel {
     public AbstractInvertedPendulumKalmanModel(InvertedPendulumParams params, InvertedPendulumModelMeasureSimulator modelMeasureSimulator) {
         this.params = params;
         this.modelMeasureSimulator = modelMeasureSimulator;
-        initKalmanModel();
     }
 
     // ------------------------------------------------------------------------
