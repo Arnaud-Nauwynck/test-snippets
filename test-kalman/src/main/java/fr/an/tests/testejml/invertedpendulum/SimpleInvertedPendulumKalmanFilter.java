@@ -226,7 +226,7 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
         double f20 = 0.0; // d(angleDot)/dposDot
         double f21 = 0.0; // d(angleDot)/dpos
         double f22 = // d(angleDot)/dangleDot
-                1.0; // (- c_a * (pml * 2.0 * angleDot ) * invTm - fp  / pml) * angleDot_denom;
+                (- c_a * (pml * 2.0 * angleDot ) * invTm - fp  / pml) * angleDot_denom;
         double f23 = // d(angleDot)/dangle
                 (   cstG * c_a 
                         + s_a * (f + pml * angleDot * angleDot * s_a - fc) * invTm 
