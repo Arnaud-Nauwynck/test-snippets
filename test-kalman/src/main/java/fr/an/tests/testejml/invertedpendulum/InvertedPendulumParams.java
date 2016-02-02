@@ -11,7 +11,7 @@ public class InvertedPendulumParams {
     // friction... not modeled in observable model..
     public double fricCart = 0.0005;
 
-    public double paramForceIncrMag = 5.;
+    public double paramForceIncrMag = 2.;
 
 //    x = [x_1, x_2, x_3, x_4] = [x_w, \dot{x}_w, \varphi, \dot{\varphi}]
 //    l = 0.5     # length of the pendulum rod

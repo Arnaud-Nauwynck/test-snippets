@@ -22,6 +22,7 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
     // state origin for linearisation
     protected DenseMatrix64F x0 = new DenseMatrix64F(4, 1);
     
+    protected DenseMatrix64F cstF0 = new DenseMatrix64F(4, 1);
     protected DenseMatrix64F F = new DenseMatrix64F(4, 4);
     protected DenseMatrix64F G = new DenseMatrix64F(4, 1);
     protected DenseMatrix64F Q = new DenseMatrix64F(4, 4);
@@ -41,14 +42,15 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
         0.0, 0.00001 //
     };
     
-    protected boolean useEKFNonLinear = false;
-    protected double relinearizeWhenAngleMax = 3.14/6;
+    protected boolean useLinearPredict = false;
+    protected double relinearizeWhenAngleMax = 0.0001; // ~always re-linearize 
+        // 3.1415/6.0;
     
     private boolean debug = false;
     protected DenseMatrix64F errState = new DenseMatrix64F(4, 1);
     private static DecimalFormat df_state = new DecimalFormat("+00.000;-#");
     private static DecimalFormat df_err = new DecimalFormat("0.#E0");
-    private static DecimalFormat df_cov = new DecimalFormat("#.###");
+    private static DecimalFormat df_cov = new DecimalFormat("+0.000;-#");
 
     // ------------------------------------------------------------------------
     
@@ -83,14 +85,13 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
         this.debug = debug;
     }
     
-    public boolean isUseEKFNonLinear() {
-        return useEKFNonLinear;
+    public boolean isUseLinearPredict() {
+        return useLinearPredict;
     }
 
-    public void setUseEKFNonLinear(boolean useEKFNonLinear) {
-        this.useEKFNonLinear = useEKFNonLinear;
+    public void setUseLinearPredict(boolean p) {
+        this.useLinearPredict = p;
     }
-
 
     @Override
     protected void initKalmanModel() {
@@ -99,10 +100,11 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
             public void predictTimeStep(double dt) {
                 eqt.alias(dt, "dt");
                 
-                if (useEKFNonLinear) {
-                    ekfNonLinearPredict(dt);
-                } else {
+                if (useLinearPredict) {
                     predictXt.perform();
+                } else {
+                    DenseMatrix64F x = getState();
+                    evalPredictTimeStepNonLinear(x, dt, x);
                 }
 
                 // (optionnaly?) re-linearize each time...
@@ -193,14 +195,19 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
         double common = (f + pml * angleDot * angleDot * s_a - fc) * invTm;
         double angleDDot = (cstG * s_a - c_a * common - fp * angleDot / pml)
             / (pl05 * (4. / 3. - pm * c_a * c_a * invTm));
-//        double posDDot = common - pml * angleDDot * c_a * invTm;
+        double posDDot = common - pml * angleDDot * c_a * invTm;
 //
 //        // Now update state.
-//        posDot += posDDot * dt;
 //        pos += posDot * dt;
-//        angleDot += angleDDot * dt;
+//        posDot += posDDot * dt;
 //        angle += angleDot * dt;
+//        angleDot += angleDDot * dt;
 
+        double cstF0_0 = posDDot;
+        double cstF0_1 = posDot; // x0.get(0);
+        double cstF0_2 = angleDDot;
+        double cstF0_3 = angleDot; // x0.get(2);
+        
         // f0j= d(posDot)/dj
         //     = d(common - pml * angleDDot * c_a * invTm) / dj
         //     = invTm * d( f + pml * angleDot * angleDot * s_a - fc  - pml * angleDDot * c_a ) / dj
@@ -217,7 +224,7 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
         double f12 = 0.0; // d(pos)/dangleDot
         double f13 = 0.0; // d(pos)/dangle
 
-        // f2j = d(angleDot)/dj
+        // f2j = d(angleDDot)/dj
         //     = d( (cstG * s_a - c_a * common - fp * angleDot / pml)
         //            / (pl05 * (4. / 3. - pm * c_a * c_a * invTm)) )/dj
         //     = d( (cstG * s_a - c_a * (f + pml * angleDot * angleDot * s_a - fc) * invTm - fp * angleDot / pml)
@@ -244,23 +251,22 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
         double f32 = 1.0; // d(angle)/dangleDot
         double f33 = 0.0; // d(angle)/dangle
 
+        cstF0.set(0, 0, cstF0_0); cstF0.set(1, 0, cstF0_1); cstF0.set(2, 0, cstF0_2); cstF0.set(3, 0, cstF0_3);
         
         F.set(0, 0, f00); F.set(0, 1, f01); F.set(0, 2, f02); F.set(0, 3, f03);
         F.set(1, 0, f10); F.set(1, 1, f11); F.set(1, 2, f12); F.set(1, 3, f13);
         F.set(2, 0, f20); F.set(2, 1, f21); F.set(2, 2, f22); F.set(2, 3, f23);
         F.set(3, 0, f30); F.set(3, 1, f31); F.set(3, 2, f32); F.set(3, 3, f33);
         
-        G.set(0, invTm);
+        G.set(0, f * invTm);
         G.set(1, 0.0);
-        G.set(2, - c_a * invTm);
+        G.set(2, - f * c_a * invTm);
         G.set(3, 0.0);
 
-        kalmanFilter.setStateTransition(x0, F, G, Q);
-        
+        kalmanFilter.setStateTransition(x0, cstF0, F, G, Q);
     }
 
-    private void ekfNonLinearPredict(double dt) {
-        DenseMatrix64F x = kalmanFilter.getState();
+    public void evalPredictTimeStepNonLinear(DenseMatrix64F res, double dt, DenseMatrix64F x) {
         double posDot = x.get(STATE_POSDOT);
         double pos = x.get(STATE_POS);
         double angleDot = x.get(STATE_ANGLEDOT);
@@ -275,7 +281,7 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
         double invTm = 1.0 / tm;
         double pl05 = 0.5 * params.getParamPoleLength();
         double pml = pl05 * pm;
-        double fc = params.fricCart * (posDot < 0 ? -1 : 0);
+        double fc = 0.0; // TODO friction..   params.fricCart * (posDot < 0 ? -1 : 0);
         double fp = params.fricPole;
         
         double common = (f + pml * angleDot * angleDot * s_a - fc) * invTm;
@@ -284,15 +290,15 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
         double posDDot = common - pml * angleDDot * c_a * invTm;
 
         // Now update state.
-        posDot += posDDot * dt;
         pos += posDot * dt;
-        angleDot += angleDDot * dt;
+        posDot += posDDot * dt;
         angle += angleDot * dt;
+        angleDot += angleDDot * dt;
         
-        x.set(STATE_POSDOT, posDot);
-        x.set(STATE_POS, pos);
-        x.set(STATE_ANGLEDOT, angleDot);
-        x.set(STATE_ANGLE, angle);
+        res.set(STATE_POSDOT, posDot);
+        res.set(STATE_POS, pos);
+        res.set(STATE_ANGLEDOT, angleDot);
+        res.set(STATE_ANGLE, angle);
     }
 
     

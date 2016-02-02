@@ -38,7 +38,7 @@ public interface HybridKalmanFilter {
      * @param Q plant noise.
      * @param H measurement projection matrix.
      */
-    public void setStateTransition( DenseMatrix64F x0, DenseMatrix64F F, DenseMatrix64F G, DenseMatrix64F Q);
+    public void setStateTransition( DenseMatrix64F x0, DenseMatrix64F cstF0, DenseMatrix64F F, DenseMatrix64F G, DenseMatrix64F Q);
 
     public void setNthMeasureTransition(int measureSetIndex, DenseMatrix64F H, DenseMatrix64F R);
     
@@ -87,7 +87,7 @@ public interface HybridKalmanFilter {
 
     public boolean isValid();
     
-
+    public DenseMatrix64F getCstF0();
     public DenseMatrix64F getF();
     public DenseMatrix64F getG();
     public DenseMatrix64F getQ();

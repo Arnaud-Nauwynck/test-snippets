@@ -50,7 +50,9 @@ public class InvertedPendulumSimulatorUI {
                 InvertedPendulumModel model = new InvertedPendulumModel(modelParams);
 
                 InvertedPendulumModelMeasureSimulator modelMeasureSimulator = new InvertedPendulumModelMeasureSimulator(model);
-                AbstractInvertedPendulumKalmanModel kalmanFilterModel = new SimpleInvertedPendulumKalmanFilter(modelParams, modelMeasureSimulator);
+                SimpleInvertedPendulumKalmanFilter kalmanFilterModel = new SimpleInvertedPendulumKalmanFilter(modelParams, modelMeasureSimulator);
+                
+                kalmanFilterModel.setDebug(true); // verbose dump matrixes ... for debugging numerical errors
                 
                 InvertedPendulumSimulatorUI ui = new InvertedPendulumSimulatorUI(model, kalmanFilterModel);
                 JFrame frame = new JFrame();

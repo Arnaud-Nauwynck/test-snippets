@@ -17,7 +17,7 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
     // system state estimate
     private DenseMatrix64F x,x0,P;
     
-    
+    private DenseMatrix64F cstF0;
     private DenseMatrix64F F;
     private DenseMatrix64F G;
     private DenseMatrix64F Q;
@@ -86,11 +86,11 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
         x0 = new DenseMatrix64F(dimX, 1);
         eqt.alias(x,"x",x0,"x0",P,"P");
         eqt.alias(new DenseMatrix64F(dimU, 1), "u"); // zero if not overriden by setControlCommand()
-        aliasDummy(eqt, "x0", "F", "G", "Q");
+        aliasDummy(eqt, "x0", "cstF0", "F", "G", "Q");
         eqt.alias(0.001, "dt");
         
-        predictXtWithoutU = eqt.compile("x = x + F*(x-x0)*dt");
-        predictXtWithU = eqt.compile("x = x + F*(x-x0)*dt + G*u*dt");
+        predictXtWithoutU = eqt.compile("x = x + (cstF0 + F*(x-x0))*dt");
+        predictXtWithU = eqt.compile("x = x + (cstF0 + F*(x-x0))*dt + G*u*dt");
         predictXt = predictXtWithoutU; 
         predictPt = eqt.compile("P = P + F*P*dt + P*F'*dt + Q*Q'*dt");
     }
@@ -112,7 +112,7 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
         eqm.alias(m.R, "R");
         aliasDummy(eqm, "H", "R");
         
-        m.updateY = eqm.compile("y = z - H*(x-x0)");
+        m.updateY = eqm.compile("y = z - H*x");  // may use ? "y = z - cstH0 - H*(x-x0)"
         // TODO use pinv() ? 
         m.updateK = eqm.compile("K = P*H' * pinv( H*P*H' + R*R')");
         m.updateX = eqm.compile("x = x + K*y");
@@ -122,7 +122,7 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
     }
 
     @Override
-    public void setStateTransition(DenseMatrix64F x0, DenseMatrix64F F, DenseMatrix64F G, DenseMatrix64F Q) {
+    public void setStateTransition(DenseMatrix64F x0, DenseMatrix64F cstF0, DenseMatrix64F F, DenseMatrix64F G, DenseMatrix64F Q) {
         if (x0.getNumRows() != x.numRows) throw new IllegalArgumentException();
         if (x0.getNumCols() != x.numCols) throw new IllegalArgumentException();
         if (x.getNumRows() != F.numRows) throw new IllegalArgumentException();
@@ -136,10 +136,11 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
         if (x.getNumRows() != Q.numCols) throw new IllegalArgumentException();
 
         this.x0 = x0;
+        this.cstF0 = cstF0;
         this.F = F;
         this.G = G;
         this.Q = Q;
-        eqt.alias(x0,"x0", F,"F", Q,"Q");
+        eqt.alias(x0,"x0", cstF0, "cstF0", F, "F", Q, "Q");
         if (G != null) {
             eqt.alias(G,"G");
             predictXt = predictXtWithU; 
@@ -208,6 +209,10 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
     @Override
     public DenseMatrix64F getCovariance() {
         return P;
+    }
+    
+    public DenseMatrix64F getCstF0() {
+        return cstF0;
     }
     
     public DenseMatrix64F getF() {
