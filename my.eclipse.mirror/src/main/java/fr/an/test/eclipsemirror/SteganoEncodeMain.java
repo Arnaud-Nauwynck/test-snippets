@@ -18,6 +18,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
+import javax.management.RuntimeErrorException;
+
+import fr.an.bitwise4j.encoder.huffman.HuffmanTable.MutableInt;
 
 public class SteganoEncodeMain {
 
@@ -65,13 +68,71 @@ public class SteganoEncodeMain {
         }
     }
     
+    public static class IndexHtmlWriter {
+        File outputDir;
+        String outputFilename;
+        PrintStream indexHtmlOut;
+        int imgPageCount = 0;
+        int maxImgPerPage = 10;
+        int pageIndex = 0;
+        PrintStream pageHtmlOut;
+        
+        public IndexHtmlWriter(File outputDir, String outputFilename) {
+            this.outputDir = outputDir;
+            this.outputFilename = outputFilename;
+            indexHtmlOut = newFilePrintStream(outputFilename + ".html");
+            indexHtmlOut.print("<html>\n<body>\n");
+            
+            openPageHtml();
+        }
+
+        private void openPageHtml() {
+            String pageName = outputFilename + "-" + pageIndex + ".html";
+            pageHtmlOut = newFilePrintStream(pageName);
+            pageHtmlOut.print("<html>\n<body>\n");
+            
+            indexHtmlOut.println("<A href='" + pageName + "'>page</A>\n");
+        }
+
+        protected PrintStream newFilePrintStream(String fileName) {
+            try {
+                return new PrintStream(new BufferedOutputStream(new FileOutputStream(new File(outputDir, fileName))));
+            } catch(IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        public void addImgFile(String imgFileName) {
+            imgPageCount++;
+            pageHtmlOut.print("<img src='" + imgFileName + "' width='20' height='20'/>\n");
+            if (imgPageCount > maxImgPerPage) {
+                closePageHtml();
+                imgPageCount = 0;
+                pageIndex++;
+                openPageHtml();
+            }
+        }
+        
+        public void close() {
+            indexHtmlOut.print("</body>\n</html>\n");
+            indexHtmlOut.close();
+            indexHtmlOut = null;
+            
+            closePageHtml();
+        }
+
+        private void closePageHtml() {
+            pageHtmlOut.print("</body>\n</html>\n");
+            pageHtmlOut.close();
+            pageHtmlOut = null;
+        }
+        
+    }
+    
     public void run() {
         IndexedFilesZipper indexedFilesZipper = new IndexedFilesZipper(maxPartLen);
         
         try {
-            PrintStream indexOut = new PrintStream(new BufferedOutputStream(new FileOutputStream(new File(outputDir, outputFilename + ".html"))));
-            indexOut.print("<html>\n<body>\n");
-            
+            IndexHtmlWriter indexHtmlWriter = new IndexHtmlWriter(outputDir, outputFilename);
             
             Path inputDirPath = Paths.get(inputDir.toURI());
             Files.walkFileTree(inputDirPath, new SimpleFileVisitor<Path>(){
@@ -91,7 +152,7 @@ public class SteganoEncodeMain {
                         indexedFilesZipper.putNextEntry(relativePathName, file, 
                             (buffer,zi) -> {
                                 String imgFileName = outputFilename + "-" + zi + extName;
-                                indexOut.print("<img src='" + imgFileName + "' width='1' height='1'/>\n");
+                                indexHtmlWriter.addImgFile(imgFileName);
                                 File outputImgFile = new File(outputDir, imgFileName);
                                 writeWrapPNG(buffer, outputImgFile);
                             });
@@ -101,8 +162,7 @@ public class SteganoEncodeMain {
                 }
             });
             
-            indexOut.print("</body>\n</html>\n");
-            indexOut.close();
+            indexHtmlWriter.close();
         } catch(Exception ex) {
             throw new RuntimeException("Failed", ex);
         }
