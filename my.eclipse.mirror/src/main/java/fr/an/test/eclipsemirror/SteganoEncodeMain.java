@@ -18,9 +18,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
-import javax.management.RuntimeErrorException;
-
-import fr.an.bitwise4j.encoder.huffman.HuffmanTable.MutableInt;
 
 public class SteganoEncodeMain {
 
