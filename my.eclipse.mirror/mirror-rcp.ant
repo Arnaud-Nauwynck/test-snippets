@@ -1,0 +1,19 @@
+<project name="Create Mirror" default="create-mirror" basedir=".">
+
+	<target name="create-mirror">
+
+		<property name="target.dir" location="${user.home}/eclipsemirror" />
+
+		<echo message="" />
+		<echo message="Mirroring into ${target.dir}..." />
+
+		<p2.mirror source="http://download.eclipse.org/releases/mars">
+			<destination location="${target.dir}/releases/mars" />
+			<iu id="org.eclipse.rcp.feature.group" />
+			<iu id="org.eclipse.rcp.source.feature.group" />
+			<iu id="org.eclipse.equinox.executable.feature.group" />
+		</p2.mirror>
+
+	</target>
+
+</project>
