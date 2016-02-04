@@ -1,7 +1,6 @@
 package fr.an.test.eclipsemirror;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
