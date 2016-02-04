@@ -29,7 +29,7 @@ public class SteganoEncodeMain {
     private Pattern inputFilePattern;
 
     @Getter @Setter
-    private int maxPartLen = 1*1024*1024; // 1 Mo
+    private int maxPartLen = 2*1024*1024; // Mo
     @Getter @Setter
     private String outputZipPath = "";
     @Getter @Setter

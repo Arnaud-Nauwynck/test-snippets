@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class SteganoEncodeMainTest {
@@ -18,7 +19,6 @@ public class SteganoEncodeMainTest {
             FileUtils.deleteDirectory(outputDir);
         }
         outputDir.mkdirs();
-        
         SteganoEncodeMain sut = new SteganoEncodeMain();
         sut.setInputDir(inputDir);
         // sut.setExtName(".png");
@@ -36,4 +36,32 @@ public class SteganoEncodeMainTest {
         Assert.assertTrue(new File(outputDir, "test1-2.png").exists());
     }
 
+    
+    @Test @Ignore
+    public void testRun_test_huge() throws Exception {
+        // Prepare
+        File inputDir = new File("/home/arnaud/eclipsemirror/nodeclipse/plugins");
+        File outputDir = new File("target/tests/test_huge");
+        if (outputDir.exists()) {
+            FileUtils.deleteDirectory(outputDir);
+        }
+        outputDir.mkdirs();
+        SteganoEncodeMain sut = new SteganoEncodeMain();
+        sut.setInputDir(inputDir);
+        // sut.setMaxPartLen(2*1024*1024);
+        sut.setOutputDir(outputDir);
+        sut.setOutputFilename("test1");
+        sut.setOutputZipPath("plugins/");
+        // Perform
+        sut.run();
+        // Post-check
+        Assert.assertEquals(95, outputDir.listFiles().length);
+        Assert.assertTrue(new File(outputDir, "test1.html").exists());
+        Assert.assertTrue(new File(outputDir, "test1-0.html").exists());
+        Assert.assertTrue(new File(outputDir, "test1-7.html").exists());
+        Assert.assertTrue(new File(outputDir, "test1-0.html").exists());
+        Assert.assertTrue(new File(outputDir, "test1-85.png").exists());
+    }
+
+    
 }
