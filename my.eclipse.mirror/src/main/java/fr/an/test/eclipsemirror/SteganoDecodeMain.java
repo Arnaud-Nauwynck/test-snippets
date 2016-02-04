@@ -9,15 +9,29 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.IOUtils;
+
+import lombok.Getter;
+import lombok.Setter;
+
 public class SteganoDecodeMain {
 
+    @Getter @Setter
     private File inputDir;
+    @Getter @Setter
     private String inputFileBaseName;
+    @Getter @Setter
     private String inputFileExt = ".png";
+    @Getter @Setter
     private File outputDir;
+    @Getter @Setter
+    private boolean decodeZipOnly;
+    @Getter @Setter
     private String outputFilename;
     
     public static void main(String[] args) {
@@ -77,16 +91,39 @@ public class SteganoDecodeMain {
                 DataInputStream din = new DataInputStream(new ByteArrayInputStream(imgData));
                 int fileLen = din.readInt();
     
-                File zipFile = new File(outputDir, outputFilename + "-" + i + ".zip");
-                try (OutputStream fileOut = new BufferedOutputStream(new FileOutputStream(zipFile))) {
-                    fileOut.write(imgData, 4, fileLen);
+                if (decodeZipOnly) {
+                    File zipFile = new File(outputDir, outputFilename + "-" + i + ".zip");
+                    try (OutputStream fileOut = new BufferedOutputStream(new FileOutputStream(zipFile))) {
+                        fileOut.write(imgData, 4, fileLen);
+                    }
+                } else {
+                    try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(imgData, 4, fileLen))) {
+                        unzipToDir(zis, outputDir);
+                    }
                 }
-                
-                // TODO unzip on the fly..
                 
             } catch(Exception ex) {
                 throw new RuntimeException("Failed", ex);
             }
         }
+    }
+
+    public static void unzipToDir(ZipInputStream zis, File outputDir) throws IOException {
+        ZipEntry ze;
+        while((ze = zis.getNextEntry()) != null) {
+            String fileName = ze.getName();
+            File ouputFile = new File(outputDir, fileName);
+            if (ze.isDirectory()) {
+                ouputFile.mkdirs();
+            } else {
+                File parentDir = ouputFile.getParentFile();
+                parentDir.mkdirs();
+                try (OutputStream fos = new BufferedOutputStream(new FileOutputStream(ouputFile))) {             
+                    IOUtils.copy(zis, fos);
+                }
+            }
+            zis.closeEntry();
+        }
+        
     }
 }

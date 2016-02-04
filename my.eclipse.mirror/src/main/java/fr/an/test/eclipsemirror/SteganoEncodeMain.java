@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -19,15 +18,25 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class SteganoEncodeMain {
 
+    @Getter @Setter
     private File inputDir;
+    @Getter @Setter
     private Pattern inputFilePattern;
 
+    @Getter @Setter
     private int maxPartLen = 1*1024*1024; // 1 Mo
+    @Getter @Setter
     private String outputZipPath = "";
+    @Getter @Setter
     private File outputDir;
+    @Getter @Setter
     private String outputFilename;
+    @Getter @Setter
     private String extName = ".png";
     
     
@@ -65,67 +74,10 @@ public class SteganoEncodeMain {
         }
     }
     
-    public static class IndexHtmlWriter {
-        File outputDir;
-        String outputFilename;
-        PrintStream indexHtmlOut;
-        int imgPageCount = 0;
-        int maxImgPerPage = 10;
-        int pageIndex = 0;
-        PrintStream pageHtmlOut;
-        
-        public IndexHtmlWriter(File outputDir, String outputFilename) {
-            this.outputDir = outputDir;
-            this.outputFilename = outputFilename;
-            indexHtmlOut = newFilePrintStream(outputFilename + ".html");
-            indexHtmlOut.print("<html>\n<body>\n");
-            
-            openPageHtml();
-        }
-
-        private void openPageHtml() {
-            String pageName = outputFilename + "-" + pageIndex + ".html";
-            pageHtmlOut = newFilePrintStream(pageName);
-            pageHtmlOut.print("<html>\n<body>\n");
-            
-            indexHtmlOut.println("<A href='" + pageName + "'>page</A>\n");
-        }
-
-        protected PrintStream newFilePrintStream(String fileName) {
-            try {
-                return new PrintStream(new BufferedOutputStream(new FileOutputStream(new File(outputDir, fileName))));
-            } catch(IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-        public void addImgFile(String imgFileName) {
-            imgPageCount++;
-            pageHtmlOut.print("<img src='" + imgFileName + "' width='20' height='20'/>\n");
-            if (imgPageCount > maxImgPerPage) {
-                closePageHtml();
-                imgPageCount = 0;
-                pageIndex++;
-                openPageHtml();
-            }
-        }
-        
-        public void close() {
-            indexHtmlOut.print("</body>\n</html>\n");
-            indexHtmlOut.close();
-            indexHtmlOut = null;
-            
-            closePageHtml();
-        }
-
-        private void closePageHtml() {
-            pageHtmlOut.print("</body>\n</html>\n");
-            pageHtmlOut.close();
-            pageHtmlOut = null;
-        }
-        
-    }
-    
     public void run() {
+        if (! outputDir.exists()) {
+            outputDir.mkdirs();
+        }
         IndexedFilesZipper indexedFilesZipper = new IndexedFilesZipper(maxPartLen);
         
         try {
