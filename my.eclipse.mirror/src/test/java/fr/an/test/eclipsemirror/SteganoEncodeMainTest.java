@@ -28,12 +28,13 @@ public class SteganoEncodeMainTest {
         // Perform
         sut.run();
         // Post-check
-        Assert.assertEquals(5, outputDir.listFiles().length);
+        Assert.assertTrue(6 <= outputDir.listFiles().length);
         Assert.assertTrue(new File(outputDir, "test1.html").exists());
         Assert.assertTrue(new File(outputDir, "test1-0.html").exists());
         Assert.assertTrue(new File(outputDir, "test1-0.png").exists());
         Assert.assertTrue(new File(outputDir, "test1-1.png").exists());
         Assert.assertTrue(new File(outputDir, "test1-2.png").exists());
+        Assert.assertTrue(new File(outputDir, "test1-3.png").exists());
     }
 
     

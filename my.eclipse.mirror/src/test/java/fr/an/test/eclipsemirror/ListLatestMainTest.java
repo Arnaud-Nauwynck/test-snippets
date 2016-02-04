@@ -19,7 +19,7 @@ public class ListLatestMainTest {
         sut.setDir(new File("/home/arnaud/eclipsemirror/nodeclipse/plugins"));
         
         List<File> ls = sut.run();
-        PrintStream scriptOut = new PrintStream(new FileOutputStream("script.txt"));
+        PrintStream scriptOut = new PrintStream(new FileOutputStream("target/tests/script.txt"));
         
         Map<String,List<File>> group2ls = new HashMap<String,List<File>>(); 
         for(File f : ls) {
