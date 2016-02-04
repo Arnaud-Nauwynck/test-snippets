@@ -91,7 +91,10 @@ public interface HybridKalmanFilter {
     public DenseMatrix64F getF();
     public DenseMatrix64F getG();
     public DenseMatrix64F getQ();
+    
     public DenseMatrix64F getNthMeasureH(int measureIndex);
     public DenseMatrix64F getNthMeasureR(int measureIndex);
-    
+    public DenseMatrix64F getNthMeasureInnov(int measureIndex);
+    public DenseMatrix64F getNthMeasureKalmanGain(int measureIndex);
+       
 }

@@ -228,13 +228,19 @@ public class JEMLEqHybridKalmanFilter implements HybridKalmanFilter {
     }
 
     public DenseMatrix64F getNthMeasureH(int measureIndex) {
-        MeasureSetEq m = this.measureSetEqs[measureIndex];
-        return m.H;
+        return this.measureSetEqs[measureIndex].H;
     }
 
     public DenseMatrix64F getNthMeasureR(int measureIndex) {
-        MeasureSetEq m = this.measureSetEqs[measureIndex];
-        return m.R;
+        return this.measureSetEqs[measureIndex].R;
+    }
+
+    public DenseMatrix64F getNthMeasureInnov(int measureIndex) {
+        return this.measureSetEqs[measureIndex].getInnovVector();
+    }
+    
+    public DenseMatrix64F getNthMeasureKalmanGain(int measureIndex) {
+        return this.measureSetEqs[measureIndex].getKalmanGain();
     }
 
     protected static void aliasDummy(Equation eq, String... names) {

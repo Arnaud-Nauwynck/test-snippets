@@ -1,12 +1,14 @@
 package fr.an.tests.testejml.invertedpendulum;
 
+import static fr.an.tests.testejml.util.DenseMatrix64FUtils.matToString;
+import static fr.an.tests.testejml.util.DenseMatrix64FUtils.vectToString;
+
 import java.text.DecimalFormat;
 
 import org.ejml.data.DenseMatrix64F;
 import org.ejml.ops.CommonOps;
 
 import fr.an.tests.testejml.kalman.JEMLEqHybridKalmanFilter;
-import static fr.an.tests.testejml.util.DenseMatrix64FUtils.*;
 
 public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulumKalmanModel {
 
@@ -17,59 +19,97 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
     protected static final int STATE_ANGLEDOT = 2;
     protected static final int STATE_ANGLE = 3;
     
-    private int indexMeasureXAngle;
         
     // state origin for linearisation
     protected DenseMatrix64F x0 = new DenseMatrix64F(4, 1);
     
     protected DenseMatrix64F cstF0 = new DenseMatrix64F(4, 1);
-    protected DenseMatrix64F F = new DenseMatrix64F(4, 4);
-    protected DenseMatrix64F G = new DenseMatrix64F(4, 1);
-    protected DenseMatrix64F Q = new DenseMatrix64F(4, 4);
+    protected DenseMatrix64F matF = new DenseMatrix64F(4, 4);
+    protected DenseMatrix64F matG = new DenseMatrix64F(4, 1);
+    protected DenseMatrix64F matQ = new DenseMatrix64F(4, 4);
 
-    protected DenseMatrix64F H = new DenseMatrix64F(2, 4);
-    protected DenseMatrix64F R = new DenseMatrix64F(2, 2);
+    protected boolean useLinearPredict = false;
+    protected double relinearizeWhenAngleMax = 3.1415/10.0;
+            //  0.01; // ~always re-linearize 
+
+    
+    private int indexMeasureXAngle;
+    protected DenseMatrix64F matH_XAngle = new DenseMatrix64F(2, 4);
+    protected DenseMatrix64F matR_XAngle = new DenseMatrix64F(2, 2);
 
     protected static double[] defaultQ = new double[] {
-        1.,       0.00001, 0.00001, 0.00001, //
-        0.000001, 1.,      0.00001, 0.00001, //
-        0.000001, 0.00001, 1.,      0.00001, //
-        0.000001, 0.00001, 0.00001, 1., 
+        0.1,    0.0001, 0.0001, 0.0001, //
+        0.0001, 0.1,    0.0001, 0.0001, //
+        0.0001, 0.0001, 0.1,    0.0001, //
+        0.0001, 0.0001, 0.0001, 0.1, 
     };
     
-    protected static double[] defaultR = new double[] {
-        0.00001, 0.0, //
-        0.0, 0.00001 //
+    protected static double[] defaultR_XAngle = new double[] {
+        0.001,   0.00001, //
+        0.00001, 0.001 //
+    };
+
+    // used to interpolate speed from difference between current observed pos and prev observed pos (possibly with amort factor)
+    // should be useless in real Kalman filter (not re-linearized..) ??
+    private int prevObjCount = 3;
+    protected long[] prevObsTimeMillis = new long[prevObjCount];
+    protected double[] prevObsPos = new double[prevObjCount];
+    protected double[] prevObsAngle = new double[prevObjCount];
+
+    protected boolean useInterpolatedSpeedFromPrevObs = true;
+    protected DenseMatrix64F z_DX_X_DAngle_Angle = new DenseMatrix64F(4, 1); 
+    
+    // using previous observation to interpolate speend by difference between prev observed pos - observed pos
+    protected int indexMeasure_DX_X_DAngle_Angle;
+    protected DenseMatrix64F matH_DX_X_DAngle_Angle = new DenseMatrix64F(4, 4);
+    protected DenseMatrix64F matR_DX_X_DAngle_Angle = new DenseMatrix64F(4, 4);
+    
+    protected static double[] defaultR_DX_X_DAngle_Angle = new double[] {
+        2*0.001, 0.00001, 0.00001, 0.00001, //
+        0.00001, 0.001,   0.00001, 0.00001, //
+        0.00001, 0.00001, 2*0.001, 0.00001, //
+        0.00001, 0.00001, 0.00001, 0.001,   //
     };
     
-    protected boolean useLinearPredict = false;
-    protected double relinearizeWhenAngleMax = 0.0001; // ~always re-linearize 
-        // 3.1415/6.0;
+
     
     private boolean debug = false;
     protected DenseMatrix64F errState = new DenseMatrix64F(4, 1);
     private static DecimalFormat df_state = new DecimalFormat("+00.000;-#");
-    private static DecimalFormat df_err = new DecimalFormat("0.#E0");
-    private static DecimalFormat df_cov = new DecimalFormat("+0.000;-#");
+    private static DecimalFormat df_err = new DecimalFormat("0.0E0");
+    private static DecimalFormat df_cov = new DecimalFormat("+0.00E0;-#"); // "+0.000000;-#";
 
     // ------------------------------------------------------------------------
     
     public SimpleInvertedPendulumKalmanFilter(InvertedPendulumParams modelParams, InvertedPendulumModelMeasureSimulator modelSimulator) {
         super(modelParams, modelSimulator);
                 
-        G.set(STATE_POSDOT, 1.0);
-        G.set(STATE_POS, 0.0);
-        G.set(STATE_ANGLEDOT, 1.0);
-        G.set(STATE_ANGLE, 0.0);
+        matG.set(STATE_POSDOT, 1.0);
+        matG.set(STATE_POS, 0.0);
+        matG.set(STATE_ANGLEDOT, 1.0);
+        matG.set(STATE_ANGLE, 0.0);
 
-        Q.setData(defaultQ);
+        matQ.setData(defaultQ);
 
-        H.setData(new double[] {
+        matH_XAngle.setData(new double[] {
             0.0, 1.0, 0.0, 0.0,  //
             0.0, 0.0, 0.0, 1.0,  //
         });
+        matR_XAngle.setData(defaultR_XAngle);
 
-        R.setData(defaultR);
+        matH_DX_X_DAngle_Angle.setData(new double[] {
+            1.0, 0.0, 0.0, 0.0, //
+            0.0, 1.0, 0.0, 0.0, //
+            0.0, 0.0, 1.0, 0.0, //
+            0.0, 0.0, 0.0, 1.0, //
+        });
+        matR_DX_X_DAngle_Angle.setData(defaultR_DX_X_DAngle_Angle);
+
+        
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < prevObjCount; i++) {
+            prevObsTimeMillis[i] = startTime;
+        }
         
         initKalmanModel();
     }
@@ -116,47 +156,82 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
                 predictPt.perform();
                 
                 if (debug) {
-                    debugDump("predictTimeStep " + dt, false, -1);
+                    debugDumpKalmanEstim("predictTimeStep " + dt, false);
                 }
                 
             }
 
             @Override
             public void updateNthMeasure(int measureIndex, DenseMatrix64F z) {
-                super.updateNthMeasure(measureIndex, z);
+                int interpMeasureIndex = measureIndex;
+                DenseMatrix64F interpZ = z;
+                
+                if (measureIndex == indexMeasureXAngle) {
+                    // shift update prev obs ... 
+                    long timeMillis = System.currentTimeMillis();
+                    for (int i = 0; i < prevObjCount-1; i++) {
+                        prevObsTimeMillis[i+1] = prevObsTimeMillis[i];
+                        prevObsPos[i+1] = prevObsPos[i]; 
+                        prevObsAngle[i+1] = prevObsAngle[i];
+                    }
+                    prevObsTimeMillis[0] = timeMillis;
+                    prevObsPos[0] = z.get(0, 0); 
+                    prevObsAngle[0] = z.get(1, 0);
+
+                    // interpolate observed speed from [0]-[1] 
+                    double dt01 = 0.001 * (prevObsTimeMillis[0] - prevObsTimeMillis[1]);
+                    double invDt01 = 1.0 / Math.max(dt01, 0.008); // avoid div 0 (jvm time precision=~8ms)
+                    double interpDotPos01 = invDt01 * (prevObsPos[0] - prevObsPos[1]);
+                    double interpDotAngle01 = invDt01 * (prevObsAngle[0] - prevObsAngle[1]);
+                    
+                    // same with observed speed from [1]-[2]
+                    double dt12 = 0.001 * (prevObsTimeMillis[1] - prevObsTimeMillis[2]);
+                    double invDt12 = 1.0 / Math.max(dt12, 0.008);
+                    double interpDotPos12 = invDt12 * (prevObsPos[1] - prevObsPos[2]);
+                    double interpDotAngle12 = invDt12 * (prevObsAngle[1] - prevObsAngle[2]);
+                    
+                    // interpolate using time decreasing average: (3.0*d01 + 1.0*d12) / 4.0
+                    double interpDotPos = 0.25 * (3.0 * interpDotPos01 + interpDotPos12);
+                    double interpDotAngle = 0.25 * (3.0 * interpDotAngle01 + interpDotAngle12);
+                    
+                    
+                    if (useInterpolatedSpeedFromPrevObs) {
+                        // augment observed vector z [X, Angle] with interpolated speed => [DX, X, DAngle, Angle]
+                        z_DX_X_DAngle_Angle.set(0, 0, interpDotPos);
+                        z_DX_X_DAngle_Angle.set(1, 0, z.get(0, 0));
+                        z_DX_X_DAngle_Angle.set(2, 0, interpDotAngle);
+                        z_DX_X_DAngle_Angle.set(3, 0, z.get(1, 0));
+                        
+                        interpMeasureIndex = indexMeasure_DX_X_DAngle_Angle;
+                        interpZ = z_DX_X_DAngle_Angle;
+                        
+                        if (debug) {
+                            System.out.println("use speed interpol updateNthMeasure[" + measureIndex + "] " 
+                                    + vectToString(z, df_state)
+                                    + "-> [" + interpMeasureIndex + "] " + vectToString(z_DX_X_DAngle_Angle, df_state));
+                        }
+                    }
+                }
+
+                if (debug) {
+                    debugDumpKalmanEstim("pre updateNthMeasure[" + interpMeasureIndex + "]", false);
+                    debugDumpKalmanGain("update updateNthMeasure[" + interpMeasureIndex + "]", interpMeasureIndex, interpZ);
+                }
+                
+                super.updateNthMeasure(interpMeasureIndex, interpZ);
                 
                 if (debug) {
-                    debugDump("updateNthMeasure[" + measureIndex + "] " + vectToString(z, df_state), true, measureIndex);
+                    debugDumpKalmanEstim("post updateNthMeasure[" + interpMeasureIndex + "]", true);
                 }
-            }
-            protected void debugDump(String msg, boolean dumpKalman, int measureIndex) {
-                DenseMatrix64F x = getState();
-                DenseMatrix64F P = getCovariance();
-                
-                if (modelMeasureSimulator != null) {
-                    InvertedPendulumModel realModel = modelMeasureSimulator.getModel();
-                    DenseMatrix64F realState = realModel.getState();
-                    CommonOps.subtract(realState, x, errState);
-                    System.out.print(msg +  " =>\n"
-                            + "estim:"+ vectToString(x, df_state) + "\n" 
-                            + "real :" + vectToString(realState, df_state) + "\n"
-                            + "err  : " + vectToString(errState, df_err) + "\n");
-                }
-                if (dumpKalman) {
-                    MeasureSetEq m = measureSetEqs[measureIndex];
-                    DenseMatrix64F inov = m.getInnovVector();
-                    DenseMatrix64F kalmanGain = m.getKalmanGain();
-                    System.out.print(
-                          "inov :" + vectToString(inov, df_err) + "\n"
-                         + "gain :" + vectToString(kalmanGain, df_state) + "\n");
-                }
-                System.out.print("cov:\n" + matToString(P, df_cov) + "\n");
             }
         };
         this.kalmanFilter.initStateTransition(4, 1, 2);
+
         indexMeasureXAngle = kalmanFilter.initNthMeasureTransition("XAngle", 2, 2);
-                
-        kalmanFilter.setNthMeasureTransition(indexMeasureXAngle, H, R);
+        kalmanFilter.setNthMeasureTransition(indexMeasureXAngle, matH_XAngle, matR_XAngle);
+        
+        indexMeasure_DX_X_DAngle_Angle = kalmanFilter.initNthMeasureTransition("DX_X_DAngle_Angle", 4, 4);
+        kalmanFilter.setNthMeasureTransition(indexMeasure_DX_X_DAngle_Angle, matH_DX_X_DAngle_Angle, matR_DX_X_DAngle_Angle);
         
         updateLinearize();
     }
@@ -253,17 +328,17 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
 
         cstF0.set(0, 0, cstF0_0); cstF0.set(1, 0, cstF0_1); cstF0.set(2, 0, cstF0_2); cstF0.set(3, 0, cstF0_3);
         
-        F.set(0, 0, f00); F.set(0, 1, f01); F.set(0, 2, f02); F.set(0, 3, f03);
-        F.set(1, 0, f10); F.set(1, 1, f11); F.set(1, 2, f12); F.set(1, 3, f13);
-        F.set(2, 0, f20); F.set(2, 1, f21); F.set(2, 2, f22); F.set(2, 3, f23);
-        F.set(3, 0, f30); F.set(3, 1, f31); F.set(3, 2, f32); F.set(3, 3, f33);
+        matF.set(0, 0, f00); matF.set(0, 1, f01); matF.set(0, 2, f02); matF.set(0, 3, f03);
+        matF.set(1, 0, f10); matF.set(1, 1, f11); matF.set(1, 2, f12); matF.set(1, 3, f13);
+        matF.set(2, 0, f20); matF.set(2, 1, f21); matF.set(2, 2, f22); matF.set(2, 3, f23);
+        matF.set(3, 0, f30); matF.set(3, 1, f31); matF.set(3, 2, f32); matF.set(3, 3, f33);
         
-        G.set(0, f * invTm);
-        G.set(1, 0.0);
-        G.set(2, - f * c_a * invTm);
-        G.set(3, 0.0);
+        matG.set(0, f * invTm);
+        matG.set(1, 0.0);
+        matG.set(2, - f * c_a * invTm);
+        matG.set(3, 0.0);
 
-        kalmanFilter.setStateTransition(x0, cstF0, F, G, Q);
+        kalmanFilter.setStateTransition(x0, cstF0, matF, matG, matQ);
     }
 
     public void evalPredictTimeStepNonLinear(DenseMatrix64F res, double dt, DenseMatrix64F x) {
@@ -317,5 +392,33 @@ public class SimpleInvertedPendulumKalmanFilter extends AbstractInvertedPendulum
     public double getEstimatedAngle() {
         return kalmanFilter.getState().get(STATE_ANGLE);
     }
+
+    protected void debugDumpKalmanGain(String msg, int measureIndex, DenseMatrix64F z) {
+        DenseMatrix64F inov = kalmanFilter.getNthMeasureInnov(measureIndex);
+        DenseMatrix64F kalmanGain = kalmanFilter.getNthMeasureKalmanGain(measureIndex);
+        System.out.print(
+             "z   :" + vectToString(z, df_state) + "\n"
+             + "inov :" + vectToString(inov, df_err) + "\n"
+             + "gain :" + vectToString(kalmanGain, df_state) + "\n");
+    }
+    
+    protected void debugDumpKalmanEstim(String msg, boolean dumpCov) {
+        DenseMatrix64F x = kalmanFilter.getState();
+        DenseMatrix64F P = kalmanFilter.getCovariance();
+        
+        System.out.print(msg +  " =>\n"
+                + "estim:"+ vectToString(x, df_state) + "\n");
+        if (modelMeasureSimulator != null) {
+            InvertedPendulumModel realModel = modelMeasureSimulator.getModel();
+            DenseMatrix64F realState = realModel.getState();
+            CommonOps.subtract(realState, x, errState);
+            System.out.print("real :" + vectToString(realState, df_state) + "\n"
+                    + "err  : " + vectToString(errState, df_err) + "\n");
+        }
+        if (dumpCov) {
+            System.out.print("cov:\n" + matToString(P, df_cov) + "\n");
+        }
+    }
+    
 
 }
