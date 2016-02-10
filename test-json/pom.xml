@@ -66,6 +66,17 @@
             <artifactId>jackson-jaxrs-json-provider</artifactId>
         </dependency>
         
+        <dependency>
+		    <groupId>org.eclipse.jgit</groupId>
+		    <artifactId>org.eclipse.jgit</artifactId>
+		    <version>4.2.0.201601211800-r</version>
+		</dependency>
+
+        <dependency>
+        	<groupId>javax.inject</groupId>
+        	<artifactId>javax.inject</artifactId>
+        	<version>1</version>
+        </dependency>
         
 		<dependency>
 			<groupId>junit</groupId>
