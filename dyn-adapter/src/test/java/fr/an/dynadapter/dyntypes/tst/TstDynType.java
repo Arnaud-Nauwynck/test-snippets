@@ -1,17 +1,30 @@
-package fr.an.dynadapter.dyntypes;
+package fr.an.dynadapter.dyntypes.tst;
 
-public final class TstDynInterfaceId {
+public final class TstDynType {
     
     public final String name;
+    private final TstDynType superType;
+    private final TstDynType[] interfaces;
     
-    public TstDynInterfaceId(String name) {
+    public TstDynType(String name, TstDynType superType, TstDynType[] interfaces) {
         this.name = name;
+        this.superType = superType;
+        this.interfaces = interfaces != null? interfaces.clone() : new TstDynType[0];
     }
     
     public String getName() {
         return name;
     }
 
+    public TstDynType getSuperType() {
+        return superType;
+    }
+
+    public TstDynType[] getInterfaces() {
+        return interfaces;
+    }
+
+    
     @Override
     public int hashCode() {
         return name.hashCode();
@@ -25,7 +38,7 @@ public final class TstDynInterfaceId {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        TstDynInterfaceId other = (TstDynInterfaceId) obj;
+        TstDynType other = (TstDynType) obj;
         if (name == null) {
             if (other.name != null)
                 return false;

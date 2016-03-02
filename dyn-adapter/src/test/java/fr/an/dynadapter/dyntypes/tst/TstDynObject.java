@@ -1,4 +1,4 @@
-package fr.an.dynadapter.dyntypes;
+package fr.an.dynadapter.dyntypes.tst;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -11,7 +11,7 @@ import java.util.Set;
 
 /**
  * This class is inspired from Eclipse platform AdapterManager 
- * ... but heavilly refactored to allow dynamic "type ids" not backed up java classes
+ * ... but heavilly refactored to allow dynamic "type ids" not backed up by java classes.
  * 
  * See Eclipse documentation for a detailed explanation..
  * The purpose of it is to allow java "extends/implements" not at compile time, but at runtime.
@@ -203,5 +203,4 @@ public class DynAdapterManager<DT,IId> implements IDynAdapterManager<DT,IId>, ID
         }
     }
     
-
 }

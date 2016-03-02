@@ -1,4 +1,4 @@
-package fr.an.dynadapter.dyntypes;
+package fr.an.dynadapter.dyntypes.tst;
 
 import fr.an.dynadapter.IDynAdapterFactory;
 
@@ -19,13 +19,13 @@ public class TstDynFooBarAdapter implements IDynBar {
 
         @Override
         public /*<T> T*/ Object getAdapter(Object adaptableObject, TstDynInterfaceId interfaceId) {
-            assert interfaceId == TstDynAdapterManagerUtilTest.CST_IDynBar;
+            assert interfaceId == TstDynTypeUtils.CST_IDynBar;
             return new TstDynFooBarAdapter((TstDynObject) adaptableObject);
         }
 
         @Override
         public TstDynInterfaceId[] getInterfaceIds() {
-            return new TstDynInterfaceId[] { TstDynAdapterManagerUtilTest.CST_IDynBar };
+            return new TstDynInterfaceId[] { TstDynTypeUtils.CST_IDynBar };
         }
         
     }
