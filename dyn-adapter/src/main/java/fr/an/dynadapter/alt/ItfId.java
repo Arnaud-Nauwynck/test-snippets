@@ -26,6 +26,14 @@ public final class ItfId<T> {
         this.name = name;
     }
 
+    public static <T> ItfId<T> of(Class<T> interfaceClass, String name) {
+        return new ItfId<>(interfaceClass, name);
+    }
+
+    public static <T> ItfId<T> of(Class<T> interfaceClass) {
+        return of(interfaceClass, "");
+    }
+
     // ------------------------------------------------------------------------
     
     public Class<T> getInterfaceClass() {
