@@ -1,5 +1,6 @@
 package fr.an.dynadapter.alt;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -103,12 +104,14 @@ import fr.an.dynadapter.typehiera.ITypeHierarchy;
  * 
  * 
  */
-public class AdapterAlternativesManager<DT> implements IAdapterAlternativesManager<DT>, IAdapterAlternativesManagerSPI<DT> {
+public class AdapterAlternativesManager<DT> implements IAdapterAlternativesManager<DT>, IAdapterAlternativesManagerSPI<DT>, Closeable {
 
     private final ITypeHierarchy<DT> typeHierarchy;
         
     /**
      * registered factories
+     * 
+     * thread safety: explicit outer lock on "this"
      */
     private final Map<DT,List<IAdapterAlternativeFactory>> factories = new HashMap<>(5);
 
@@ -125,9 +128,14 @@ public class AdapterAlternativesManager<DT> implements IAdapterAlternativesManag
         this.typeHierarchy = typeHierarchy;
     }
 
-    // impements IAdapterManager
+    @Override
+    public void close() {
+        factories.clear();
+        adapterLookup = null;
+    }
+    
+    // implements IAdapterManager
     // ------------------------------------------------------------------------
-
     
     @Override
     public <T> T getAdapter(Object adaptable, ItfId<T> interfaceId, Predicate<String> alternativePredicate) {
@@ -255,7 +263,6 @@ public class AdapterAlternativesManager<DT> implements IAdapterAlternativesManag
         flushLookup();
     }
 
-    @Override
     public synchronized void unregisterAdapters(IAdapterAlternativeFactory factory) {
         for (List<IAdapterAlternativeFactory> ls : factories.values()) {
             ls.remove(factory);
@@ -329,7 +336,7 @@ public class AdapterAlternativesManager<DT> implements IAdapterAlternativesManag
      * it is lazyly computed for type or parent superType hierarchy, given all factories per type
      */
     private Map<ItfId<?>,Map<String,IAdapterAlternativeFactory>> getFactories(DT adaptableType) {
-        //cache reference to lookup to protect against concurrent flush
+        // cache reference to lookup to protect against concurrent flush
         Map<DT,Map<ItfId<?>,Map<String,IAdapterAlternativeFactory>>> lookup = adapterLookup;
         if (lookup == null) {
             adapterLookup = lookup = Collections.synchronizedMap(new HashMap<>(30));

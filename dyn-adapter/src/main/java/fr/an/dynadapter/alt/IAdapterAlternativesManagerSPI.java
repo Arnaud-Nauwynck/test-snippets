@@ -8,8 +8,10 @@ public interface IAdapterAlternativesManagerSPI<DT> {
     public void unregisterAdapters(IAdapterAlternativeFactory factory, DT adaptableType);
     public void registerAdapters(Collection<AdapterAltFactoryRegistration<DT>> registrations);
     public void unregisterAdapters(Collection<AdapterAltFactoryRegistration<DT>> registrations);
-    public void unregisterAdapters(IAdapterAlternativeFactory factory);
-    public void unregisterAllAdapters();
+
+    // not plugin compatible, would be usefull only for cleanup => test if instanceof Closeable instead
+    // public void unregisterAdapters(IAdapterAlternativeFactory factory);
+    // public void unregisterAllAdapters();
     
     public void flushLookup();
     
