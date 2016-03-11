@@ -138,6 +138,27 @@ public class AdapterAlternativesManager<DT> implements IAdapterAlternativesManag
     // ------------------------------------------------------------------------
     
     @Override
+    public <T> T getAdapter(Object adaptable, ItfId<T> interfaceId) {
+        // equivalent to inlined code... return getAdapter(adaptable, interfaceId, x -> true);
+        DT adaptableType = typeHierarchy.dataTypeOf(adaptable);
+        Map<String, IAdapterAlternativeFactory> a2f = getFactories(adaptableType, interfaceId);
+        if (a2f != null) {
+            for(Map.Entry<String,IAdapterAlternativeFactory> a2fEntry : a2f.entrySet()) {
+                IAdapterAlternativeFactory factory = a2fEntry.getValue();
+                Object tmpres =factory.getAdapter(adaptable, interfaceId);
+                if (tmpres != null) {
+                    return castAs(tmpres, interfaceId);
+                }
+            }
+        }
+        if (interfaceId.getName().equals("") 
+                && interfaceId.interfaceClass.isInstance(adaptable)) {
+            return castAs(adaptable, interfaceId);
+        }
+        return null;
+    }
+    
+    @Override
     public <T> T getAdapter(Object adaptable, ItfId<T> interfaceId, Predicate<String> alternativePredicate) {
         DT adaptableType = typeHierarchy.dataTypeOf(adaptable);
         Map<String, IAdapterAlternativeFactory> a2f = getFactories(adaptableType, interfaceId);
