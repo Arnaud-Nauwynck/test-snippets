@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import fr.an.dynadapter.simple.lang.LangDynAdapterManagerUtil;
+import fr.an.dynadapter.simple.lang.LangDynAdapterManagerUtilTest;
 import fr.an.dynadapter.tstdynobj.IDynBar;
 import fr.an.dynadapter.tstdynobj.TstDynDataTypeHierarchy;
 import fr.an.dynadapter.tstdynobj.TstDynFooBarAdapter;
@@ -21,7 +21,7 @@ import fr.an.dynadapter.tstfoo.IBar;
 public class DynAdapterManagerTest {
 
     protected DynAdapterManager<TstDynType, TstDynInterfaceId> dynSut;
-    protected DynAdapterManager<Class<?>, Class<?>> staticSut = LangDynAdapterManagerUtil.createInstanceFoo();
+    protected DynAdapterManager<Class<?>, Class<?>> staticSut = LangDynAdapterManagerUtilTest.createInstanceFoo();
         
     @Before
     public void setup() {
@@ -55,7 +55,7 @@ public class DynAdapterManagerTest {
 
     @Test
     public void testGetAdapter_static() { 
-        DynAdapterManager<Class<?>, Class<?>> sut = LangDynAdapterManagerUtil.createInstanceFoo();
+        DynAdapterManager<Class<?>, Class<?>> sut = LangDynAdapterManagerUtilTest.createInstanceFoo();
         Foo foo = new Foo();
         foo.setFooValue("foo");
         IBar res = (IBar) sut.getAdapter(foo, IBar.class);

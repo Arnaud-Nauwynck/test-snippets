@@ -15,10 +15,15 @@ public class LangDynAdapterManagerUtilTest {
 
     protected DynAdapterManager<Class<?>, Class<?>> sut;
 
+    public static DynAdapterManager<Class<?>,Class<?>> createInstanceFoo() {  
+        DynAdapterManager<Class<?>,Class<?>> res = LangDynAdapterManagerUtil.createInstance();
+        res.registerAdapters(new FooBarAdapter.Factory(), Foo.class);
+        return res;
+    }
+    
     @Before
     public void setup() {
-        sut = LangDynAdapterManagerUtil.createInstance();
-        sut.registerAdapters(new FooBarAdapter.Factory(), Foo.class);
+        sut = createInstanceFoo();
     }
 
     @Test

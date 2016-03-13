@@ -14,7 +14,7 @@ import java.util.TreeMap;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class SortedArrayDicTest {
+public class SortedMapBenchmarkTest {
     
     private static final Field elementDataField;
     static {
