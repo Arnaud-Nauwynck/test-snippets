@@ -1,6 +1,11 @@
 package fr.an.dynadapter.alt;
 
-public final class ItfId<T> {
+import java.io.Serializable;
+
+public final class ItfId<T> implements Comparable<ItfId<?>>, Serializable {
+
+    /** */
+    private static final long serialVersionUID = 1L;
 
     /**
      * java type for adapter "interface" (may be a class, not an interface.. even java.lang.Object)
@@ -46,7 +51,7 @@ public final class ItfId<T> {
 
     @Override
     public int hashCode() {
-        return interfaceClass.hashCode() ^ name.hashCode();
+        return interfaceClass.getName().hashCode() ^ name.hashCode();
     }
 
     @Override
@@ -62,9 +67,20 @@ public final class ItfId<T> {
     }
 
     @Override
+    public int compareTo(ItfId<?> other) {
+        if (other == null) {
+            return +1;
+        }
+        int res = interfaceClass.getName().compareTo(other.interfaceClass.getName());
+        if (res == 0) {
+            res = name.compareTo(other.name);
+        }
+        return res;
+    }
+
+    @Override
     public String toString() {
         return interfaceClass.getName() + ((!name.isEmpty())? ":name=" + name : "");
     }
-    
     
 }
