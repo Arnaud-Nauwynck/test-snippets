@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import fr.an.dynadapter.typehiera.DefaultLangTypeHierarchy;
 import fr.an.dynadapter.typehiera.ITypeHierarchy;
 
 /**
@@ -387,6 +388,17 @@ public class AdapterAlternativesManager<DT> implements IAdapterAlternativesManag
             return;
         for (IAdapterAlternativeFactory factory : factoryList) {
             ItfId<?>[] itfIds = factory.getInterfaceIds();
+            
+            // also register all superInterfaces of ItfIds
+            Set<ItfId<?>> allItfIds = new LinkedHashSet<>();
+            DefaultLangTypeHierarchy itfHiera = new DefaultLangTypeHierarchy();
+            for(ItfId<?> itfId : itfIds) {
+                Class<?>[] allItfSuperTypes = itfHiera.computeSuperTypesOrder(itfId.getInterfaceClass());
+                for(Class<?> itfSuperType : allItfSuperTypes) {
+                    allItfIds.add(ItfId.of(itfSuperType, itfId.getName()));
+                }
+            }
+            
             String alternativeName = factory.getAlternativeName();
             for (ItfId<?> itfId : itfIds) {
                 Map<String, IAdapterAlternativeFactory> a2f = to.get(itfId);
