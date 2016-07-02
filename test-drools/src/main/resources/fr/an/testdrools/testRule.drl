@@ -1,0 +1,26 @@
+package fr.an.testdrools;
+
+import fr.an.testdrools.model.WebApp;
+import fr.an.testdrools.model.WebServer;
+import fr.an.testdrools.model.WebAppDeployed;
+
+dialect  "mvel"
+
+rule "deploy WebApp-WebServer"
+when
+    $webServer : WebServer(  )
+    $webApp : WebApp(  )
+then
+    System.out.println("deploy webApp:" + $webApp.getId() + " to webServer:" + $webServer.getId());
+    WebAppDeployed deployed = new WebAppDeployed($webApp, $webServer);
+    insertLogical(deployed);
+end
+
+
+
+rule "monitoring WebApp-WebServer"
+when
+  $deployed: WebAppDeployed( )
+then
+  System.out.println("monitoring " + $deployed.getWebApp().getId() + " " + $deployed.getWebServer().getId()); 
+end
