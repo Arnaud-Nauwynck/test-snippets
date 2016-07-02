@@ -22,26 +22,26 @@ import org.springframework.stereotype.Component;
 @Component
 public class Consumer {
 
-//	@JmsListener(destination = "TestQueue1")
-//	public void receiveQueue1(String text) {
-//		doLog("TestQueue1", text);
-//	}
-//
-//	@JmsListener(destination = "TestTopic1", containerFactory="jmsListenerContainerTopic")
-//	public void receiveTopic1_cont(String text) {
-//		doLog("TestTopic1 using jmsListenerContainerTopic", text);
-//	}
-//
-//	@JmsListener(destination = "TestQueue1", containerFactory="jmsListenerContainerQueue")
-//	public void receiveQueue1_cont(String text) {
-//		doLog("TestQueue1 using jmsListenerContainerQueue", text);
-//	}
-//	
-//	// DOES NOT WORK!!
-//	@JmsListener(destination = "TestTopic1")
-//	public void receiveTopic1_err(String text) {
-//		doLog("TestTopic1", text);
-//	}
+	@JmsListener(destination = "TestQueue1")
+	public void receiveQueue1(String text) {
+		doLog("TestQueue1", text);
+	}
+
+	@JmsListener(destination = "TestTopic1", containerFactory="jmsListenerContainerTopic")
+	public void receiveTopic1_cont(String text) {
+		doLog("TestTopic1 using jmsListenerContainerTopic", text);
+	}
+
+	@JmsListener(destination = "TestQueue1", containerFactory="jmsListenerContainerQueue")
+	public void receiveQueue1_cont(String text) {
+		doLog("TestQueue1 using jmsListenerContainerQueue", text);
+	}
+	
+	// DOES NOT WORK!!
+	@JmsListener(destination = "TestTopic1")
+	public void receiveTopic1_err(String text) {
+		doLog("TestTopic1", text);
+	}
 
 	// DOES NOT WORK!!
 	@JmsListener(destination = "topic://TestTopic1")
@@ -50,7 +50,7 @@ public class Consumer {
 	}
 	
 	protected void doLog(String from, String msg) {
-		System.out.println("\n **** " + from + " => " + msg + "\n");
+		System.out.println("**** " + from + " => " + msg);
 	}
 	
 }

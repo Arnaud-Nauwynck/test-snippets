@@ -40,12 +40,12 @@ public class SampleActiveMQApplication {
 	
 	@Bean
 	public Queue testQueue1() {
-		return new ActiveMQQueue("TestQueue1");  // queue://
+		return new ActiveMQQueue("TestQueue1"); 
 	}
 
 	@Bean
 	public Topic testTopic1() {
-		return new ActiveMQTopic("TestTopic1");  // topic://
+		return new ActiveMQTopic("TestTopic1"); 
 	}
 	
 	@Autowired
@@ -67,7 +67,6 @@ public class SampleActiveMQApplication {
 	}
 	
 	public static void main(String[] args) {
-		LOG.trace("test log TRACE");
 		LOG.debug("test log DEBUG");
 		LOG.info("test log INFO");
 		
