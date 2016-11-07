@@ -1,0 +1,9 @@
+
+git2neo4j:
+  neo4j:
+    mode: bolt
+
+    driver: org.neo4j.ogm.drivers.bolt.driver.BoltDriver
+    url: bolt://neo4j:neo4j-pass@localhost 
+    
+# cf ... curl -H "Content-Type: application/json" -X POST -d '{"password":"neo4j-pass"}' -u neo4j:neo4j http://localhost:7474/user/neo4j/password

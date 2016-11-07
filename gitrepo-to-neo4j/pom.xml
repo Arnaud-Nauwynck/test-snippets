@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>fr.an.tools</groupId>
+	<artifactId>gitrepo-to-neo4j</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>gitrepo-to-neo4j</name>
+	<description>tool to put a git repository commit history in a neo4j database</description>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.4.1.RELEASE</version>
+		<relativePath/>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		
+		<neo4j.version>2.3.3</neo4j.version>
+        <neo4j-ogm.version>2.0.5</neo4j-ogm.version>
+        
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-neo4j</artifactId>
+		</dependency>
+		
+		<!-- 
+		<dependency>
+		  <groupId>org.neo4j</groupId>
+		  <artifactId>neo4j-kernel</artifactId>
+		  <version>${neo4j.version}</version>
+		</dependency>
+		
+		<dependency>
+		  <groupId>org.neo4j.app</groupId>
+		  <artifactId>neo4j-server</artifactId>
+		  <version>${neo4j.version}</version>
+		</dependency>
+		 -->
+
+		<dependency>
+		    <groupId>org.neo4j</groupId>
+		    <artifactId>neo4j-ogm-bolt-driver</artifactId>
+			<version>${neo4j-ogm.version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.neo4j</groupId>
+		    <artifactId>neo4j-ogm-embedded-driver</artifactId>
+			<version>${neo4j-ogm.version}</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>org.eclipse.jgit</groupId>
+		    <artifactId>org.eclipse.jgit</artifactId>
+		    <version>4.5.0.201609210915-r</version>
+		</dependency>
+
+		<dependency>
+		    <groupId>ma.glasnost.orika</groupId>
+		    <artifactId>orika-core</artifactId>
+		    <version>1.4.6</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+
+</project>
