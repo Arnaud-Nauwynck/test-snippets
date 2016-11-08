@@ -16,11 +16,25 @@ public class RevCommitEntity {
 	/** SHA-1 .. cf ObjectId */
 	private String sha1;
 	
-	@Relationship(type = "RATED")
+	@Relationship(type = "parent")
 	private List<RevCommitEntity> parents;
 	
 	private String shortMessage;
 	private String fullMessage;
+	
+	private int commitTime;
+
+	@Relationship(type = "author")
+	private PersonIdentEntity authorIdent;
+	
+	@Relationship(type = "committer")
+	private PersonIdentEntity committerIdent;
+
+	@Relationship(type = "revTree")
+	private RevTreeEntity revTree;
+
+	// @Relationship(type = "footerLines")
+	// List<FooterLine> footerLines;
 	
 	// ------------------------------------------------------------------------
 
@@ -33,8 +47,8 @@ public class RevCommitEntity {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setId(Long p) {
+		this.id = p;
 	}
 
 	public String getSha1() {
@@ -49,8 +63,8 @@ public class RevCommitEntity {
 		return sha1 != null? ObjectId.fromString(sha1) : null;
 	}
 	
-	public void setCommitId(ObjectId commitId) {
-		this.sha1 = commitId != null? commitId.name() : null;
+	public void setCommitId(ObjectId p) {
+		this.sha1 = p != null? p.name() : null;
 	}
 	
 	
@@ -58,8 +72,8 @@ public class RevCommitEntity {
 		return parents;
 	}
 
-	public void setParents(List<RevCommitEntity> parents) {
-		this.parents = parents;
+	public void setParents(List<RevCommitEntity> p) {
+		this.parents = p;
 	}
 
 	public String getShortMessage() {
@@ -74,9 +88,43 @@ public class RevCommitEntity {
 		return fullMessage;
 	}
 
-	public void setFullMessage(String fullMessage) {
-		this.fullMessage = fullMessage;
+	public void setFullMessage(String p) {
+		this.fullMessage = p;
 	}
+	
+	public int getCommitTime() {
+		return commitTime;
+	}
+
+	public void setCommitTime(int p) {
+		this.commitTime = p;
+	}
+
+	public PersonIdentEntity getAuthorIdent() {
+		return authorIdent;
+	}
+
+	public void setAuthorIdent(PersonIdentEntity p) {
+		this.authorIdent = p;
+	}
+
+	public PersonIdentEntity getCommitterIdent() {
+		return committerIdent;
+	}
+
+	public void setCommitterIdent(PersonIdentEntity p) {
+		this.committerIdent = p;
+	}
+	
+	public RevTreeEntity getRevTree() {
+		return revTree;
+	}
+	
+	public void setRevTree(RevTreeEntity revTree) {
+		this.revTree = revTree;
+	}
+	
+	// ------------------------------------------------------------------------
 
 	@Override
 	public String toString() {
