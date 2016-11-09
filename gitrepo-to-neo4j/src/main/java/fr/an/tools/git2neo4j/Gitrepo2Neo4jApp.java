@@ -31,8 +31,8 @@ public class Gitrepo2Neo4jApp implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		File localGitRepo =
-				// new File("/home/arnaud/downloadTools/eclipse-git/jgit/jgit.github");
-				new File(".."); //TODO test from self local repo ... 
+				new File("/home/arnaud/downloadTools/eclipse-git/jgit/jgit.github");
+				// new File(".."); //TODO test from self local repo ... 
 		LOG.info("using git repo:" + localGitRepo);
 		if (! new File(localGitRepo, ".git").exists()) {
 			throw new RuntimeException();

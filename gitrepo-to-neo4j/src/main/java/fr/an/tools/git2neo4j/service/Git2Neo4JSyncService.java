@@ -24,12 +24,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.an.tools.git2neo4j.domain.BlobEntity;
+import fr.an.tools.git2neo4j.domain.DirTreeEntity;
+import fr.an.tools.git2neo4j.domain.GitLinkEntity;
 import fr.an.tools.git2neo4j.domain.PersonIdentEntity;
 import fr.an.tools.git2neo4j.domain.RevCommitEntity;
 import fr.an.tools.git2neo4j.domain.RevTreeEntity;
-import fr.an.tools.git2neo4j.repository.PersonIdentRepository;
-import fr.an.tools.git2neo4j.repository.RevCommitRepository;
-import fr.an.tools.git2neo4j.repository.RevTreeRepository;
+import fr.an.tools.git2neo4j.domain.SymLinkEntity;
+import fr.an.tools.git2neo4j.repository.BlobDAO;
+import fr.an.tools.git2neo4j.repository.DirTreeDAO;
+import fr.an.tools.git2neo4j.repository.GitLinkDAO;
+import fr.an.tools.git2neo4j.repository.PersonDAO;
+import fr.an.tools.git2neo4j.repository.RevCommitDAO;
+import fr.an.tools.git2neo4j.repository.RevTreeDAO;
+import fr.an.tools.git2neo4j.repository.SymLinkDAO;
 
 @Component
 public class Git2Neo4JSyncService {
@@ -37,11 +45,21 @@ public class Git2Neo4JSyncService {
 	private static final Logger LOG = LoggerFactory.getLogger(Git2Neo4JSyncService.class);
 
 	@Autowired
-	private RevCommitRepository revCommitRepository;
+	private RevCommitDAO revCommitDAO;
+	
 	@Autowired
-	private PersonIdentRepository personIdentRepository;
+	private PersonDAO personDAO;
+	
 	@Autowired
-	private RevTreeRepository revTreeRepository;
+	private RevTreeDAO treeDAO;
+	@Autowired
+	private DirTreeDAO dirTreeDAO;
+	@Autowired
+	private BlobDAO blobDAO;
+	@Autowired
+	private SymLinkDAO symLinkDAO;
+	@Autowired
+	private GitLinkDAO gitLinkDAO;
 
 	// @Autowired
 	// private MapperFacade mapperFacade;
@@ -53,7 +71,7 @@ public class Git2Neo4JSyncService {
 
 	// ------------------------------------------------------------------------
 
-	public static class SyncCtx {
+	public class SyncCtx {
 		Repository repository;
 		RevWalk revWalk;
 
@@ -61,29 +79,63 @@ public class Git2Neo4JSyncService {
 		Map<ObjectId, RevTreeEntity> sha2revTreeEntities = new HashMap<>();
 		Map<String, PersonIdentEntity> email2person = new HashMap<>();
 
+		List<RevCommitEntity> bufferRevCommitEntities = new ArrayList<>();
+		List<RevTreeEntity> bufferRevTreeEntities = new ArrayList<>();
+		
 		public SyncCtx(Repository repository, Iterable<RevCommitEntity> revCommitEntities,
-				Iterable<PersonIdentEntity> personEntities, Iterable<RevTreeEntity> revTreeEntities) {
+				Iterable<PersonIdentEntity> personEntities, 
+				Iterable<DirTreeEntity> dirEntities, Iterable<BlobEntity> blobEntities) {
 			this.repository = repository;
 			this.revWalk = new RevWalk(repository);
-			for (RevCommitEntity e : revCommitEntities) {
-				sha2revCommitEntities.put(e.getCommitId(), e);
-			}
+			putRevCommits(revCommitEntities);
 			for (PersonIdentEntity e : personEntities) {
 				email2person.put(e.getEmailAddress(), e);
 			}
-			for (RevTreeEntity e : revTreeEntities) {
+			putRevTrees(dirEntities);
+			putRevTrees(blobEntities);
+		}
+
+		private void putRevTrees(Iterable<? extends RevTreeEntity> src) {
+			for (RevTreeEntity e : src) {
 				sha2revTreeEntities.put(e.getCommitId(), e);
+			}
+		}
+
+		private void putRevCommits(Iterable<RevCommitEntity> revCommitEntities) {
+			for (RevCommitEntity e : revCommitEntities) {
+				sha2revCommitEntities.put(e.getCommitId(), e);
+			}
+		}
+		
+		public void save(RevCommitEntity e) {
+			bufferRevCommitEntities.add(e);
+		}
+		public void save(RevTreeEntity e) {
+			bufferRevTreeEntities.add(e);
+		}
+		public void flush() {
+			if (! bufferRevCommitEntities.isEmpty()) {
+				Iterable<RevCommitEntity> saved = revCommitDAO.save(bufferRevCommitEntities, 1);
+				putRevCommits(saved);
+				bufferRevCommitEntities.clear();
+			}
+			if (! bufferRevTreeEntities.isEmpty()) {
+				Iterable<RevTreeEntity> saved = treeDAO.save(bufferRevTreeEntities, 1);
+				putRevTrees(saved);
+				bufferRevTreeEntities.clear();
 			}
 		}
 	}
 
+	
 	@Transactional
 	public void syncRepo(Git git) {
 		LOG.info("sync git repo ...");
-		Iterable<RevCommitEntity> revCommitEntities = revCommitRepository.findAll();
-		Iterable<PersonIdentEntity> personEntities = personIdentRepository.findAll();
-		Iterable<RevTreeEntity> revTreeEntities = revTreeRepository.findAll();
-		SyncCtx ctx = new SyncCtx(git.getRepository(), revCommitEntities, personEntities, revTreeEntities);
+		Iterable<RevCommitEntity> revCommitEntities = revCommitDAO.findAll();
+		Iterable<PersonIdentEntity> personEntities = personDAO.findAll();
+		Iterable<DirTreeEntity> dirTreeEntities = dirTreeDAO.findAll();
+		Iterable<BlobEntity> blobEntities = blobDAO.findAll();
+		SyncCtx ctx = new SyncCtx(git.getRepository(), revCommitEntities, personEntities, dirTreeEntities, blobEntities);
 
 		Iterable<RevCommit> revCommits;
 		try {
@@ -103,6 +155,9 @@ public class Git2Neo4JSyncService {
 		Collections.reverse(reverseOrderRevCommits);
 		
 		Map<RevCommit,RevCommitEntity> tmpRevCommitEntities = new LinkedHashMap<>();
+		int progressFreq = 100;
+		int progressCount = progressFreq;
+		System.out.println("findOrCreateRevCommitEntity " + reverseOrderRevCommits.size() + " commit(s), show progress each " + progressFreq);
 		for (RevCommit revCommit : reverseOrderRevCommits) {
 			try {
 				RevCommitEntity tmpres = findOrCreateRevCommitEntity(ctx, revCommit);
@@ -110,15 +165,23 @@ public class Git2Neo4JSyncService {
 			} catch(Exception ex) {
 				LOG.error("Failed", ex);
 			}
+			if (progressCount-- <= 0) {
+				progressCount = progressFreq;
+				System.out.print(".");
+			}
+		}
+		System.out.println();
+		LOG.info("flush save Revcommit + RevTree");
+		ctx.flush();
+		
+		for (Map.Entry<RevCommit,RevCommitEntity>  e : tmpRevCommitEntities.entrySet()) {
+			RevCommit revCommit = e.getKey();
+			RevCommitEntity revCommitEntity = e.getValue();
+			updateRevCommitParents(ctx, revCommit, revCommitEntity);
 		}
 
-//		for (Map.Entry<RevCommit,RevCommitEntity>  e : tmpRevCommitEntities.entrySet()) {
-//			RevCommit revCommit = e.getKey();
-//			RevCommitEntity revCommitEntity = e.getValue();
-//			updateRevCommitParents(ctx, revCommit, revCommitEntity);
-//			// revCommitRepository.save(revCommitEntity);
-//		}
-
+		ctx.flush();
+		
 		
 		LOG.info("done sync git repo");
 	}
@@ -138,12 +201,11 @@ public class Git2Neo4JSyncService {
 
 			git2entity(ctx, src, res);
 
-			LOG.info("git RevCommit " + commitId);
-			revCommitRepository.save(res);
+			LOG.debug("git RevCommit " + commitId);
+			ctx.save(res);
 		} else {
 			// update (if sync code changed ..)
 			git2entity(ctx, src, res);
-			revCommitRepository.save(res);
 		}
 		return res;
 	}
@@ -167,35 +229,53 @@ public class Git2Neo4JSyncService {
 		} catch (NullPointerException e) {
 			throw new RuntimeException(e);
 		}
-		LOG.info("RevCommit " + commitId + " " + shortMessage);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("RevCommit " + commitId + " " + shortMessage);
+		}
 		
 		res.setShortMessage(shortMessage);
 		res.setFullMessage(src.getFullMessage());
 
-		// may StackOverflow ...
-		updateRevCommitParents(ctx, src, res);
+		// may StackOverflow !! do not recurse from here
+		// updateRevCommitParents(ctx, src, res);
 
 		res.setCommitTime(src.getCommitTime());
 
 
-		res.setAuthorIdent(findOrCreatePersonEntity(ctx, src.getAuthorIdent()));
-		res.setCommitterIdent(findOrCreatePersonEntity(ctx, src.getCommitterIdent()));
+		res.setAuthor(findOrCreatePersonEntity(ctx, src.getAuthorIdent()));
+		res.setCommitter(findOrCreatePersonEntity(ctx, src.getCommitterIdent()));
 		
-		res.setRevTree(findOrCreateRevTree(ctx, src.getTree()));
+		res.setRevTree(findOrCreateRevTree(ctx, src.getTree(), dirSynchroniser));
 	}
 
 	protected void updateRevCommitParents(SyncCtx ctx, RevCommit src, RevCommitEntity res) {
 		RevCommit[] parents = src.getParents();
-
+		if (parents == null || parents.length == 0) {
+			return; // only the initial commit..
+		}
+		
 		// recursive find or create parent commits!
-		List<RevCommitEntity> parentEntities = new ArrayList<>();
+		boolean chg = false;
+		List<RevCommitEntity> parentEntities = res.getParents();
+		if (parentEntities == null) {
+			parentEntities = new ArrayList<>();
+			res.setParents(parentEntities);
+			chg = true;
+		} else if (parentEntities.size() != parents.length) {
+			chg = true; //? update change?? (was not created before) 
+		}
+		
 		for (RevCommit parent : parents) {
 			RevCommitEntity parentEntity = findOrCreateRevCommitEntity(ctx, parent);
 			if (parentEntity != null) {
 				parentEntities.add(parentEntity);
 			} // else should not occur?!
 		}
-		res.setParents(parentEntities);
+		
+		if (chg) {
+			// save??
+			ctx.save(res);
+		}
 	}
 
 	protected PersonIdentEntity findOrCreatePersonEntity(SyncCtx ctx, PersonIdent src) {
@@ -210,57 +290,166 @@ public class Git2Neo4JSyncService {
 			res.setName(src.getName());
 
 			ctx.email2person.put(email, res);
-			personIdentRepository.save(res);
+			personDAO.save(res);
 		}
 		return res;
 	}
 
-	protected RevTreeEntity findOrCreateRevTree(SyncCtx ctx, RevTree src) {
+	protected static abstract class RevTreeEntitySynchroniser<TEntity extends RevTreeEntity> {
+		public abstract TEntity createEntity();
+		public abstract void git2entity(SyncCtx ctx, RevTree src, TEntity res);
+		public abstract void save(TEntity entity);
+	}
+	
+	protected <TEntity extends RevTreeEntity> RevTreeEntity findOrCreateRevTree(SyncCtx ctx, RevTree src, RevTreeEntitySynchroniser<TEntity> callback) {
 		if (src == null) {
 			return null;
 		}
 		final ObjectId commitId = src.getId();
-		RevTreeEntity res = ctx.sha2revTreeEntities.get(commitId);
+		@SuppressWarnings("unchecked")
+		TEntity res = (TEntity) ctx.sha2revTreeEntities.get(commitId);
 		if (res == null) {
-			res = new RevTreeEntity();
+			res = callback.createEntity();
+			
 			res.setCommitId(commitId);
 			ctx.sha2revTreeEntities.put(commitId, res);
 
-			git2entity(ctx, src, res);
-
-			revTreeRepository.save(res);
+			callback.git2entity(ctx, src, res);
+			
+			// callback.save(res);
+			ctx.save(res);
 		} else {
 			// update (if sync code changed ..)
-			// git2entity(ctx, src, res);
+			// callback.git2entity(src, res);
 		}
 		return res;
 	}
 
-	private void git2entity(SyncCtx ctx, RevTree src, RevTreeEntity res) {
-		MutableObjectId moid = new MutableObjectId(); 
-		TreeWalk treeWalk = new TreeWalk(ctx.repository);
-		try {
-			ObjectId revTreeId = src.getId();
-			String revTreeSha = revTreeId.name(); 
-			treeWalk.addTree(revTreeId);
-			treeWalk.setRecursive(false);
-			while (treeWalk.next()) {
-				int treeCount = treeWalk.getTreeCount();
-				// treeWalk.getTree(nth, clazz);
-				
-				FileMode fileMode = treeWalk.getFileMode();
-				String path = treeWalk.getPathString();
-				// System.out.println("revTree " + revTreeSha + " - entry: " + path);
-				// System.out.println("found: " + treeWalk.getPathString());
-				
-				//TODO
-			}
-		} catch (IOException ex) {
-			throw new RuntimeException(ex);
-		} finally {
-			treeWalk.close();
+	protected <TEntity extends RevTreeEntity> RevTreeEntity findOrCreateRevTree(SyncCtx ctx, RevTree src, FileMode fileMode) {
+		RevTreeEntity res;
+		int fileModeBits = fileMode.getObjectType();
+		if (FileMode.TREE.equals(fileModeBits)) {
+			res = findOrCreateRevTree(ctx, src, dirSynchroniser);
+		} else if (FileMode.REGULAR_FILE.equals(fileModeBits)) {
+			res = findOrCreateRevTree(ctx, src, blobSynchroniser);
+		} else if (FileMode.SYMLINK.equals(fileModeBits)) {
+			res = findOrCreateRevTree(ctx, src, symLinkSynchroniser);
+		} else if (FileMode.GITLINK.equals(fileModeBits)) {
+			res = findOrCreateRevTree(ctx, src, gitLinkSynchroniser);
+		} else {
+			res = null; // should not occurs
+		}
+		return res;
+	}
+		
+	protected class DirSynchroniser extends RevTreeEntitySynchroniser<DirTreeEntity> {
+
+		@Override
+		public DirTreeEntity createEntity() {
+			return new DirTreeEntity();
 		}
 
+		@Override
+		public void git2entity(SyncCtx ctx, RevTree src, DirTreeEntity res) {
+			MutableObjectId moid = new MutableObjectId(); 
+			TreeWalk treeWalk = new TreeWalk(ctx.repository);
+			try {
+				ObjectId revTreeId = src.getId();
+				String revTreeSha = revTreeId.name(); 
+				treeWalk.addTree(revTreeId);
+				treeWalk.setRecursive(false);
+
+//					int treeCount = treeWalk.getTreeCount();
+//						for(int i = 0; i < treeCount; i++) {
+//							AbstractTreeIterator entryIter = treeWalk.getTree(i, AbstractTreeIterator.class);
+//							entryIter.getEntryFileMode();
+//						}
+					
+				while (treeWalk.next()) {
+					
+					FileMode fileMode = treeWalk.getFileMode();
+					String path = treeWalk.getPathString();
+					treeWalk.getObjectId(moid, 0);
+					
+					// System.out.println("revTree entry: " + fileMode + " " + path + " " + moid);
+					// TODO create DirTreeEntry then recurse ...
+					
+					
+				}
+			} catch (IOException ex) {
+				throw new RuntimeException(ex);
+			} finally {
+				treeWalk.close();
+			}
+
+		}
+
+		@Override
+		public void save(DirTreeEntity entity) {
+			dirTreeDAO.save(entity);
+		} 
+		
 	}
+
+	protected class BlobSynchroniser extends RevTreeEntitySynchroniser<BlobEntity> {
+
+		@Override
+		public BlobEntity createEntity() {
+			return new BlobEntity();
+		}
+
+		@Override
+		public void git2entity(SyncCtx ctx, RevTree src, BlobEntity res) {
+		}
+		
+		@Override
+		public void save(BlobEntity entity) {
+			blobDAO.save(entity);
+		} 
+		
+	}
+
+	protected class SymLinkSynchroniser extends RevTreeEntitySynchroniser<SymLinkEntity> {
+
+		@Override
+		public SymLinkEntity createEntity() {
+			return new SymLinkEntity();
+		}
+
+		@Override
+		public void git2entity(SyncCtx ctx, RevTree src, SymLinkEntity res) {
+		}
+		
+		@Override
+		public void save(SymLinkEntity entity) {
+			symLinkDAO.save(entity);
+		} 
+		
+	}
+	
+	protected class GitLinkSynchroniser extends RevTreeEntitySynchroniser<GitLinkEntity> {
+
+		@Override
+		public GitLinkEntity createEntity() {
+			return new GitLinkEntity();
+		}
+
+		@Override
+		public void git2entity(SyncCtx ctx, RevTree src, GitLinkEntity res) {
+		}
+		
+		@Override
+		public void save(GitLinkEntity entity) {
+			gitLinkDAO.save(entity);
+		} 
+		
+	}
+		
+			
+	private DirSynchroniser dirSynchroniser = new DirSynchroniser();
+	private BlobSynchroniser blobSynchroniser = new BlobSynchroniser();
+	private SymLinkSynchroniser symLinkSynchroniser = new SymLinkSynchroniser();
+	private GitLinkSynchroniser gitLinkSynchroniser = new GitLinkSynchroniser();
+
 
 }

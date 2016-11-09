@@ -3,7 +3,7 @@ package fr.an.tools.git2neo4j.domain;
 import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 
-@NodeEntity
+@NodeEntity(label="Person")
 public class PersonIdentEntity {
 
 	@GraphId 

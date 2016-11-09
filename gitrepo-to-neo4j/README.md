@@ -8,9 +8,11 @@ http://localhost:7474/browser/
 
 # queries
 
-match(c: RevCommitEntity) return c
-match(c: RevCommitEntity)-[r]-(t) return c,r,t
-match(c: RevCommitEntity)-[p:parent]-(c2: RevCommitEntity)  return c,p,c2
+MATCH(c: RevCommitEntity) return c
+
+MATCH(c: RevCommitEntity)-[r]-(t) return c,r,t
+
+MATCH(c: RevCommitEntity)-[p:parent]-(c2: RevCommitEntity)  return c,p,c2
 
 # delete ...
-# MATCH (e: RevCommitEntity) -[p]- (e2) DELETE e,p
+MATCH (e: RevCommitEntity) -[p]- (e2) DELETE e,p

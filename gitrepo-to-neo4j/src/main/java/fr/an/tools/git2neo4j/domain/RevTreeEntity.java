@@ -2,10 +2,13 @@ package fr.an.tools.git2neo4j.domain;
 
 import org.eclipse.jgit.lib.ObjectId;
 import org.neo4j.ogm.annotation.GraphId;
-import org.neo4j.ogm.annotation.NodeEntity;
 
-@NodeEntity
-public class RevTreeEntity {
+/**
+ * abstract class ... sub-classes: DirTreeEntity / BlobEntity
+ *
+ */
+// @NodeEntity(label="RevTree")
+public abstract class RevTreeEntity {
 
 	@GraphId 
 	private Long id; // internal generated id, not the SHA1 !!

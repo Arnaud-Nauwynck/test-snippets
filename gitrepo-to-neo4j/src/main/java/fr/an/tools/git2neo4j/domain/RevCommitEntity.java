@@ -7,7 +7,7 @@ import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 
-@NodeEntity
+@NodeEntity(label="RevCi")
 public class RevCommitEntity {
 
 	@GraphId 
@@ -20,15 +20,16 @@ public class RevCommitEntity {
 	private List<RevCommitEntity> parents;
 	
 	private String shortMessage;
+	
 	private String fullMessage;
 	
 	private int commitTime;
 
 	@Relationship(type = "author")
-	private PersonIdentEntity authorIdent;
+	private PersonIdentEntity author;
 	
 	@Relationship(type = "committer")
-	private PersonIdentEntity committerIdent;
+	private PersonIdentEntity committer;
 
 	@Relationship(type = "revTree")
 	private RevTreeEntity revTree;
@@ -100,35 +101,35 @@ public class RevCommitEntity {
 		this.commitTime = p;
 	}
 
-	public PersonIdentEntity getAuthorIdent() {
-		return authorIdent;
+	public PersonIdentEntity getAuthor() {
+		return author;
 	}
 
-	public void setAuthorIdent(PersonIdentEntity p) {
-		this.authorIdent = p;
+	public void setAuthor(PersonIdentEntity p) {
+		this.author = p;
 	}
 
-	public PersonIdentEntity getCommitterIdent() {
-		return committerIdent;
+	public PersonIdentEntity getCommitter() {
+		return committer;
 	}
 
-	public void setCommitterIdent(PersonIdentEntity p) {
-		this.committerIdent = p;
+	public void setCommitter(PersonIdentEntity p) {
+		this.committer = p;
 	}
 	
 	public RevTreeEntity getRevTree() {
 		return revTree;
 	}
 	
-	public void setRevTree(RevTreeEntity revTree) {
-		this.revTree = revTree;
+	public void setRevTree(RevTreeEntity p) {
+		this.revTree = p;
 	}
 	
 	// ------------------------------------------------------------------------
 
 	@Override
 	public String toString() {
-		return "RevCommitEntity [id=" + id + ", " + sha1 + "]";
+		return "RevCi[id=" + id + ", " + sha1 + "]";
 	}
 	
 }
