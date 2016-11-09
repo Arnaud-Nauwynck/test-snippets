@@ -2,7 +2,9 @@ package fr.an.tools.git2neo4j.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +16,7 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +32,6 @@ import fr.an.tools.git2neo4j.repository.RevCommitRepository;
 import fr.an.tools.git2neo4j.repository.RevTreeRepository;
 
 @Component
-@Transactional
 public class Git2Neo4JSyncService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(Git2Neo4JSyncService.class);
@@ -53,6 +55,8 @@ public class Git2Neo4JSyncService {
 
 	public static class SyncCtx {
 		Repository repository;
+		RevWalk revWalk;
+
 		Map<ObjectId, RevCommitEntity> sha2revCommitEntities = new HashMap<>();
 		Map<ObjectId, RevTreeEntity> sha2revTreeEntities = new HashMap<>();
 		Map<String, PersonIdentEntity> email2person = new HashMap<>();
@@ -60,6 +64,7 @@ public class Git2Neo4JSyncService {
 		public SyncCtx(Repository repository, Iterable<RevCommitEntity> revCommitEntities,
 				Iterable<PersonIdentEntity> personEntities, Iterable<RevTreeEntity> revTreeEntities) {
 			this.repository = repository;
+			this.revWalk = new RevWalk(repository);
 			for (RevCommitEntity e : revCommitEntities) {
 				sha2revCommitEntities.put(e.getCommitId(), e);
 			}
@@ -72,6 +77,7 @@ public class Git2Neo4JSyncService {
 		}
 	}
 
+	@Transactional
 	public void syncRepo(Git git) {
 		LOG.info("sync git repo ...");
 		Iterable<RevCommitEntity> revCommitEntities = revCommitRepository.findAll();
@@ -81,19 +87,39 @@ public class Git2Neo4JSyncService {
 
 		Iterable<RevCommit> revCommits;
 		try {
-			revCommits = git.log().setMaxCount(1000).all() // from all refs
-															// (=master +
-															// branchs ..)
+			revCommits = git.log().all() // from all refs(=master + branchs ..)
 					.call();
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed to get git commit log history", ex);
 		}
 
-		for (RevCommit revCommit : revCommits) {
-			System.out.println("RevCommit: " + revCommit + " " + revCommit.getShortMessage());
-			findOrCreateRevCommitEntity(ctx, revCommit);
+		// recursive save => resolve parent => save ... stack overflow...
+		// => put in reverse order
+		// should 1/ insert without relationships  then 2/ insert relationships
+		List<RevCommit> reverseOrderRevCommits = new ArrayList<>();
+		for (RevCommit e : revCommits) {
+			reverseOrderRevCommits.add(e);
+		}
+		Collections.reverse(reverseOrderRevCommits);
+		
+		Map<RevCommit,RevCommitEntity> tmpRevCommitEntities = new LinkedHashMap<>();
+		for (RevCommit revCommit : reverseOrderRevCommits) {
+			try {
+				RevCommitEntity tmpres = findOrCreateRevCommitEntity(ctx, revCommit);
+				tmpRevCommitEntities.put(revCommit, tmpres);
+			} catch(Exception ex) {
+				LOG.error("Failed", ex);
+			}
 		}
 
+//		for (Map.Entry<RevCommit,RevCommitEntity>  e : tmpRevCommitEntities.entrySet()) {
+//			RevCommit revCommit = e.getKey();
+//			RevCommitEntity revCommitEntity = e.getValue();
+//			updateRevCommitParents(ctx, revCommit, revCommitEntity);
+//			// revCommitRepository.save(revCommitEntity);
+//		}
+
+		
 		LOG.info("done sync git repo");
 	}
 
@@ -101,7 +127,9 @@ public class Git2Neo4JSyncService {
 		if (src == null) {
 			return null;
 		}
+		
 		final ObjectId commitId = src.getId();
+		
 		RevCommitEntity res = ctx.sha2revCommitEntities.get(commitId);
 		if (res == null) {
 			res = new RevCommitEntity();
@@ -110,24 +138,54 @@ public class Git2Neo4JSyncService {
 
 			git2entity(ctx, src, res);
 
+			LOG.info("git RevCommit " + commitId);
 			revCommitRepository.save(res);
 		} else {
 			// update (if sync code changed ..)
 			git2entity(ctx, src, res);
+			revCommitRepository.save(res);
 		}
 		return res;
 	}
 
 	private void git2entity(SyncCtx ctx, RevCommit src, RevCommitEntity res) {
 		// mapperFacade.map(revCommit, revCommitEntity); // TODO ...
-		// MappingException: No converter registered for conversion from
-		// RevCommit to Long
-		RevCommit[] parents = src.getParents();
+		// MappingException: No converter registered for conversion from RevCommit to Long
 
-		if (parents == null) {
-			// initial commit
-			return;
+		ObjectId commitId = src.getId();
+
+		// JGit Bug ... need to re-read fully the RevCommit ??!!!!
+		try {
+			src = ctx.revWalk.parseCommit(commitId);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
+		
+		String shortMessage;
+		try {
+			shortMessage = src.getShortMessage();
+		} catch (NullPointerException e) {
+			throw new RuntimeException(e);
+		}
+		LOG.info("RevCommit " + commitId + " " + shortMessage);
+		
+		res.setShortMessage(shortMessage);
+		res.setFullMessage(src.getFullMessage());
+
+		// may StackOverflow ...
+		updateRevCommitParents(ctx, src, res);
+
+		res.setCommitTime(src.getCommitTime());
+
+
+		res.setAuthorIdent(findOrCreatePersonEntity(ctx, src.getAuthorIdent()));
+		res.setCommitterIdent(findOrCreatePersonEntity(ctx, src.getCommitterIdent()));
+		
+		res.setRevTree(findOrCreateRevTree(ctx, src.getTree()));
+	}
+
+	protected void updateRevCommitParents(SyncCtx ctx, RevCommit src, RevCommitEntity res) {
+		RevCommit[] parents = src.getParents();
 
 		// recursive find or create parent commits!
 		List<RevCommitEntity> parentEntities = new ArrayList<>();
@@ -138,16 +196,6 @@ public class Git2Neo4JSyncService {
 			} // else should not occur?!
 		}
 		res.setParents(parentEntities);
-
-		res.setCommitTime(src.getCommitTime());
-
-		res.setShortMessage(src.getShortMessage());
-		res.setFullMessage(src.getFullMessage());
-
-		res.setAuthorIdent(findOrCreatePersonEntity(ctx, src.getAuthorIdent()));
-		res.setCommitterIdent(findOrCreatePersonEntity(ctx, src.getCommitterIdent()));
-		
-		res.setRevTree(findOrCreateRevTree(ctx, src.getTree()));
 	}
 
 	protected PersonIdentEntity findOrCreatePersonEntity(SyncCtx ctx, PersonIdent src) {
@@ -189,8 +237,8 @@ public class Git2Neo4JSyncService {
 	}
 
 	private void git2entity(SyncCtx ctx, RevTree src, RevTreeEntity res) {
-		TreeWalk treeWalk = new TreeWalk(ctx.repository);
 		MutableObjectId moid = new MutableObjectId(); 
+		TreeWalk treeWalk = new TreeWalk(ctx.repository);
 		try {
 			ObjectId revTreeId = src.getId();
 			String revTreeSha = revTreeId.name(); 
@@ -202,13 +250,15 @@ public class Git2Neo4JSyncService {
 				
 				FileMode fileMode = treeWalk.getFileMode();
 				String path = treeWalk.getPathString();
-				System.out.println("revTree " + revTreeSha + " - entry: " + path);
+				// System.out.println("revTree " + revTreeSha + " - entry: " + path);
 				// System.out.println("found: " + treeWalk.getPathString());
 				
 				//TODO
 			}
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
+		} finally {
+			treeWalk.close();
 		}
 
 	}

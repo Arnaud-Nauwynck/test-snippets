@@ -21,12 +21,18 @@ public class Gitrepo2Neo4jApp implements CommandLineRunner {
 	private Git2Neo4JSyncService git2Neo4JSyncService;
 	
 	public static void main(String[] args) {
-		SpringApplication.run(Gitrepo2Neo4jApp.class, args);
+		try {
+			SpringApplication.run(Gitrepo2Neo4jApp.class, args);
+		} catch(Throwable ex) {
+			ex.printStackTrace(System.err);
+		}
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
-		File localGitRepo = new File(".."); //TODO test from self local repo ... 
+		File localGitRepo =
+				// new File("/home/arnaud/downloadTools/eclipse-git/jgit/jgit.github");
+				new File(".."); //TODO test from self local repo ... 
 		LOG.info("using git repo:" + localGitRepo);
 		if (! new File(localGitRepo, ".git").exists()) {
 			throw new RuntimeException();
