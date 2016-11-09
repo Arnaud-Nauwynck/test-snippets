@@ -6,8 +6,8 @@ import org.neo4j.ogm.annotation.Relationship;
 @NodeEntity(label="SymbolicRepoRef")
 public class SymbolicRepoRefEntity extends AbstractRepoRefEntity {
 
-	@Relationship(type = "ref")
-	private AbstractRepoRefEntity ref;
+	@Relationship(type = "target")
+	private AbstractRepoRefEntity target;
 	
 	// ------------------------------------------------------------------------
 
@@ -16,15 +16,19 @@ public class SymbolicRepoRefEntity extends AbstractRepoRefEntity {
 
 	// ------------------------------------------------------------------------
 	
-	public AbstractRepoRefEntity getRef() {
-		return ref;
+	public AbstractRepoRefEntity getTarget() {
+		return target;
 	}
 
-	public void setRef(AbstractRepoRefEntity p) {
-		this.ref = p;
+	public void setTarget(AbstractRepoRefEntity p) {
+		this.target = p;
 	}
 
 	// ------------------------------------------------------------------------
 
+	@Override
+	public String toString() {
+		return "SymbolicRepoRef [" + id + " '" + name + "', target:" + target + "]";
+	}
 
 }

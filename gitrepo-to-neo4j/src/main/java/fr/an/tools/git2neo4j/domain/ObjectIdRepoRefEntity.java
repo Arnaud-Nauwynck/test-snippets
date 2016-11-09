@@ -4,14 +4,14 @@ import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 
 @NodeEntity(label="RepoRef")
-public class RepoRefEntity extends AbstractRepoRefEntity {
+public class ObjectIdRepoRefEntity extends AbstractRepoRefEntity {
 
 	@Relationship(type = "refCommit")
 	private RevCommitEntity refCommit;
 	
 	// ------------------------------------------------------------------------
 
-	public RepoRefEntity() {
+	public ObjectIdRepoRefEntity() {
 	}
 
 	// ------------------------------------------------------------------------
@@ -26,5 +26,9 @@ public class RepoRefEntity extends AbstractRepoRefEntity {
 
 	// ------------------------------------------------------------------------
 
+	@Override
+	public String toString() {
+		return "ObjectIdRepoRefEntity [" + id + " '" + name + "', refCommit:" + refCommit + "]";
+	}
 
 }

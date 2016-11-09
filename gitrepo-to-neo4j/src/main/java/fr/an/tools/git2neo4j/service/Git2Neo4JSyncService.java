@@ -1,5 +1,7 @@
 package fr.an.tools.git2neo4j.service;
 
+import static org.eclipse.jgit.lib.RefDatabase.ALL;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,8 +14,12 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.MutableObjectId;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectIdRef;
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.RefDatabase;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.SymbolicRef;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -24,20 +30,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import fr.an.tools.git2neo4j.domain.AbstractRepoRefEntity;
 import fr.an.tools.git2neo4j.domain.BlobEntity;
 import fr.an.tools.git2neo4j.domain.DirTreeEntity;
 import fr.an.tools.git2neo4j.domain.GitLinkEntity;
+import fr.an.tools.git2neo4j.domain.ObjectIdRepoRefEntity;
 import fr.an.tools.git2neo4j.domain.PersonIdentEntity;
 import fr.an.tools.git2neo4j.domain.RevCommitEntity;
 import fr.an.tools.git2neo4j.domain.RevTreeEntity;
 import fr.an.tools.git2neo4j.domain.SymLinkEntity;
+import fr.an.tools.git2neo4j.domain.SymbolicRepoRefEntity;
 import fr.an.tools.git2neo4j.repository.BlobDAO;
 import fr.an.tools.git2neo4j.repository.DirTreeDAO;
 import fr.an.tools.git2neo4j.repository.GitLinkDAO;
 import fr.an.tools.git2neo4j.repository.PersonDAO;
+import fr.an.tools.git2neo4j.repository.RepoRefDAO;
 import fr.an.tools.git2neo4j.repository.RevCommitDAO;
 import fr.an.tools.git2neo4j.repository.RevTreeDAO;
 import fr.an.tools.git2neo4j.repository.SymLinkDAO;
+import fr.an.tools.git2neo4j.repository.SymbolicRepoRefDAO;
 
 @Component
 public class Git2Neo4JSyncService {
@@ -49,6 +60,11 @@ public class Git2Neo4JSyncService {
 	
 	@Autowired
 	private PersonDAO personDAO;
+	
+	@Autowired
+	private RepoRefDAO repoRefDAO;
+	@Autowired
+	private SymbolicRepoRefDAO symbolicRepoRefDAO;
 	
 	@Autowired
 	private RevTreeDAO treeDAO;
@@ -72,6 +88,7 @@ public class Git2Neo4JSyncService {
 	// ------------------------------------------------------------------------
 
 	public class SyncCtx {
+		Git git;
 		Repository repository;
 		RevWalk revWalk;
 
@@ -79,13 +96,19 @@ public class Git2Neo4JSyncService {
 		Map<ObjectId, RevTreeEntity> sha2revTreeEntities = new HashMap<>();
 		Map<String, PersonIdentEntity> email2person = new HashMap<>();
 
+		Map<String,SymbolicRepoRefEntity> symbolicRefEntities = new HashMap<>();
+		Map<String,ObjectIdRepoRefEntity> objecIdRefEntities = new HashMap<>();
+		
 		List<RevCommitEntity> bufferRevCommitEntities = new ArrayList<>();
 		List<RevTreeEntity> bufferRevTreeEntities = new ArrayList<>();
 		
-		public SyncCtx(Repository repository, Iterable<RevCommitEntity> revCommitEntities,
+		public SyncCtx(Git git, Iterable<RevCommitEntity> revCommitEntities,
 				Iterable<PersonIdentEntity> personEntities, 
-				Iterable<DirTreeEntity> dirEntities, Iterable<BlobEntity> blobEntities) {
-			this.repository = repository;
+				Iterable<DirTreeEntity> dirEntities, Iterable<BlobEntity> blobEntities,
+				Map<String,SymbolicRepoRefEntity> symbolicRefEntities,
+				Map<String,ObjectIdRepoRefEntity> objecIdRefEntities) {
+			this.git = git;
+			this.repository = git.getRepository();
 			this.revWalk = new RevWalk(repository);
 			putRevCommits(revCommitEntities);
 			for (PersonIdentEntity e : personEntities) {
@@ -93,6 +116,12 @@ public class Git2Neo4JSyncService {
 			}
 			putRevTrees(dirEntities);
 			putRevTrees(blobEntities);
+			if (symbolicRefEntities != null) {
+				this.symbolicRefEntities.putAll(symbolicRefEntities);
+			}
+			if (objecIdRefEntities != null) {
+				this.objecIdRefEntities.putAll(objecIdRefEntities);
+			}
 		}
 
 		private void putRevTrees(Iterable<? extends RevTreeEntity> src) {
@@ -125,6 +154,14 @@ public class Git2Neo4JSyncService {
 				bufferRevTreeEntities.clear();
 			}
 		}
+
+		public AbstractRepoRefEntity getRef(String refName) {
+			AbstractRepoRefEntity res = symbolicRefEntities.get(refName);
+			if (res == null) {
+				res = objecIdRefEntities.get(refName); 
+			}
+			return res;
+		}
 	}
 
 	
@@ -135,8 +172,16 @@ public class Git2Neo4JSyncService {
 		Iterable<PersonIdentEntity> personEntities = personDAO.findAll();
 		Iterable<DirTreeEntity> dirTreeEntities = dirTreeDAO.findAll();
 		Iterable<BlobEntity> blobEntities = blobDAO.findAll();
-		SyncCtx ctx = new SyncCtx(git.getRepository(), revCommitEntities, personEntities, dirTreeEntities, blobEntities);
+		Map<String,SymbolicRepoRefEntity> symbolicRefEntities = refsToRefByNameMap(symbolicRepoRefDAO.findAll());
+		Map<String,ObjectIdRepoRefEntity> objecIdRefEntities = refsToRefByNameMap(repoRefDAO.findAll());
+		
+		SyncCtx ctx = new SyncCtx(git, revCommitEntities, personEntities, dirTreeEntities, blobEntities, 
+				symbolicRefEntities, objecIdRefEntities);
 
+		
+		Map<Ref, AbstractRepoRefEntity> refs = findOrCreateAllRefs(ctx);
+		
+		
 		Iterable<RevCommit> revCommits;
 		try {
 			revCommits = git.log().all() // from all refs(=master + branchs ..)
@@ -182,8 +227,122 @@ public class Git2Neo4JSyncService {
 
 		ctx.flush();
 		
+		// update refs
+		updateGitToEntityRefs(ctx, refs);
+
 		
+		ctx.flush();
+
 		LOG.info("done sync git repo");
+	}
+
+	protected Map<Ref,AbstractRepoRefEntity> findOrCreateAllRefs(SyncCtx ctx) {
+		Map<Ref,AbstractRepoRefEntity> res = new HashMap<>();
+		RefDatabase refDatabase = ctx.repository.getRefDatabase();
+		Map<String, Ref> refs;
+		try {
+			refs = refDatabase.getRefs(ALL);
+		} catch (IOException ex) {
+			throw new RuntimeException("Failed to read refs", ex);
+		}
+		
+		// find or create refs (no update target Ref, or target CommitId ) ... must be done at end after findOrCreate commitIds...  
+		for (Ref ref : refs.values()) {
+			LOG.info("ref: " + ref);
+			AbstractRepoRefEntity refEntity = findOrCreateRef(ctx, ref);
+			res.put(ref, refEntity);
+		}
+		return res;
+	}
+	
+	private AbstractRepoRefEntity findOrCreateRef(SyncCtx ctx, Ref ref) {
+		AbstractRepoRefEntity res;
+		if (ref instanceof SymbolicRef) {
+			SymbolicRef symRef = (SymbolicRef) ref;
+			String refName = symRef.getName();
+			SymbolicRepoRefEntity entity = ctx.symbolicRefEntities.get(refName);
+			if (entity == null) {
+				entity = new SymbolicRepoRefEntity();
+				entity.setName(refName);
+				ctx.symbolicRefEntities.put(refName, entity);
+				symbolicRepoRefDAO.save(entity, 1);
+			}
+			res = entity;
+		} else if (ref instanceof ObjectIdRef) {
+			ObjectIdRef oidRef = (ObjectIdRef) ref;
+			String refName = oidRef.getName();
+			ObjectIdRepoRefEntity entity = ctx.objecIdRefEntities.get(refName);
+			if (entity == null) {
+				entity = new ObjectIdRepoRefEntity();
+				entity.setName(refName);
+				ctx.objecIdRefEntities.put(refName, entity);
+				repoRefDAO.save(entity, 1);
+			}
+			res = entity;
+		} else {
+			LOG.error("unrecognised ref type (expeceting SymbolicRef / ObjectIdRef)");
+			return null;
+		}
+		return res;
+	}
+
+
+	protected void updateGitToEntityRefs(SyncCtx ctx, Map<Ref,AbstractRepoRefEntity> refs) {
+		for(Map.Entry<Ref,AbstractRepoRefEntity> e : refs.entrySet()) {
+			Ref ref = e.getKey();
+			AbstractRepoRefEntity refEntity = e.getValue();
+			if (ref instanceof SymbolicRef) {
+				SymbolicRef symRef = (SymbolicRef) ref;
+				SymbolicRepoRefEntity symRefEntity = (SymbolicRepoRefEntity) refEntity;
+				updateGitToEntityRef(ctx, symRef, symRefEntity);
+			} else if (ref instanceof ObjectIdRef) {
+				ObjectIdRef oidRef = (ObjectIdRef) ref;
+				ObjectIdRepoRefEntity oidRefEntity = (ObjectIdRepoRefEntity) refEntity;
+				updateGitToEntityRef(ctx, oidRef, oidRefEntity);
+			}
+		}
+	}
+	
+	private void updateGitToEntityRef(SyncCtx ctx, ObjectIdRef src, ObjectIdRepoRefEntity res) {
+		ObjectId oid = src.getObjectId();
+		RevCommitEntity revCommitEntity = ctx.sha2revCommitEntities.get(oid);
+		if (revCommitEntity == null) {
+			LOG.warn("Should not occurs: revCommit " + oid + " not found for ObjectIdRef " + src);
+			// findOrCreateRevCommitEntity(ctx, revCommit);
+		}
+		RevCommitEntity prev = res.getRefCommit();
+		if (prev != revCommitEntity) {
+			LOG.info("update ref " + res + " commitId:" + revCommitEntity);
+			res.setRefCommit(revCommitEntity);
+			repoRefDAO.save(res, 1);
+		}
+	}
+
+	private void updateGitToEntityRef(SyncCtx ctx, SymbolicRef src, SymbolicRepoRefEntity res) {
+		Ref targetRef = src.getTarget();
+		if (targetRef == null) {
+			LOG.warn("should not occur? null target for SymbolicRef " + src);
+			res.setTarget(null);
+			symbolicRepoRefDAO.save(res, 1);
+			return;
+		}
+		String targetRefName = targetRef.getName();
+		AbstractRepoRefEntity targetRefEntity = ctx.getRef(targetRefName);
+		AbstractRepoRefEntity prev = res.getTarget();
+		if (prev != targetRefEntity) {
+			LOG.info("update SymbolicRef " + res + " target:" + targetRefEntity);
+			res.setTarget(targetRefEntity);
+			symbolicRepoRefDAO.save(res, 1);
+		}
+	}
+
+	private static <T extends AbstractRepoRefEntity> Map<String,T> refsToRefByNameMap(Iterable<T> refs) {
+		Map<String,T> res = new HashMap<>();
+		for(T e : refs) {
+			String name = e.getName();
+			res.put(name, e);
+		}
+		return res;
 	}
 
 	protected RevCommitEntity findOrCreateRevCommitEntity(SyncCtx ctx, RevCommit src) {

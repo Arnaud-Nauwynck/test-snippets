@@ -5,9 +5,9 @@ import org.neo4j.ogm.annotation.GraphId;
 public abstract class AbstractRepoRefEntity {
 
 	@GraphId 
-	private Long id;
+	protected Long id;
 
-	private String name;
+	protected String name;
 		
 	// ------------------------------------------------------------------------
 
@@ -34,5 +34,5 @@ public abstract class AbstractRepoRefEntity {
 
 	// ------------------------------------------------------------------------
 
-
+	
 }
