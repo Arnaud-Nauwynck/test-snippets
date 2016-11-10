@@ -594,7 +594,7 @@ public class Git2Neo4JSyncService {
 						entryEntity = new DirEntryEntity();
 						entryEntity.setName(path);
 						entryEntity.setFileMode(fileMode.getBits());
-						entryEntity = dirEntryDAO.save(entryEntity);
+						entryEntity = dirEntryDAO.save(entryEntity, 1);
 						resEntries.add(entryEntity);
 						// LOG.debug("revTree entry: " + fileMode + " '" + path + "' dirEntry:" + entryEntity);
 						chg = true;
