@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import fr.an.tools.git2neo4j.domain.AbstractRepoRefEntity;
 import fr.an.tools.git2neo4j.domain.BlobEntity;
+import fr.an.tools.git2neo4j.domain.DirEntryEntity;
 import fr.an.tools.git2neo4j.domain.DirTreeEntity;
 import fr.an.tools.git2neo4j.domain.GitLinkEntity;
 import fr.an.tools.git2neo4j.domain.ObjectIdRepoRefEntity;
@@ -41,6 +42,7 @@ import fr.an.tools.git2neo4j.domain.RevTreeEntity;
 import fr.an.tools.git2neo4j.domain.SymLinkEntity;
 import fr.an.tools.git2neo4j.domain.SymbolicRepoRefEntity;
 import fr.an.tools.git2neo4j.repository.BlobDAO;
+import fr.an.tools.git2neo4j.repository.DirEntryDAO;
 import fr.an.tools.git2neo4j.repository.DirTreeDAO;
 import fr.an.tools.git2neo4j.repository.GitLinkDAO;
 import fr.an.tools.git2neo4j.repository.PersonDAO;
@@ -70,6 +72,8 @@ public class Git2Neo4JSyncService {
 	private RevTreeDAO treeDAO;
 	@Autowired
 	private DirTreeDAO dirTreeDAO;
+	@Autowired
+	private DirEntryDAO dirEntryDAO;
 	@Autowired
 	private BlobDAO blobDAO;
 	@Autowired
@@ -102,6 +106,8 @@ public class Git2Neo4JSyncService {
 		List<RevCommitEntity> bufferRevCommitEntities = new ArrayList<>();
 		List<RevTreeEntity> bufferRevTreeEntities = new ArrayList<>();
 		
+		Map<RevTree,DirTreeEntity> dirTreeToUpdate = new HashMap<>();
+				
 		public SyncCtx(Git git, Iterable<RevCommitEntity> revCommitEntities,
 				Iterable<PersonIdentEntity> personEntities, 
 				Iterable<DirTreeEntity> dirEntities, Iterable<BlobEntity> blobEntities,
@@ -162,6 +168,12 @@ public class Git2Neo4JSyncService {
 			}
 			return res;
 		}
+
+		public Map<RevTree, DirTreeEntity> copyAndClearDirTreeToUpdate() {
+			Map<RevTree,DirTreeEntity> res = dirTreeToUpdate;
+			this.dirTreeToUpdate = new HashMap<>();
+			return res;
+		}
 	}
 
 	
@@ -180,11 +192,54 @@ public class Git2Neo4JSyncService {
 
 		
 		Map<Ref, AbstractRepoRefEntity> refs = findOrCreateAllRefs(ctx);
+				
+		findOrCreateRevCommits(ctx);
 		
+
+		ctx.flush();
 		
+		// update RevTree
+		recursiveUpdateDirTrees(ctx);
+		
+		// update refs
+		updateGitToEntityRefs(ctx, refs);
+
+		
+		ctx.flush();
+
+		LOG.info("done sync git repo");
+	}
+
+	private void recursiveUpdateDirTrees(SyncCtx ctx) {
+		if (! ctx.dirTreeToUpdate.isEmpty()) {
+			int progressFreq = 1000;
+			int progressCount = progressFreq;
+
+			while(! ctx.dirTreeToUpdate.isEmpty()) {
+				Map<RevTree,DirTreeEntity> tmpDirTreeToUpdate = ctx.copyAndClearDirTreeToUpdate();
+				int tmpRemainCount = tmpDirTreeToUpdate.size();
+				for(Map.Entry<RevTree,DirTreeEntity> e : tmpDirTreeToUpdate.entrySet()) {
+					RevTree revTree = e.getKey();
+					DirTreeEntity revTreeEntity = e.getValue();
+					dirSynchroniser.git2entity(ctx, revTree, revTreeEntity);
+					
+					if (progressCount-- <= 0) {
+						progressCount = progressFreq;
+						// System.out.print(".");
+						int remainCount = tmpRemainCount + ctx.dirTreeToUpdate.size(); 
+						LOG.info("recursiveUpdateDirTrees remaining " + remainCount);
+					}
+					
+					tmpRemainCount--;
+				}
+			}
+		}
+	}
+
+	private Map<RevCommit, RevCommitEntity> findOrCreateRevCommits(SyncCtx ctx) {
 		Iterable<RevCommit> revCommits;
 		try {
-			revCommits = git.log().all() // from all refs(=master + branchs ..)
+			revCommits = ctx.git.log().all() // from all refs(=master + branchs ..)
 					.call();
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed to get git commit log history", ex);
@@ -207,6 +262,8 @@ public class Git2Neo4JSyncService {
 			try {
 				RevCommitEntity tmpres = findOrCreateRevCommitEntity(ctx, revCommit);
 				tmpRevCommitEntities.put(revCommit, tmpres);
+				
+				ctx.dirTreeToUpdate.put(revCommit.getTree(), (DirTreeEntity) tmpres.getRevTree());
 			} catch(Exception ex) {
 				LOG.error("Failed", ex);
 			}
@@ -224,16 +281,8 @@ public class Git2Neo4JSyncService {
 			RevCommitEntity revCommitEntity = e.getValue();
 			updateRevCommitParents(ctx, revCommit, revCommitEntity);
 		}
-
-		ctx.flush();
 		
-		// update refs
-		updateGitToEntityRefs(ctx, refs);
-
-		
-		ctx.flush();
-
-		LOG.info("done sync git repo");
+		return tmpRevCommitEntities;
 	}
 
 	protected Map<Ref,AbstractRepoRefEntity> findOrCreateAllRefs(SyncCtx ctx) {
@@ -511,34 +560,58 @@ public class Git2Neo4JSyncService {
 		@Override
 		public void git2entity(SyncCtx ctx, RevTree src, DirTreeEntity res) {
 			MutableObjectId moid = new MutableObjectId(); 
-			TreeWalk treeWalk = new TreeWalk(ctx.repository);
-			try {
+			
+			try (TreeWalk treeWalk = new TreeWalk(ctx.repository)) {
 				ObjectId revTreeId = src.getId();
-				String revTreeSha = revTreeId.name(); 
+				// String revTreeSha = revTreeId.name(); 
 				treeWalk.addTree(revTreeId);
 				treeWalk.setRecursive(false);
 
-//					int treeCount = treeWalk.getTreeCount();
+//					
 //						for(int i = 0; i < treeCount; i++) {
 //							AbstractTreeIterator entryIter = treeWalk.getTree(i, AbstractTreeIterator.class);
 //							entryIter.getEntryFileMode();
 //						}
-					
+				boolean chg = false;
+				List<DirEntryEntity> resEntries = res.getEntries();
+				if (resEntries == null) {
+					resEntries = new ArrayList<>();
+					res.setEntries(resEntries);
+					chg = true;
+				}
+				// int treeCount = treeWalk.getTreeCount();
+				Map<String,DirEntryEntity> remainEntryByName = new HashMap<>();
+				for(DirEntryEntity e : resEntries) {
+					remainEntryByName.put(e.getName(), e);
+				}
 				while (treeWalk.next()) {
-					
 					FileMode fileMode = treeWalk.getFileMode();
 					String path = treeWalk.getPathString();
 					treeWalk.getObjectId(moid, 0);
 					
-					// System.out.println("revTree entry: " + fileMode + " " + path + " " + moid);
+					DirEntryEntity entryEntity = remainEntryByName.remove(path);
+					if (entryEntity == null) {
+						entryEntity = new DirEntryEntity();
+						entryEntity.setName(path);
+						entryEntity.setFileMode(fileMode.getBits());
+						entryEntity = dirEntryDAO.save(entryEntity);
+						resEntries.add(entryEntity);
+						// LOG.debug("revTree entry: " + fileMode + " '" + path + "' dirEntry:" + entryEntity);
+						chg = true;
+					}
 					// TODO create DirTreeEntry then recurse ...
-					
-					
+				}
+				if (! remainEntryByName.isEmpty()) {
+					for(DirEntryEntity e : remainEntryByName.values()) {
+						resEntries.remove(e);
+					}
+					chg = true;
+				}
+				if (chg) {
+					treeDAO.save(res);
 				}
 			} catch (IOException ex) {
 				throw new RuntimeException(ex);
-			} finally {
-				treeWalk.close();
 			}
 
 		}

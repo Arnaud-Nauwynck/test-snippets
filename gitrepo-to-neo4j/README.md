@@ -8,11 +8,13 @@ http://localhost:7474/browser/
 
 # queries
 
-MATCH(c: RevCommitEntity) return c
+match(r:SymbolicRepoRef) return r
 
-MATCH(c: RevCommitEntity)-[r]-(t) return c,r,t
+MATCH(c: RevCi) return c limit 100
 
-MATCH(c: RevCommitEntity)-[p:parent]-(c2: RevCommitEntity)  return c,p,c2
+MATCH(c: RevCi)-[r]-(t) return c,r,t limit 100
+
+MATCH(c: RevCi)-[p:parent]-(c2: RevCi)  return c,p,c2 limit 100
 
 # delete ...
-MATCH (e: RevCommitEntity) -[p]- (e2) DELETE e,p
+MATCH (e: RevCi) -[p]- (e2) DELETE e,p

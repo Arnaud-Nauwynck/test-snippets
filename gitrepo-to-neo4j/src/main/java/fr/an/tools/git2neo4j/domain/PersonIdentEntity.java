@@ -1,13 +1,11 @@
 package fr.an.tools.git2neo4j.domain;
 
-import org.neo4j.ogm.annotation.GraphId;
 import org.neo4j.ogm.annotation.NodeEntity;
 
 @NodeEntity(label="Person")
 public class PersonIdentEntity {
 
-	@GraphId 
-	private Long id; // internal generated id, not name/email
+	private Long id;
 	
 	private String name;
 	private String emailAddress;

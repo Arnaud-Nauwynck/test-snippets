@@ -6,9 +6,11 @@ import org.neo4j.ogm.annotation.Relationship;
 @NodeEntity(label="DirEntry")
 public class DirEntryEntity {
 
+	private Long id;
+	
 	private String name;
 	
-	private String fileMode;
+	private int fileMode;
 	
 	@Relationship(type="tree")
 	private RevTreeEntity tree;
@@ -19,6 +21,14 @@ public class DirEntryEntity {
 	}
 
 	// ------------------------------------------------------------------------
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 	
 	public String getName() {
 		return name;
@@ -28,12 +38,12 @@ public class DirEntryEntity {
 		this.name = name;
 	}
 
-	public String getFileMode() {
+	public int getFileMode() {
 		return fileMode;
 	}
 
-	public void setFileMode(String fileMode) {
-		this.fileMode = fileMode;
+	public void setFileMode(int p) {
+		this.fileMode = p;
 	}
 
 	public RevTreeEntity getTree() {
