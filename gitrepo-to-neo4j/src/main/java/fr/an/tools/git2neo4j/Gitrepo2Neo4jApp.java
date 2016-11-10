@@ -10,7 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import fr.an.tools.git2neo4j.service.Git2Neo4JSyncService;
+import fr.an.tools.git2neo4j.service.RevCommitSyncService;
 
 @SpringBootApplication
 public class Gitrepo2Neo4jApp implements CommandLineRunner {
@@ -18,7 +18,7 @@ public class Gitrepo2Neo4jApp implements CommandLineRunner {
 	private static final Logger LOG = LoggerFactory.getLogger(Gitrepo2Neo4jApp.class);
 	
 	@Autowired
-	private Git2Neo4JSyncService git2Neo4JSyncService;
+	private RevCommitSyncService git2Neo4JSyncService;
 	
 	public static void main(String[] args) {
 		try {
@@ -30,6 +30,7 @@ public class Gitrepo2Neo4jApp implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+		LOG.info("http://localhost:7474/browser/");
 		File localGitRepo =
 				new File("/home/arnaud/downloadTools/eclipse-git/jgit/jgit.github");
 				// new File(".."); //TODO test from self local repo ... 
