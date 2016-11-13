@@ -9,7 +9,8 @@ import org.neo4j.ogm.annotation.Relationship;
 @NodeEntity(label="DirTree")
 public class DirTreeEntity extends RevTreeEntity {
 
-	@Relationship(type="entries")
+	// @RelatedTo()
+	@Relationship(type="has_entry")
 	private List<DirEntryEntity> entries = new ArrayList<>();
 	
 	// ------------------------------------------------------------------------
@@ -27,6 +28,14 @@ public class DirTreeEntity extends RevTreeEntity {
 		this.entries = entries;
 	}
 
+	public void addEntry(DirEntryEntity e) {
+		if (entries == null) {
+			entries = new ArrayList<>();
+		}
+		entries.add(e);
+	}
+	
+	
 	// ------------------------------------------------------------------------
 
 	

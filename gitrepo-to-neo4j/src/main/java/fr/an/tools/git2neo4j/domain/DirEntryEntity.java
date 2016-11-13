@@ -1,24 +1,37 @@
 package fr.an.tools.git2neo4j.domain;
 
-import org.neo4j.ogm.annotation.NodeEntity;
-import org.neo4j.ogm.annotation.Relationship;
+import org.neo4j.ogm.annotation.EndNode;
+import org.neo4j.ogm.annotation.RelationshipEntity;
+import org.neo4j.ogm.annotation.StartNode;
 
-@NodeEntity(label="DirEntry")
+@RelationshipEntity(type="has_entry")
 public class DirEntryEntity {
 
 	private Long id;
+	
+	@StartNode 
+	private DirTreeEntity parentDir;
+	
+	@EndNode   
+	private RevTreeEntity child;
 	
 	private String name;
 	
 	private int fileMode;
 	
-	@Relationship(type="tree")
-	private RevTreeEntity tree;
-
 	// ------------------------------------------------------------------------
 
 	public DirEntryEntity() {
 	}
+	
+	public DirEntryEntity(DirTreeEntity parentDir, RevTreeEntity child, String name, int fileMode) {
+		this();
+		this.parentDir = parentDir;
+		this.child = child;
+		this.name = name;
+		this.fileMode = fileMode;
+	}
+
 
 	// ------------------------------------------------------------------------
 
@@ -28,6 +41,22 @@ public class DirEntryEntity {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+	
+	public DirTreeEntity getParentDir() {
+		return parentDir;
+	}
+	
+	public void setParentDir(DirTreeEntity parentDir) {
+		this.parentDir = parentDir;
+	}
+	
+	public RevTreeEntity getChild() {
+		return child;
+	}
+
+	public void setChild(RevTreeEntity child) {
+		this.child = child;
 	}
 	
 	public String getName() {
@@ -45,14 +74,7 @@ public class DirEntryEntity {
 	public void setFileMode(int p) {
 		this.fileMode = p;
 	}
-
-	public RevTreeEntity getTree() {
-		return tree;
-	}
-
-	public void setTree(RevTreeEntity tree) {
-		this.tree = tree;
-	}
+	
 	
 	// ------------------------------------------------------------------------
 	

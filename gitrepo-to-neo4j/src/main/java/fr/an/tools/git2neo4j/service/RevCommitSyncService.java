@@ -24,15 +24,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import fr.an.tools.git2neo4j.domain.AbstractRepoRefEntity;
-import fr.an.tools.git2neo4j.domain.DirTreeEntity;
 import fr.an.tools.git2neo4j.domain.ObjectIdRepoRefEntity;
 import fr.an.tools.git2neo4j.domain.PersonIdentEntity;
 import fr.an.tools.git2neo4j.domain.RevCommitEntity;
+import fr.an.tools.git2neo4j.domain.RevTreeEntity;
 import fr.an.tools.git2neo4j.domain.SymbolicRepoRefEntity;
+import fr.an.tools.git2neo4j.repository.ObjectIdRepoRefDAO;
 import fr.an.tools.git2neo4j.repository.PersonDAO;
 import fr.an.tools.git2neo4j.repository.RepoRefDAO;
 import fr.an.tools.git2neo4j.repository.RevCommitDAO;
 import fr.an.tools.git2neo4j.repository.SymbolicRepoRefDAO;
+import fr.an.tools.git2neo4j.service.RevTreeToEntityScanner.ScanRevTreeResult;
 
 @Component
 public class RevCommitSyncService {
@@ -54,9 +56,13 @@ public class RevCommitSyncService {
 	@Autowired
 	private RepoRefDAO repoRefDAO;
 	@Autowired
+	private ObjectIdRepoRefDAO objectIdRepoRefDAO;
+	@Autowired
 	private SymbolicRepoRefDAO symbolicRepoRefDAO;
 
-
+	@Autowired
+	private RevTreeToEntityScanner revTreeToEntityScanner;
+	
 	// ------------------------------------------------------------------------
 
 	public RevCommitSyncService() {
@@ -68,20 +74,74 @@ public class RevCommitSyncService {
 		LOG.info("sync git repo ...");
 		SyncCtx ctx = xaHelper.doInXA(() -> preloadSyncCtx(git));
 		
-		Map<Ref, AbstractRepoRefEntity> refs = xaHelper.doInXA(() -> findOrCreateAllRefs(ctx));
+		Map<Ref, AbstractRepoRefEntity> ref2RefEntities = xaHelper.doInXA(() -> findOrCreateAllRefs(ctx));
 				
-		xaHelper.doInXA(() -> findOrCreateRevCommits(ctx));
+		Map<RevCommit, RevCommitEntity> revCi2Entities = xaHelper.doInXA(() -> findOrCreateRevCommits(ctx));
 		
+		xaHelper.doInXA(() -> updateRevCommitParents(ctx, revCi2Entities));
+
 		// update refs (commitIds / targetRefs)
-		xaHelper.doInXA(() -> updateRefs(ctx, refs));
+		xaHelper.doInXA(() -> updateRefs(ctx, ref2RefEntities));
+
+		Map<String,Ref> refByName = refsToNameMap(ref2RefEntities.keySet());
+		Ref headRef = refByName.get("HEAD");
+		SymbolicRepoRefEntity headRefEntity = (SymbolicRepoRefEntity) ref2RefEntities.get(headRef);
+		if (headRef != null && headRef instanceof SymbolicRef) {
+			Ref targetHeadRef = headRef.getTarget();
+			ObjectIdRepoRefEntity targetHeadRefEntity = (ObjectIdRepoRefEntity) headRefEntity.getTarget();
+			
+			xaHelper.doInXA(() -> syncRefCommitRevTree(ctx, targetHeadRef, targetHeadRefEntity));
+		}
+
+		int revCiCount = revCi2Entities.size();
+		int revCiIndex = 0;
+		for(Map.Entry<RevCommit, RevCommitEntity>  e : revCi2Entities.entrySet()) {
+			RevCommit commit = e.getKey();
+			RevCommitEntity commitEntity = e.getValue();
+			LOG.info("[" +  (++revCiIndex) + "/" + revCiCount + "] update Tree for Commit " + commit.getName());
+			xaHelper.doInXA(() -> syncRevCommitTree(ctx, commit, commitEntity));
+		}
 		
 		// OutOfMemoryError + very very slow ...
 		// update RevTree
 		// recursiveUpdateDirTrees(ctx);
-	
-
 		
 		LOG.info("done sync git repo");
+	}
+
+	private void syncRefCommitRevTree(SyncCtx ctx, Ref ref, ObjectIdRepoRefEntity refEntity) {
+		ObjectId commitId = ref.getObjectId();
+		RevCommit commit;
+		try {
+			commit = ctx.revWalk.parseCommit(commitId);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		RevCommitEntity commitEntity = refEntity.getRefCommit();
+		if (commitEntity == null) {
+			throw new RuntimeException("RevCommitEntity not found");
+		}
+		
+		syncRevCommitTree(ctx, commit, commitEntity);
+	}
+
+	private void syncRevCommitTree(SyncCtx ctx, RevCommit commit, RevCommitEntity commitEntity) {
+		RevTreeEntity revTreeEntity = commitEntity.getRevTree();
+		if (revTreeEntity != null) {
+			return;// immutable => assume sync ok .. no need to update
+		}
+		
+		ObjectId revTreeId = commit.getTree();
+		
+		ScanRevTreeResult syncRevTreeRes = revTreeToEntityScanner.recursiveSyncRevTree(ctx.repository, revTreeId, ctx.sha2revTreeEntities);
+		
+		commitEntity.setRevTree(syncRevTreeRes.rootRevTree);
+		
+		revCommitDAO.save(commitEntity, 1);
+		// revCommitDAO.save(headCommitEntity) // => StackOverFlow...
+		
+		ctx.sha2revTreeEntities.putAll(syncRevTreeRes.revTree);
 	}
 
 	//?? //?? @Transactional
@@ -89,7 +149,7 @@ public class RevCommitSyncService {
 		LOG.info("preloading symbolicRef");
 		Map<String,SymbolicRepoRefEntity> symbolicRefEntities = refsToRefByNameMap(symbolicRepoRefDAO.findAll());
 		LOG.info("preloading objectIdRef");
-		Map<String,ObjectIdRepoRefEntity> objecIdRefEntities = refsToRefByNameMap(repoRefDAO.findAll());
+		Map<String,ObjectIdRepoRefEntity> objecIdRefEntities = refsToRefByNameMap(objectIdRepoRefDAO.findAll());
 		LOG.info("preloading revCommits");
 		Iterable<RevCommitEntity> revCommitEntities = revCommitDAO.findAll();
 		LOG.info("preloading persons");
@@ -132,8 +192,6 @@ public class RevCommitSyncService {
 			try {
 				RevCommitEntity tmpres = findOrCreateRevCommitEntity(ctx, revCommit);
 				tmpRevCommitEntities.put(revCommit, tmpres);
-				
-				ctx.dirTreeToUpdate.put(revCommit.getTree(), (DirTreeEntity) tmpres.getRevTree());
 			} catch(Exception ex) {
 				LOG.error("Failed", ex);
 			}
@@ -142,20 +200,24 @@ public class RevCommitSyncService {
 				System.out.print(".");
 			}
 		}
-		System.out.println();
-		LOG.info("flush save Revcommit + RevTree");
-		ctx.flush();
+
+		revCommitDAO.save(tmpRevCommitEntities.values(), 1);
 		
+		return tmpRevCommitEntities;
+	}
+	
+	protected void updateRevCommitParents(SyncCtx ctx, Map<RevCommit, RevCommitEntity> tmpRevCommitEntities) {
+		LOG.info("updateRevCommitParents");		
 		for (Map.Entry<RevCommit,RevCommitEntity>  e : tmpRevCommitEntities.entrySet()) {
 			RevCommit revCommit = e.getKey();
 			RevCommitEntity revCommitEntity = e.getValue();
 			updateRevCommitParents(ctx, revCommit, revCommitEntity);
 		}
-		
-		ctx.flush();
 
-		return tmpRevCommitEntities;
+		// do not save recursive... StackOverFlow !!
+		// revCommitDAO.save(tmpRevCommitEntities.values());
 	}
+	
 
 	//?? @Transactional
 	protected Map<Ref,AbstractRepoRefEntity> findOrCreateAllRefs(SyncCtx ctx) {
@@ -174,6 +236,21 @@ public class RevCommitSyncService {
 			AbstractRepoRefEntity refEntity = findOrCreateRef(ctx, ref);
 			res.put(ref, refEntity);
 		}
+		
+		// update SymbolicRepoRefEntity
+		for(Map.Entry<Ref,AbstractRepoRefEntity> e : res.entrySet()) {
+			Ref ref = e.getKey();
+			AbstractRepoRefEntity refEntity = e.getValue();
+			if (ref instanceof SymbolicRef) {
+				SymbolicRef symRef = (SymbolicRef) ref;
+				SymbolicRepoRefEntity symRefEntity = (SymbolicRepoRefEntity) refEntity;
+				updateGitToEntityRef(ctx, symRef, symRefEntity);
+			}
+		}
+					
+		List<AbstractRepoRefEntity> refEntities = new ArrayList<>(res.values());
+		repoRefDAO.save(refEntities, 1);
+		
 		return res;
 	}
 	
@@ -186,8 +263,8 @@ public class RevCommitSyncService {
 			if (entity == null) {
 				entity = new SymbolicRepoRefEntity();
 				entity.setName(refName);
-				ctx.symbolicRefEntities.put(refName, entity);
 				symbolicRepoRefDAO.save(entity, 1);
+				ctx.symbolicRefEntities.put(refName, entity);
 			}
 			res = entity;
 		} else if (ref instanceof ObjectIdRef) {
@@ -197,8 +274,8 @@ public class RevCommitSyncService {
 			if (entity == null) {
 				entity = new ObjectIdRepoRefEntity();
 				entity.setName(refName);
+				objectIdRepoRefDAO.save(entity, 1);
 				ctx.objecIdRefEntities.put(refName, entity);
-				repoRefDAO.save(entity, 1);
 			}
 			res = entity;
 		} else {
@@ -224,7 +301,6 @@ public class RevCommitSyncService {
 				updateGitToEntityRef(ctx, oidRef, oidRefEntity);
 			}
 		}
-		ctx.flush();
 	}
 	
 	private void updateGitToEntityRef(SyncCtx ctx, ObjectIdRef src, ObjectIdRepoRefEntity res) {
@@ -238,7 +314,7 @@ public class RevCommitSyncService {
 		if (prev != revCommitEntity) {
 			LOG.info("update ref " + res + " commitId:" + revCommitEntity);
 			res.setRefCommit(revCommitEntity);
-			repoRefDAO.save(res, 1);
+			objectIdRepoRefDAO.save(res, 1);
 		}
 	}
 
@@ -269,6 +345,15 @@ public class RevCommitSyncService {
 		return res;
 	}
 
+	private static Map<String,Ref> refsToNameMap(Iterable<Ref> refs) {
+		Map<String,Ref> res = new HashMap<>();
+		for(Ref e : refs) {
+			String name = e.getName();
+			res.put(name, e);
+		}
+		return res;
+	}
+
 	protected RevCommitEntity findOrCreateRevCommitEntity(SyncCtx ctx, RevCommit src) {
 		if (src == null) {
 			return null;
@@ -285,7 +370,6 @@ public class RevCommitSyncService {
 			git2entity(ctx, src, res);
 
 			LOG.debug("git RevCommit " + commitId);
-			ctx.save(res);
 		} else {
 			// update (if sync code changed ..)
 			git2entity(ctx, src, res);
@@ -294,11 +378,7 @@ public class RevCommitSyncService {
 	}
 
 	private void git2entity(SyncCtx ctx, RevCommit src, RevCommitEntity res) {
-		// mapperFacade.map(revCommit, revCommitEntity); // TODO ...
-		// MappingException: No converter registered for conversion from RevCommit to Long
-
 		ObjectId commitId = src.getId();
-
 		// JGit Bug ... need to re-read fully the RevCommit ??!!!!
 		try {
 			src = ctx.revWalk.parseCommit(commitId);
@@ -346,7 +426,8 @@ public class RevCommitSyncService {
 			res.setParents(parentEntities);
 			chg = true;
 		} else if (parentEntities.size() != parents.length) {
-			chg = true; //? update change?? (was not created before) 
+			//? update change?? (was not created before)
+			chg = true;
 		}
 		
 		for (RevCommit parent : parents) {
@@ -357,8 +438,7 @@ public class RevCommitSyncService {
 		}
 		
 		if (chg) {
-			// save??
-			ctx.save(res);
+			revCommitDAO.save(res, 1); //do not recuse ... StackOverflow !!
 		}
 	}
 
@@ -372,9 +452,9 @@ public class RevCommitSyncService {
 			res = new PersonIdentEntity();
 			res.setEmailAddress(email);
 			res.setName(src.getName());
+			personDAO.save(res);
 
 			ctx.email2person.put(email, res);
-			personDAO.save(res);
 		}
 		return res;
 	}

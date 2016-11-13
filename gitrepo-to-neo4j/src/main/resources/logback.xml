@@ -7,7 +7,9 @@
 		</layout>
 	</appender>
 	
-	<logger name="org.neo4j.ogm.drivers.bolt.request.BoltRequest" level="WARN"/>
+	<!-- 
+	 <logger name="org.neo4j.ogm.drivers.bolt.request.BoltRequest" level="WARN"/>
+	 -->
 	
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />

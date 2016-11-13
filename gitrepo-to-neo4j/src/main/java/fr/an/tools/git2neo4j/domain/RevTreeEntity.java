@@ -2,12 +2,14 @@ package fr.an.tools.git2neo4j.domain;
 
 import org.eclipse.jgit.lib.ObjectId;
 import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Labels;
 
 /**
  * abstract class ... sub-classes: DirTreeEntity / BlobEntity
- *
+ * types: DirTree | Blob | SymLink | GitLink
  */
 // @NodeEntity(label="RevTree")
+@Labels(defaultValue="Tree")
 public abstract class RevTreeEntity {
 
 	@GraphId 
@@ -31,13 +33,12 @@ public abstract class RevTreeEntity {
 		this.id = id;
 	}
 
-	public ObjectId getCommitId() {
+	public ObjectId getObjectId() {
 		return sha1 != null? ObjectId.fromString(sha1) : null;
 	}
 	
-	public void setCommitId(ObjectId commitId) {
-		this.sha1 = commitId != null? commitId.name() : null;
+	public void setObjectId(ObjectId objectId) {
+		this.sha1 = objectId != null? objectId.name() : null;
 	}
-	
 	
 }

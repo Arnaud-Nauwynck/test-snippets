@@ -54,6 +54,9 @@ public class DirTreeSyncService {
 	@Autowired
 	private GitLinkDAO gitLinkDAO;
 
+	@Autowired
+	private RevTreeToEntityScanner revTreeToEntityScanner;
+	
 	private int batchSizeUpdateDirTree = 50;
 	
 	// ------------------------------------------------------------------------
@@ -105,6 +108,26 @@ public class DirTreeSyncService {
 		ctx.flush();
 	}
 
+	
+	
+
+	public <TEntity extends RevTreeEntity> RevTreeEntity findOrCreateRevTree(SyncCtx ctx, RevTree src, FileMode fileMode) {
+		RevTreeEntity res;
+		int fileModeBits = fileMode.getObjectType();
+		if (FileMode.TREE.equals(fileModeBits)) {
+			res = findOrCreateRevTree(ctx, src, dirSynchroniser);
+		} else if (FileMode.REGULAR_FILE.equals(fileModeBits)) {
+			res = findOrCreateRevTree(ctx, src, blobSynchroniser);
+		} else if (FileMode.SYMLINK.equals(fileModeBits)) {
+			res = findOrCreateRevTree(ctx, src, symLinkSynchroniser);
+		} else if (FileMode.GITLINK.equals(fileModeBits)) {
+			res = findOrCreateRevTree(ctx, src, gitLinkSynchroniser);
+		} else {
+			res = null; // should not occurs
+		}
+		return res;
+	}
+	
 
 	protected static abstract class RevTreeEntitySynchroniser<TEntity extends RevTreeEntity> {
 		public abstract TEntity createEntity();
@@ -121,7 +144,7 @@ public class DirTreeSyncService {
 		if (res == null) {
 			res = callback.createEntity();
 			
-			res.setCommitId(commitId);
+			res.setObjectId(commitId);
 			ctx.sha2revTreeEntities.put(commitId, res);
 
 			// TODO recurse Dir-DirEntry/Blob/SymLink/GitLink  ???? not from here ????
@@ -136,22 +159,6 @@ public class DirTreeSyncService {
 		return res;
 	}
 
-	protected <TEntity extends RevTreeEntity> RevTreeEntity findOrCreateRevTree(SyncCtx ctx, RevTree src, FileMode fileMode) {
-		RevTreeEntity res;
-		int fileModeBits = fileMode.getObjectType();
-		if (FileMode.TREE.equals(fileModeBits)) {
-			res = findOrCreateRevTree(ctx, src, dirSynchroniser);
-		} else if (FileMode.REGULAR_FILE.equals(fileModeBits)) {
-			res = findOrCreateRevTree(ctx, src, blobSynchroniser);
-		} else if (FileMode.SYMLINK.equals(fileModeBits)) {
-			res = findOrCreateRevTree(ctx, src, symLinkSynchroniser);
-		} else if (FileMode.GITLINK.equals(fileModeBits)) {
-			res = findOrCreateRevTree(ctx, src, gitLinkSynchroniser);
-		} else {
-			res = null; // should not occurs
-		}
-		return res;
-	}
 		
 	protected class DirSynchroniser extends RevTreeEntitySynchroniser<DirTreeEntity> {
 
@@ -170,19 +177,11 @@ public class DirTreeSyncService {
 				treeWalk.addTree(revTreeId);
 				treeWalk.setRecursive(false);
 
-//					
-//						for(int i = 0; i < treeCount; i++) {
-//							AbstractTreeIterator entryIter = treeWalk.getTree(i, AbstractTreeIterator.class);
-//							entryIter.getEntryFileMode();
-//						}
-				boolean chg = false;
 				List<DirEntryEntity> resEntries = res.getEntries();
 				if (resEntries == null) {
 					resEntries = new ArrayList<>();
 					res.setEntries(resEntries);
-					chg = true;
 				}
-				// int treeCount = treeWalk.getTreeCount();
 				Map<String,DirEntryEntity> remainEntryByName = new HashMap<>();
 				for(DirEntryEntity e : resEntries) {
 					remainEntryByName.put(e.getName(), e);
@@ -197,23 +196,16 @@ public class DirTreeSyncService {
 						entryEntity = new DirEntryEntity();
 						entryEntity.setName(path);
 						entryEntity.setFileMode(fileMode.getBits());
-						
-						entryEntity = dirEntryDAO.save(entryEntity, 1);
-						
 						resEntries.add(entryEntity);
 						// LOG.debug("revTree entry: " + fileMode + " '" + path + "' dirEntry:" + entryEntity);
-						chg = true;
 					}
-					// TODO create DirTreeEntry then recurse ...
+					
+					// recurse ??
 				}
 				if (! remainEntryByName.isEmpty()) {
 					for(DirEntryEntity e : remainEntryByName.values()) {
 						resEntries.remove(e);
 					}
-					chg = true;
-				}
-				if (chg) {
-					treeDAO.save(res, 1);
 				}
 			} catch (IOException ex) {
 				throw new RuntimeException(ex);

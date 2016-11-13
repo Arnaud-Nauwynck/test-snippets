@@ -16,7 +16,7 @@ import fr.an.tools.git2neo4j.repository.DirEntryDAO;
 import fr.an.tools.git2neo4j.repository.DirTreeDAO;
 import fr.an.tools.git2neo4j.repository.GitLinkDAO;
 import fr.an.tools.git2neo4j.repository.PersonDAO;
-import fr.an.tools.git2neo4j.repository.RepoRefDAO;
+import fr.an.tools.git2neo4j.repository.ObjectIdRepoRefDAO;
 import fr.an.tools.git2neo4j.repository.RevCommitDAO;
 import fr.an.tools.git2neo4j.repository.RevTreeDAO;
 import fr.an.tools.git2neo4j.repository.SymLinkDAO;
@@ -37,7 +37,7 @@ public class SaveService {
 	private PersonDAO personDAO;
 	
 	@Autowired
-	private RepoRefDAO repoRefDAO;
+	private ObjectIdRepoRefDAO repoRefDAO;
 	@Autowired
 	private SymbolicRepoRefDAO symbolicRepoRefDAO;
 	

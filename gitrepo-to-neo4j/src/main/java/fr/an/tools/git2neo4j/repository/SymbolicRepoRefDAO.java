@@ -6,4 +6,7 @@ import fr.an.tools.git2neo4j.domain.SymbolicRepoRefEntity;
 
 public interface SymbolicRepoRefDAO extends GraphRepository<SymbolicRepoRefEntity> {
 
+	// @Query 
+	SymbolicRepoRefEntity findByName(String name);
+	
 }
