@@ -113,12 +113,13 @@ public class RevTreeToEntityScanner {
 		res.scanRes.rootRevTree = rootDirEntity;
 		
 		System.out.println("recursiveScan revTree " + rootTreeId + " {");
-		Set<ObjectId> treeIds = new LinkedHashSet<>();
+		int treePathCount = 0; 
 		try (TreeWalk treeWalk = new TreeWalk(repository)) {
 			treeWalk.addTree(rootTreeId);
 
 			treeWalk.setRecursive(false);
 			while (treeWalk.next()) {
+				treePathCount++;
 				FileMode fileMode = treeWalk.getFileMode();
 				String name = treeWalk.getNameString();
 				String path = treeWalk.getPathString();
@@ -126,12 +127,11 @@ public class RevTreeToEntityScanner {
 				int depth = treeWalk.getDepth();
 			    if (treeWalk.isSubtree()) {
 			        // System.out.println("dir: " + path);
-			        treeWalk.enterSubtree();
+			        // cf next ... treeWalk.enterSubtree();
 			    } else {
 			        // System.out.println("file: " + path);
 			    }
 				
-				treeIds.add(objectId); // for debug print
 				// System.out.println("" + fileMode + " " + treeWalk.getPathString() + " " + objectId.name());
 				
 				RevTreeEntity foundTreeEntity = sha2revTreeEntities.get(objectId);
@@ -169,12 +169,17 @@ public class RevTreeToEntityScanner {
 						missingTree.missingPathEntries.add(new MissingPathEntry(missingTree, parentEntity, fileMode, name));
 					}
 				}
+				
+				if (treeWalk.isSubtree()) {
+			        // System.out.println("dir: " + path);
+			        treeWalk.enterSubtree();
+				}
 			}
 		} catch (IOException ex) {
 			throw new RuntimeException(ex);
 		}
 
-		LOG.info("recursiveScan revTree " + rootTreeId + " => " + treeIds.size() + " trees, " + missingTrees.size() + " missing Entity trees");
+		LOG.info("recursiveScan revTree " + rootTreeId + " => " + treePathCount + " treePaths, " + missingTrees.size() + " missing Entity trees");
 		return res;
 	}
 	
@@ -189,7 +194,7 @@ public class RevTreeToEntityScanner {
 		List<String> sha1s = ObjectIdUtils.toNameList(missingTrees.keySet());
 		List<RevTreeEntity> cacheFoundRevTrees = revTreeDAO.findBySHA1s(sha1s);
 		if (! cacheFoundRevTrees.isEmpty()) {
-			LOG.debug("found " + cacheFoundRevTrees + " exiting tree(s) by SHA1, which where not already connected to parent tree");
+			LOG.info("found " + cacheFoundRevTrees + " exiting tree(s) by SHA1, which where not already connected to parent tree");
 			for(RevTreeEntity treeEntity : cacheFoundRevTrees) {
 				ObjectId oid = treeEntity.getObjectId();
 				res.revTree.put(oid, treeEntity);
@@ -212,7 +217,7 @@ public class RevTreeToEntityScanner {
 						DirEntryEntity childEntry = new DirEntryEntity(parentDirEntity, treeEntity, e.name, e.fileMode.getBits());
 						parentDirEntity.addEntry(childEntry);
 					} else {
-						LOG.error("missing parent for entry?");
+//						LOG.error("missing parent for entry?");
 					}
 				}
 			}

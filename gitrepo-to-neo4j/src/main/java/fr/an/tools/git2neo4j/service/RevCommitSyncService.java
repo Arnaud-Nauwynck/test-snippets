@@ -13,6 +13,7 @@ import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectIdRef;
+import org.eclipse.jgit.lib.ObjectIdRef.PeeledTag;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.RefDatabase;
@@ -33,6 +34,7 @@ import fr.an.tools.git2neo4j.repository.ObjectIdRepoRefDAO;
 import fr.an.tools.git2neo4j.repository.PersonDAO;
 import fr.an.tools.git2neo4j.repository.RepoRefDAO;
 import fr.an.tools.git2neo4j.repository.RevCommitDAO;
+import fr.an.tools.git2neo4j.repository.RevTreeDAO;
 import fr.an.tools.git2neo4j.repository.SymbolicRepoRefDAO;
 import fr.an.tools.git2neo4j.service.RevTreeToEntityScanner.ScanRevTreeResult;
 
@@ -63,6 +65,10 @@ public class RevCommitSyncService {
 	@Autowired
 	private RevTreeToEntityScanner revTreeToEntityScanner;
 	
+	@Autowired
+	private RevTreeDAO revTreeDAO;
+	
+	
 	// ------------------------------------------------------------------------
 
 	public RevCommitSyncService() {
@@ -78,10 +84,6 @@ public class RevCommitSyncService {
 				
 		Map<RevCommit, RevCommitEntity> revCi2Entities = xaHelper.doInXA(() -> findOrCreateRevCommits(ctx));
 		
-		xaHelper.doInXA(() -> updateRevCommitParents(ctx, revCi2Entities));
-
-		// update refs (commitIds / targetRefs)
-		xaHelper.doInXA(() -> updateRefs(ctx, ref2RefEntities));
 
 		Map<String,Ref> refByName = refsToNameMap(ref2RefEntities.keySet());
 		Ref headRef = refByName.get("HEAD");
@@ -93,6 +95,13 @@ public class RevCommitSyncService {
 			xaHelper.doInXA(() -> syncRefCommitRevTree(ctx, targetHeadRef, targetHeadRefEntity));
 		}
 
+		
+		xaHelper.doInXA(() -> updateRevCommitParents(ctx, revCi2Entities));
+
+		// update refs (commitIds / targetRefs)
+		xaHelper.doInXA(() -> updateRefs(ctx, ref2RefEntities));
+
+		
 		int revCiCount = revCi2Entities.size();
 		int revCiIndex = 0;
 		for(Map.Entry<RevCommit, RevCommitEntity>  e : revCi2Entities.entrySet()) {
@@ -129,17 +138,25 @@ public class RevCommitSyncService {
 	private void syncRevCommitTree(SyncCtx ctx, RevCommit commit, RevCommitEntity commitEntity) {
 		RevTreeEntity revTreeEntity = commitEntity.getRevTree();
 		if (revTreeEntity != null) {
-			return;// immutable => assume sync ok .. no need to update
+			// return;// TODO TEMPORARY ... immutable => assume sync ok .. no need to update
 		}
 		
 		ObjectId revTreeId = commit.getTree();
 		
 		ScanRevTreeResult syncRevTreeRes = revTreeToEntityScanner.recursiveSyncRevTree(ctx.repository, revTreeId, ctx.sha2revTreeEntities);
 		
-		commitEntity.setRevTree(syncRevTreeRes.rootRevTree);
-		
-		revCommitDAO.save(commitEntity, 1);
-		// revCommitDAO.save(headCommitEntity) // => StackOverFlow...
+		if (commitEntity.getRevTree() != syncRevTreeRes.rootRevTree) {
+			if (commitEntity.getRevTree() == null) {
+				revTreeDAO.save(syncRevTreeRes.rootRevTree);
+			}
+			
+			commitEntity.setRevTree(syncRevTreeRes.rootRevTree);
+			
+			revCommitDAO.save(commitEntity, 1);
+			// revCommitDAO.save(headCommitEntity) // => StackOverFlow...
+		} else {
+			// no change, do nothing
+		}
 		
 		ctx.sha2revTreeEntities.putAll(syncRevTreeRes.revTree);
 	}
@@ -232,7 +249,7 @@ public class RevCommitSyncService {
 		
 		// find or create refs (no update target Ref, or target CommitId ) ... must be done at end after findOrCreate commitIds...  
 		for (Ref ref : refs.values()) {
-			LOG.info("ref: " + ref);
+			LOG.debug("ref: " + ref);
 			AbstractRepoRefEntity refEntity = findOrCreateRef(ctx, ref);
 			res.put(ref, refEntity);
 		}
@@ -305,11 +322,21 @@ public class RevCommitSyncService {
 	
 	private void updateGitToEntityRef(SyncCtx ctx, ObjectIdRef src, ObjectIdRepoRefEntity res) {
 		ObjectId oid = src.getObjectId();
+		if (src instanceof PeeledTag) {
+			PeeledTag peeledTag = (PeeledTag) src;
+			ObjectId peeledObjectId = peeledTag.getPeeledObjectId();
+			// LOG.info("update PeeledTag ref " + src + " peeledObjectId:" + peeledObjectId);
+			oid = peeledObjectId;
+		}
+		
 		RevCommitEntity revCommitEntity = ctx.sha2revCommitEntities.get(oid);
 		if (revCommitEntity == null) {
-			LOG.warn("Should not occurs: revCommit " + oid + " not found for ObjectIdRef " + src);
+			LOG.warn("Should not occurs: revCommit " + oid.name() + " not found for ObjectIdRef " + src);
 			// findOrCreateRevCommitEntity(ctx, revCommit);
 		}
+
+		
+
 		RevCommitEntity prev = res.getRefCommit();
 		if (prev != revCommitEntity) {
 			LOG.info("update ref " + res + " commitId:" + revCommitEntity);

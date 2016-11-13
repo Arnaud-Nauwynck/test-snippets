@@ -14,6 +14,12 @@ match(r:SymbolicRepoRef) return r
 
 match(HEAD:SymbolicRepoRef {name:"HEAD"}) return HEAD
 
+match(from {name: "HEAD"}) return from
+
+match(ref: SymbolicRepoRef) return ref union all match(ref: RepoRef) return ref
+
+match(HEAD:SymbolicRepoRef{name: "HEAD"}),(originHead:SymbolicRepoRef {name: "refs/remotes/origin/HEAD"}) return HEAD,originHead
+
 match(HEAD:SymbolicRepoRef {name:"HEAD"}) -[:target]->(x) return HEAD,x
 
 match(HEAD:SymbolicRepoRef {name:"HEAD"}) -[:target]->(x)-[:refCommit]->(ci) return HEAD,x,ci
@@ -26,6 +32,9 @@ match(HEAD:SymbolicRepoRef {name:"HEAD"}) -[:target]->(x)-[:refCommit]->(ci)-[:p
 
 
 
+match(head: SymbolicRepoRef{name:'HEAD'})-[target]-(headTarget)-[refCommit]->(ci) return head,target,headTarget,ci
+
+
 
 MATCH(c: RevCi) return c limit 100
 
@@ -34,7 +43,7 @@ MATCH(c: RevCi)-[r]-(t) return c,r,t limit 100
 MATCH(c: RevCi)-[p:parent]-(c2: RevCi)  return c,p,c2 limit 100
 
 
-match(dir:DirTree) -[de:entries]- (child) where ID(dir)=14950 return dir,de,child
+match(dir:DirTree) -[de:has_entry]- (child) where ID(dir)=14950 return dir,de,child
 
 start n=node(14950) return n
 
@@ -42,6 +51,19 @@ start n=node(14950) return n
 # Create / Update
 
 create(n1: DirTree) create(n2: DirTree) create (n1)-[:Link]->(n2)
+
+match(HEAD:SymbolicRepoRef{name: "HEAD"}),(originHead:SymbolicRepoRef {name: "refs/remotes/origin/HEAD"}) create (HEAD)-[:MyLink]->(originHead)
+
+match(HEAD:SymbolicRepoRef{name: "HEAD"}),(originHead:SymbolicRepoRef {name: "refs/remotes/origin/HEAD"}),(HEAD)-[x]->(originHead) return HEAD,x,originHead
+
+
+# current Tree of HEAD
+match(head: SymbolicRepoRef{name:'HEAD'})-[target]-(headTarget)-[refCommit]->(ci)-[ciRevTree:revTree]->(revTree) return revTree
+
+# current child tree of head
+match(head: SymbolicRepoRef{name:'HEAD'})-[target]-(headTarget)-[refCommit]->(ci)-[ciRevTree:revTree]->(revTree)
+  with revTree match (revTree)-[child:has_entry]->(t) return revTree,child,t
+
 
 
 # delete ...

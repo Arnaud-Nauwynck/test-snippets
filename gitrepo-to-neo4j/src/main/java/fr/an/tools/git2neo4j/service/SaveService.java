@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.neo4j.template.Neo4jTemplate;
 import org.springframework.stereotype.Component;
 
 import fr.an.tools.git2neo4j.domain.BlobEntity;
@@ -54,6 +55,9 @@ public class SaveService {
 	@Autowired
 	private GitLinkDAO gitLinkDAO;
 
+//	@Autowired
+//	private Neo4jTemplate neo4jTemplate;
+	
 	
 	// @Autowired
 	// private MapperFacade mapperFacade;
