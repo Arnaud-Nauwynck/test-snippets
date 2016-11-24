@@ -3,7 +3,9 @@ package fr.an.tests.testMapFlatMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,14 +47,22 @@ public class MapFlatMapTest {
 		List<Integer> ls1 = range(1,2);
 		List<Integer> ls2 = range(3,4);
 		List<Integer> ls3 = range(5,6);
-		List<String> res = ls1.stream().flatMap(x1 -> 
+	
+		List<String> res = ls1.stream().flatMap(/*(Function<Integer,Stream<String>>)*/ x1 -> 
+		ls2.stream().flatMap(x2 -> 
+			ls3.stream().map(x3 -> 
+				"" + x1 + "-" + x2 + "-" + x3)))
+			.collect(Collectors.toList());
+		List<String> expectedRes = Arrays.asList("1-3-5", "1-3-6", "1-4-5", "1-4-6", 
+				"2-3-5", "2-3-6", "2-4-5", "2-4-6");
+		Assert.assertEquals(expectedRes, res);
+	
+		List<String> castRes = ls1.stream().flatMap((Function<Integer,Stream<String>>) x1 -> 
 			ls2.stream().flatMap(x2 -> 
 				ls3.stream().map(x3 -> 
 					"" + x1 + "-" + x2 + "-" + x3)))
 				.collect(Collectors.toList());
-		List<String> expectedRes = Arrays.asList("1-3-5", "1-3-6", "1-4-5", "1-4-6", 
-				"2-3-5", "2-3-6", "2-4-5", "2-4-6");
-		Assert.assertEquals(expectedRes, res);
+		Assert.assertEquals(expectedRes, castRes);
 		
 		// basic equivalent...
 		List<String> basicRes = new ArrayList<>();
