@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -204,7 +205,7 @@ public class JacksonTest extends AbstractJsonTest {
 	}
 	
 	@Test
-	public void ListStarExtendsA_base() {
+	public void testListGenericExtendsA_base() {
 		ListGenericExtendsA<ABase> a = new ListGenericExtendsA<>();
 		ABase elt0 = new ABase(123);
 		a.ls.add(elt0);
@@ -214,7 +215,7 @@ public class JacksonTest extends AbstractJsonTest {
 	}
 
 	@Test
-	public void ListStarExtendsA_extends() {
+	public void testListGenericExtendsA_extends() {
 		ListGenericExtendsA<BExtendsBase> a = new ListGenericExtendsA<>();
 		BExtendsBase elt0 = new BExtendsBase(123, 234);
 		a.ls.add(elt0);
@@ -224,7 +225,7 @@ public class JacksonTest extends AbstractJsonTest {
 	}
 
 	@Test
-	public void ListStarExtendsA_runtime_extends() {
+	public void testListGenericExtendsA_runtime_extends() {
 		ListGenericExtendsA<ABase> a = new ListGenericExtendsA<>();
 		ABase elt0 = new ABase(123);
 		a.ls.add(elt0);
@@ -365,6 +366,28 @@ public class JacksonTest extends AbstractJsonTest {
 		a.map.put(new AKey(123, 234), 1);
 		AKeyToIntMap cloneA = serializeToJsonThenToObj(a, AKeyToIntMap.class);
 		Assert.assertEquals(a.map.size(), cloneA.map.size());
+	}
+
+	// ------------------------------------------------------------------------
+
+	public static class AParent {
+		public List<AChild> child = new ArrayList<>();
+	}
+	public static class AChild {
+		public AParent parent;
+		public AChild(AParent parent) {
+			this.parent = parent;
+		}		
+	}
+	
+	@Ignore
+	@Test
+	public void testParentChild() {
+		AParent a = new AParent();
+		AChild child = new AChild(a);
+		a.child.add(child);
+		AParent cloneA = serializeToJsonThenToObj(a, AParent.class);
+		Assert.assertEquals(a.child.size(), cloneA.child.size());
 	}
 	
 }
