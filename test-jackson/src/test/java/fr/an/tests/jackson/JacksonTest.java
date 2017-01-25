@@ -12,9 +12,9 @@ import org.junit.Test;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * All these test are ON-PURPOSE failing (or surprinsingly not)
+ * These tests are ON-PURPOSE failing (or surprinsingly not)
  * 
- * The challenge is to understand which ones are KO, and which ones work... Then to fix them.
+ * The challenge is to understand which ones are KO, and which ones are OK... Then to fix them.
  * 
  * see http://arnaud-nauwynck.github.io/2017/01/25/test-jackson.html
  *
