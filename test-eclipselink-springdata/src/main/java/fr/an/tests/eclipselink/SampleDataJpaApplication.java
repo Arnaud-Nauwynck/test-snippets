@@ -38,6 +38,8 @@ import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 public class SampleDataJpaApplication extends JpaBaseConfiguration {
 
 	public static void main(String[] args) throws Exception {
+		// must run with jvm param 
+		// -javaagent:$HOME/.m2/repository/org/springframework/spring-instrument/4.2.4.RELEASE/spring-instrument-4.2.4.RELEASE.jar
 		SpringApplication.run(SampleDataJpaApplication.class, args);
 	}
 	
