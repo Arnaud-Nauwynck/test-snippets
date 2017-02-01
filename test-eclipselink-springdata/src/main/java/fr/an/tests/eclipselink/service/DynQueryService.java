@@ -15,6 +15,9 @@ import javax.persistence.criteria.Root;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.querydsl.core.QueryMetadata;
+import com.querydsl.core.types.ParamExpression;
+import com.querydsl.core.types.dsl.Param;
 import com.querydsl.jpa.impl.JPAQuery;
 
 import fr.an.tests.eclipselink.domain.City_;
@@ -95,4 +98,29 @@ public class DynQueryService {
 		List<Hotel> res = q.fetch();
 		return res;
 	}	
+
+	public List<Hotel> findByQueryDslBindParams(HotelSpecification spec) {
+		JPAQuery<Hotel> query = new JPAQuery<>(em);
+		QueryMetadata qm = query.getMetadata();
+		JPAQuery<Hotel> q = query.select(QHotel.hotel).from(QHotel.hotel);
+		
+		if (spec.nameLike != null) {
+			q.where(QHotel.hotel.name.like(param(qm, spec.nameLike)));
+		}
+		if (spec.addressLike != null) {
+			q.where(QHotel.hotel.address.like(param(qm, spec.addressLike)));
+		}
+		if (spec.cityNameLike != null) {
+			q.where(QHotel.hotel.city.name.like(param(qm, spec.cityNameLike)));
+		}
+		
+		List<Hotel> res = q.fetch();
+		return res;
+	}
+	
+	public static Param<String> param(QueryMetadata qm, String value) {
+		Param<String> param = new Param<>(String.class);
+		qm.setParam(param, value);
+		return param;
+	}
 }

@@ -38,6 +38,13 @@ public class InitCommandLineRunner implements CommandLineRunner {
 		// SELECT t0.ID, t0.ADDRESS, t0.NAME, t0.ZIP, t0.CITY_ID FROM HOTEL t0, CITY t1 WHERE ((t0.NAME LIKE '%ilton%' ESCAPE '!' AND t1.NAME LIKE 'Barcelon%' ESCAPE '!') AND (t1.ID = t0.CITY_ID))
 		if (resQdsl0.size() != 2 || resQdsl1.size() != 1) throw new IllegalStateException();
 		LOG.info("done findByQueryDsl " + resQdsl0.size() + " " + resQdsl1.size());
+
+		List<Hotel> resQdslBV0 = dynQueryService.findByQueryDslBindParams(spec0);
+		// SELECT ID, ADDRESS, NAME, ZIP, CITY_ID FROM HOTEL WHERE NAME LIKE '%ilton%' ESCAPE '!'
+		List<Hotel> resQdslBV1 = dynQueryService.findByQueryDslBindParams(spec1);
+		// SELECT t0.ID, t0.ADDRESS, t0.NAME, t0.ZIP, t0.CITY_ID FROM HOTEL t0, CITY t1 WHERE ((t0.NAME LIKE '%ilton%' ESCAPE '!' AND t1.NAME LIKE 'Barcelon%' ESCAPE '!') AND (t1.ID = t0.CITY_ID))
+		if (resQdslBV0.size() != 2 || resQdslBV1.size() != 1) throw new IllegalStateException();
+		LOG.info("done findByQueryDsl " + resQdslBV0.size() + " " + resQdslBV1.size());
 	}
 
 	
