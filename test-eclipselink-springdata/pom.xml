@@ -58,6 +58,17 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		
+		<!-- cause error in weaver : "invalid constant type: 18" !!??
+		.. so moved weaver out to profile -Pstatic-weaver 
+		 -->
+		<dependency>
+			<groupId>org.sef4j</groupId>
+			<artifactId>sef4j-jdbc</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -94,89 +105,6 @@
 					<agent>${settings.localRepository}/org/springframework/spring-instrument/${spring.version}/spring-instrument-${spring.version}.jar</agent>
 				</configuration>
 			</plugin>
-			
-<!-- 
-			<plugin>
-	            <groupId>org.bsc.maven</groupId>
-	            <artifactId>maven-processor-plugin</artifactId>
-	            <version>2.2.4</version>
-	            <executions>
-	                <execution>
-	                    <id>eclipselink-jpa-metamodel</id>
-	                    <goals>
-	                        <goal>process</goal>
-	                    </goals>
-	                    <phase>generate-sources</phase>
-	                    <configuration>
-	                        <outputDirectory>${project.build.directory}/generated-sources/meta-model</outputDirectory>
-	                        <processors>
-	                            <processor>org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor</processor>
-	                        </processors>
-	                        <compilerArguments>-Aeclipselink.persistencexml=src/main/resources/META-INF/persistence.xml</compilerArguments>
-	                    </configuration>
-	                </execution>
-	            </executions>
-	            <dependencies>
-	                <dependency>
-	                    <groupId>org.eclipse.persistence</groupId>
-	                    <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-	                    <version>${eclipselink.version}</version>
-	                </dependency>
-	            </dependencies>
-			</plugin>
- -->
-
-			<plugin>
-			    <groupId>com.mysema.maven</groupId>
-			    <artifactId>apt-maven-plugin</artifactId>
-			    <version>1.1.3</version>
-			    <executions>
-			        <execution>
-			            <id>querydsl</id>
-			            <phase>process-resources</phase>
-			            <goals>
-			                <goal>process</goal>
-			            </goals>
-			            <configuration>
-			                <outputDirectory>${project.build.directory}/generated-sources/querydsl</outputDirectory>
-			                <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
-			            </configuration>
-			        </execution>
-			    </executions>
-			    <dependencies>
-			        <dependency>
-			            <groupId>com.querydsl</groupId>
-			            <artifactId>querydsl-apt</artifactId>
-			            <version>${querydsl.version}</version>
-			        </dependency>
-			    </dependencies>
-			</plugin>
-     
-			<plugin>
-			    <groupId>com.ethlo.persistence.tools</groupId>
-			    <artifactId>eclipselink-maven-plugin</artifactId>
-			    <version>2.6.3</version>
-			    <executions>
-			        <execution>
-			            <id>weave</id>
-			            <phase>process-classes</phase>
-			            <goals>
-			                <goal>weave</goal>
-			            </goals>
-			        </execution>
-			        <execution>
-			            <id>modelgen</id>
-			            <phase>generate-sources</phase>
-			            <goals>
-			                <goal>modelgen</goal>
-			            </goals>
-			        </execution>
-			    </executions>
-			    <configuration>
-			    	<includes>fr.an.tests.eclipselink.domain</includes>
-			    </configuration>
-			</plugin>
-
     
 			<plugin>
 	            <groupId>org.codehaus.mojo</groupId>
@@ -190,19 +118,93 @@
 	                    </goals>
 	                    <configuration>
 	                        <sources>
-	                            <source>${project.build.directory}/generated-sources/apt</source>
-	                            <source>${project.build.directory}/generated-sources/querydsl</source>
+	                            <source>${basedir}/generated-sources/apt</source>
+	                            <source>${basedir}/generated-sources/querydsl</source>
 	                        </sources>
 	                    </configuration>
 	                </execution>
 	            </executions>
 	        </plugin>
 	        
-	        <plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
-		        <artifactId>maven-compiler-plugin</artifactId>
-		    </plugin>
-	        
 		</plugins>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>static-weaver</id>
+			<build>
+				<plugins>
+					<plugin>
+					    <groupId>com.ethlo.persistence.tools</groupId>
+					    <artifactId>eclipselink-maven-plugin</artifactId>
+					    <version>2.6.3</version>
+					    <executions>
+					        <execution>
+					            <id>weave</id>
+					            <phase>process-classes</phase>
+					            <goals>
+					                <goal>weave</goal>
+					            </goals>
+					        </execution>
+					    </executions>
+					    <configuration>
+					    	<includes>fr.an.tests.eclipselink.domain</includes>
+					    </configuration>
+					</plugin>					
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>codegen</id>
+			<build>
+				<plugins>
+					<plugin>
+					    <groupId>com.mysema.maven</groupId>
+					    <artifactId>apt-maven-plugin</artifactId>
+					    <version>1.1.3</version>
+					    <executions>
+					        <execution>
+					            <id>querydsl</id>
+					            <phase>generate-sources</phase>
+					            <goals>
+					                <goal>process</goal>
+					            </goals>
+					            <configuration>
+					                <outputDirectory>${basedir}/generated-sources/querydsl</outputDirectory>
+					                <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
+					            </configuration>
+					        </execution>
+					    </executions>
+					    <dependencies>
+					        <dependency>
+					            <groupId>com.querydsl</groupId>
+					            <artifactId>querydsl-apt</artifactId>
+					            <version>${querydsl.version}</version>
+					        </dependency>
+					    </dependencies>
+					</plugin>
+		     
+					<plugin>
+					    <groupId>com.ethlo.persistence.tools</groupId>
+					    <artifactId>eclipselink-maven-plugin</artifactId>
+					    <version>2.6.3</version>
+					    <executions>
+					        <execution>
+					            <id>modelgen</id>
+					            <phase>generate-sources</phase>
+					            <goals>
+					                <goal>modelgen</goal>
+					            </goals>
+					        </execution>
+					    </executions>
+					    <configuration>
+					    	<includes>fr.an.tests.eclipselink.domain</includes>
+					    	<generatedSourcesDirectory>${basedir}/generated-sources/apt</generatedSourcesDirectory>
+					    </configuration>
+					</plugin>
+					
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
