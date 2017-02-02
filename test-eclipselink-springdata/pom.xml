@@ -47,6 +47,11 @@
 	        <artifactId>querydsl-jpa</artifactId>
 	        <version>${querydsl.version}</version>
 	    </dependency>
+	    <dependency>
+	        <groupId>com.querydsl</groupId>
+	        <artifactId>querydsl-collections</artifactId>
+	        <version>${querydsl.version}</version>
+	    </dependency>
 		
 		
 		<dependency>

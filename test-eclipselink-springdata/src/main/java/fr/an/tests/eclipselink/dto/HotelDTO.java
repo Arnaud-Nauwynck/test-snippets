@@ -19,7 +19,7 @@ public class HotelDTO implements Serializable {
 
 	private Set<ReviewDTO> reviews;
 
-	protected HotelDTO() {
+	public HotelDTO() {
 	}
 
 	public HotelDTO(CityDTO city, String name) {
