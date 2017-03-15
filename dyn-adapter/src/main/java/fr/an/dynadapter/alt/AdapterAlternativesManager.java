@@ -400,7 +400,7 @@ public class AdapterAlternativesManager<DT> implements IAdapterAlternativesManag
             }
             
             String alternativeName = factory.getAlternativeName();
-            for (ItfId<?> itfId : itfIds) {
+            for (ItfId<?> itfId : allItfIds) {
                 Map<String, IAdapterAlternativeFactory> a2f = to.get(itfId);
                 if (a2f == null) {
                     a2f = new HashMap<>();

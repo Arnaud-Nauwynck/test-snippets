@@ -32,6 +32,10 @@ public interface IAdapterAlternativesManager<DT> {
 
     public <T> boolean hasAdapter(Object adaptable, ItfId<T> interfaceId, Predicate<String> alternativePredicate);
 
+    default public <T> Map<String,T> getAdapters(Object adaptable, ItfId<T> interfaceId) {
+        return getAdapters(adaptable, interfaceId, x -> true);
+    }
+
     public <T> Map<String,T> getAdapters(Object adaptable, ItfId<T> interfaceId, Predicate<String> alternativePredicate);
 
     public Set<String> getAdapterAlternatives(DT adaptableDataType, ItfId<?> interfaceId);
