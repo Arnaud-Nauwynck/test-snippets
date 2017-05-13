@@ -1,10 +1,10 @@
 package fr.an.tests.chat;
 
-import java.util.List;
-import java.util.function.Consumer;
+import org.springframework.http.codec.ServerSentEvent;
 
 import fr.an.tests.chat.ChatRoomEntry.ChatMessageEntry;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.ReplayProcessor;
 
 /**
  * example doc/tutorials:
@@ -15,27 +15,31 @@ public class Spring5ChatRoomSSE implements ChatRoomMessageListener  {
 
 	protected final ChatRoomEntry chatRoom;
 
-	private Consumer<ChatMessageEntry> emitter;
-	private List<Flux<ChatMessageEntry>> subscriptions;
+	private ReplayProcessor<ServerSentEvent<ChatMessageEntry>> replayProcessor;
+	
+	private int idGenerator = 1;
 	
 	public Spring5ChatRoomSSE(ChatRoomEntry chatRoom) {
 		this.chatRoom = chatRoom;
-//		this.emitter = new ;
+		this.replayProcessor = ReplayProcessor.<ServerSentEvent<ChatMessageEntry>>create(100);
 	}
 
 	@Override
 	public void onPostMessage(ChatMessageEntry msg) {
-//		emitter.accept(msg);
+		ServerSentEvent<ChatMessageEntry> event = ServerSentEvent.builder(msg)
+				// .event("chat")
+				.id(generateNewId()).build();
+		replayProcessor.onNext(event);
 	}
 
-	public Flux<ChatMessageEntry> subscribe() {
-//		Flux<ChatMessageEntry> res = Flux.<ChatMessageEntry>create(emmiter);
-//		subscriptions.add(res);
-//		
-//		emitter.onTimeout(() -> this.emitters.remove(emitter));
-//		
-//		return res;
-		return null;
+	private String generateNewId() {
+		return Integer.toString(idGenerator++);
+	}
+
+	public Flux<ServerSentEvent<ChatMessageEntry>> subscribe(String lastEventId) {
+		return replayProcessor
+				// ??? 
+				.log(); //??  subscribe()
 	}
 
 }

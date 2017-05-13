@@ -11,10 +11,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -76,7 +78,7 @@ public class MyRestController {
         	from = "from (cf security..)"; 
         }
         LOG.info("receive msg chatRoom:" + chatRoom + " from:" + from + " msg: " + msg.msg);
-        chatRoomEntry.addMsg(new ChatMessageEntry(new Date(), from, chatRoom, msg.msg));
+        chatRoomEntry.addMsg(new Date(), from, msg.msg);
 	}
 	
 	@GetMapping(path="/chat/room/{chatRoom}/messages")
@@ -106,24 +108,46 @@ public class MyRestController {
 	 * 
 	 */
 	@GetMapping(path = "/chat/room/{chatRoom}/subscribeMessagesSpring4", produces = "text/event-stream")
-    public SseEmitter subscribeChatMessages(@PathVariable("chatRoom") String chatRoom) {
+    public SseEmitter subscribeChatMessages(
+    		@PathVariable("chatRoom") String chatRoom,
+    		@RequestHeader(name="last-event-id", required=false) String lastEventId) {
 		ChatRoomEntry chatRoomEntry = chatHistoryService.getChatRoom(chatRoom);
         if (chatRoomEntry == null) {
         	return null;
         }
-		return chatRoomEntry.subscribeSpring4();
+		return chatRoomEntry.subscribeSpring4(lastEventId);
     }
 
 	// Server-Sent Event using spring5
 	// ------------------------------------------------------------------------
 	
+	/**
+	 * example to test:
+	 * <PRE>
+	 * curl http://localhost:8081/app/chat/room/Default/subscribeMessagesSpring5
+	 * </PRE>
+	 * ... get results:
+	 * <PRE>
+	 * id:1
+	 * data:{"date":1494702169915,"from":"BOT","chatRoom":"Default","msg":"server start"}
+	 * 
+	 * id:2
+	 * data:{"date":1494702213058,"from":"me","chatRoom":"Default","msg":"Hello"}
+	 * 
+	 * id:3
+	 * data:{"date":1494702214060,"from":"me","chatRoom":"Default","msg":"Hello"}
+	 * </PRE>
+	 * 
+	 */
 	@GetMapping(path = "/chat/room/{chatRoom}/subscribeMessagesSpring5", produces = "text/event-stream")
-    public Flux<ChatMessageEntry> subscribeChatMessages_spring5(@PathVariable("chatRoom") String chatRoom) {
+    public Flux<ServerSentEvent<ChatMessageEntry>> subscribeChatMessages_spring5(
+    		@PathVariable("chatRoom") String chatRoom,
+    		@RequestHeader(name="last-event-id", required=false) String lastEventId) {
 		ChatRoomEntry chatRoomEntry = chatHistoryService.getChatRoom(chatRoom);
         if (chatRoomEntry == null) {
         	return null;
         }
-        return chatRoomEntry.subscribeSpring5();
+        return chatRoomEntry.subscribeSpring5(lastEventId);
     }
 	
 

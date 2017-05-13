@@ -6,8 +6,6 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import fr.an.tests.chat.ChatRoomEntry.ChatMessageEntry;
-
 @Component
 public class ChatHistoryService {
 
@@ -15,7 +13,7 @@ public class ChatHistoryService {
 	
 	public ChatHistoryService() {
 		ChatRoomEntry defaultChatRoom = addChatRoom("Default");
-		defaultChatRoom.addMsg(new ChatMessageEntry(new Date(), "BOT", "Default", "server start"));
+		defaultChatRoom.addMsg(new Date(), "BOT", "server start");
 	}
 	
 	public ChatRoomEntry addChatRoom(String name) {

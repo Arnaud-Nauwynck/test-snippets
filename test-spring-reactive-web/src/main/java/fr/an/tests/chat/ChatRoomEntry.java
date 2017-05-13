@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import reactor.core.publisher.Flux;
@@ -12,22 +13,35 @@ import reactor.core.publisher.Flux;
 public class ChatRoomEntry {
 
 	public static class ChatMessageEntry {
+		// @JsonIgnore // redundant with SSE lines "id: .."
+		public final int id;
+		
 		public final Date date;
 		public final String from;
 		public final String chatRoom; // redundant
 		public final String msg;
 		
-		public ChatMessageEntry(Date date, String from, String chatRoom, String msg) {
+		public ChatMessageEntry(int id, Date date, String from, String chatRoom, String msg) {
+			this.id = id;
 			this.date = date;
 			this.from = from;
 			this.chatRoom = chatRoom;
 			this.msg = msg;
 		}
+
+		@Override
+		public String toString() {
+			return "ChatMessage[" + date + ", from=" + from + ", room=" + chatRoom + " : " + msg + "]";
+		}
 		
 	}
 	
 	public final String name;
-	private List<ChatMessageEntry> messages = new ArrayList<>();
+	
+	private int idGenerator = 1;
+	private List<ChatMessageEntry> messages = new ArrayList<>(); // TODO CopyOnWriteArrayList ..
+
+	private int maxRecentHistory = 20;
 	
 	private List<ChatRoomMessageListener> listeners = new ArrayList<>();
 	private Spring4ChatRoomSSE spring4SSE;
@@ -45,10 +59,16 @@ public class ChatRoomEntry {
 
 	// ------------------------------------------------------------------------
 
-	public void addMsg(ChatMessageEntry p) {
-		messages.add(p);
+	public void addMsg(Date date, String from, String msg) {
+		int id = idGenerator++;
+		ChatMessageEntry msgEntry = new ChatMessageEntry(id, date, from, name, msg);
+		messages.add(msgEntry);
+		if (messages.size() > maxRecentHistory) {
+			messages.remove(0);
+		}
+		
 		for(ChatRoomMessageListener listener : listeners) {
-			listener.onPostMessage(p);
+			listener.onPostMessage(msgEntry);
 		}
 	}
 	
@@ -58,12 +78,22 @@ public class ChatRoomEntry {
 				.collect(Collectors.toList());
 	}
 
-	public SseEmitter subscribeSpring4() {
-		return spring4SSE.subscribe();
+	public List<ChatMessageEntry> listMessagesSinceLastId(int lastId) {
+		return messages.stream()
+				.filter(x -> x.id > lastId)
+				.collect(Collectors.toList());
 	}
 
-	public Flux<ChatMessageEntry> subscribeSpring5() {
-		return spring5SSE.subscribe();
+	public List<ChatMessageEntry> listMessages() {
+		return new ArrayList<>(messages);
+	}
+
+	public SseEmitter subscribeSpring4(String lastEventId) {
+		return spring4SSE.subscribe(lastEventId);
+	}
+
+	public Flux<ServerSentEvent<ChatMessageEntry>> subscribeSpring5(String lastEventId) {
+		return spring5SSE.subscribe(lastEventId);
 	}
 
 }
