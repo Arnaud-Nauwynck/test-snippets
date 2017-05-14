@@ -3,14 +3,15 @@ angular.module('myapp', [ ])
 .controller('MyController', function($scope, $http) {
     var self = this;
 
-    self.useImpl = "spring4";
+    self.useImpl = "spring5";
     self.from = "me";
     self.chatRoom = "Default";
     self.msgToSend = "";
     self.formattedMessages = '';
     
-    self.lastEventId = 0;
     self.eventSource = null;
+    self.lastEventId = 0;
+    self.connStatus = '';
     
     self.onInit = function() {
         // $scope.on("destroy", function() { self.onDispose(); });
@@ -23,7 +24,7 @@ angular.module('myapp', [ ])
     };
     
     self.connectEventSource = function() {
-        console.log("subscribe chatRoom: " + self.chatRoom + " useImpl:" + self.useImpl);
+        console.log("subscribe chatRoom: " + self.chatRoom + " useImpl:" + self.useImpl + " lastEventId:" + self.lastEventId);
         self.eventSource = new EventSource('/app/chat/room/' + self.chatRoom + '/subscribeMessagesSpring' + (self.useImpl === 'spring4'? '4' : '5'),
                 { id: self.lastEventId });
         
@@ -33,13 +34,19 @@ angular.module('myapp', [ ])
         
         self.eventSource.addEventListener('open', function(e) {
             console.log("onopen", e);
+            self.connStatus = 'connected';
+            $scope.$apply();
         }, false);
 
         self.eventSource.addEventListener('error', function(e) {
-            console.log("onerror", e);
             if (e.eventPhase == EventSource.CLOSED) {
-              console.log('connection closed');
+              console.log('connection closed (..reconnect)', e);
+              self.connStatus = 'connection closed (..auto reconnect in 3s)';
+            } else {
+              console.log("onerror", e);
+              self.connStatus = 'error\n';
             }
+            $scope.$apply();
           }, false);
         
         self.eventSource.addEventListener('message', function(e) {
@@ -75,14 +82,14 @@ angular.module('myapp', [ ])
         self.lastEventId = msg.id;
         self.eventSource.id = self.lastEventId; // should be useless??
         // if (msg.from !== self.from) {
-            self.addFormattedEvent(new Date(msg.date), msg.from, msg.msg);
+            self.addFormattedEvent(msg.id, new Date(msg.date), msg.from, msg.msg);
         // }
     };
     
     self.onClickSendMsg = function () {
         console.log("send");
         var msg = self.msgToSend;
-        self.addFormattedEvent(new Date(), self.from, msg);
+        // self.addFormattedEvent(new Date(), self.from, msg);
         
         var req = { onBehalfOf: self.from, msg };
         self.sending = true;
@@ -90,13 +97,13 @@ angular.module('myapp', [ ])
         .then(function() {
           self.sending = false;
         }, function(err) {
-          self.addFormattedEvent(new Date(), self.from, "Failed to send " + msg + ":" + err);
+          self.addFormattedEvent(-1, new Date(), self.from, "Failed to send " + msg + ":" + err);
           self.sending = false;
         });
     };
     
-    self.addFormattedEvent = function(date, from, msg) {
-       self.formattedMessages += date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + " " +  
+    self.addFormattedEvent = function(id, date, from, msg) {
+       self.formattedMessages += "[" + id + "] " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + " " +  
            ((self.from === from)? "" : "(" + from + ") ") + 
            msg + "\n\n";
     }

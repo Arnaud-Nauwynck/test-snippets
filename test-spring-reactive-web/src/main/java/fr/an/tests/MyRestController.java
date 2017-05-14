@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import fr.an.tests.chat.ChatHistoryService;
@@ -115,7 +117,8 @@ public class MyRestController {
         if (chatRoomEntry == null) {
         	return null;
         }
-		return chatRoomEntry.subscribeSpring4(lastEventId);
+        LOG.info("subscribeMessagesSpring4 lastEventId:" + lastEventId);
+        return chatRoomEntry.subscribeSpring4(lastEventId);
     }
 
 	// Server-Sent Event using spring5
@@ -147,7 +150,13 @@ public class MyRestController {
         if (chatRoomEntry == null) {
         	return null;
         }
+        LOG.info("subscribeMessagesSpring5 lastEventId:" + lastEventId);
         return chatRoomEntry.subscribeSpring5(lastEventId);
+    }
+
+	@ExceptionHandler(value = AsyncRequestTimeoutException.class)  
+    public String asyncTimeout(AsyncRequestTimeoutException e){  
+        return null; // "SSE timeout..OK";  
     }
 	
 

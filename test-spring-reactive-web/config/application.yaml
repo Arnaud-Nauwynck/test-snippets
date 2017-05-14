@@ -1,4 +1,12 @@
 
 server:
   port: 8080
+
+
+spring:
+  mvc:
+    async:
+      # default: 30 seconds... should be higher..
+      # for test only= > 15s!
+      request-timeout: 15000
     

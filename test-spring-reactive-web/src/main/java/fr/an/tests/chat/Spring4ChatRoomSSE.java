@@ -3,12 +3,11 @@ package fr.an.tests.chat;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter.DataWithMediaType;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter.SseEventBuilder;
 
 import fr.an.tests.chat.ChatRoomEntry.ChatMessageEntry;
 
@@ -31,15 +30,16 @@ public class Spring4ChatRoomSSE implements ChatRoomMessageListener {
 
 	@Override
 	public void onPostMessage(ChatMessageEntry msg) {
-		Set<DataWithMediaType> dataToSend = SseEmitter.event()
+		if (emitters.isEmpty()) {
+			return;
+		}
+		SseEventBuilder evtBuilder = SseEmitter.event()
 				.id(Integer.toString(msg.id))
-				// .name("chat")
-				.data(msg)
-				// .data(msg, MediaType.APPLICATION_JSON)
-				.build();
+				.name("chat")
+				.data(msg);
 		for(SseEmitter emitter : emitters) {
 			try {
-				emitter.send(dataToSend);
+				emitter.send(evtBuilder);
 			} catch (IOException ex) {
 				LOG.error("Failed to send msg to emitter", ex);
 			}
@@ -60,7 +60,8 @@ public class Spring4ChatRoomSSE implements ChatRoomMessageListener {
 			try {
 				emitter.send(msg);
 			} catch (IOException ex) {
-				LOG.error("Failed to re-send msg to emitter", ex);
+				LOG.error("Failed to re-send msg to emitter, ex:", ex.getMessage() + " => complete with error ... remove,disconnect");
+				emitter.completeWithError(ex);
 			}
 		}
 		

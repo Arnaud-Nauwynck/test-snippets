@@ -3,7 +3,7 @@
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
 
-    <logger name="fr.an.tests" level="#logback.loglevel#"/>
+    <logger name="fr.an.tests" level="INFO"/>
 
     <logger name="javax.xml.bind" level="WARN"/>
     <logger name="ch.qos.logback" level="WARN"/>
@@ -13,7 +13,7 @@
 <!-- 
     <logger name="org.springframework.web" level="WARN"/>
  -->
-    <logger name="org.springframework.web" level="DEBUG"/>
+    <logger name="org.springframework.web" level="INFO"/>
     
     <logger name="org.springframework.security" level="WARN"/>
     <logger name="org.springframework.cache" level="WARN"/>
@@ -22,7 +22,7 @@
         <resetJUL>true</resetJUL>
     </contextListener>
 
-    <root level="#logback.loglevel#">
+    <root level="INFO">
         <appender-ref ref="CONSOLE"/>
     </root>
 
