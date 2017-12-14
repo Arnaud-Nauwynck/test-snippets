@@ -1,0 +1,24 @@
+<!doctype html>
+<html ng-app="my-app">
+  <head>
+    <script src="vendor/angular.js"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <div ng-controller="MyController as ctrl">
+      <label>Todo:</label>
+      <input type="text" ng-model="ctrl.todoMessage" 
+      	placeholder="Enter a TODO item message"></input>
+
+	<button ng-click="ctrl.addTodo();">Add Todo</button>
+	<button ng-click="ctrl.loadTodos();">Reload</button>
+
+<ul>
+	<li ng-repeat="todo in ctrl.todos">
+		{{todo.todoMessage}}
+	</li>
+</ul>
+
+    </div>
+  </body>
+</html>
