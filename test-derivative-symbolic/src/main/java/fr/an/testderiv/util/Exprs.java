@@ -16,10 +16,15 @@ public final class Exprs {
 	private Exprs() {}
 	
 	public static final NumberExpr C_0 = new NumberExpr(0.0);
-	public static final NumberExpr C_1 = new NumberExpr(1.0);
 	public static final NumberExpr C_0_5 = new NumberExpr(0.5);
+	public static final NumberExpr C_1 = new NumberExpr(1.0);
 	public static final NumberExpr C_2 = new NumberExpr(2.0);
+	public static final NumberExpr C_3 = new NumberExpr(3.0);
 
+	public static final NumberExpr C_minus1 = new NumberExpr(-1.0);
+	public static final NumberExpr C_minus2 = new NumberExpr(-2.0);
+
+	
 	public static boolean is0(Expr expr) {
 		if (expr == Exprs.C_0) {
 			return true;
@@ -90,9 +95,25 @@ public final class Exprs {
 		return func(funcName, ImmutableList.of(arg0, arg1, arg2, arg3));
 	}
 	
+	public static FuncExpr pow(Expr e, Expr exponent) {
+		return func("pow", e, exponent);
+	}
 	
 	public static FuncExpr square(Expr e) {
-		return func("pow", e, C_2);
+		return pow(e, C_2);
+	}
+
+	public static FuncExpr ln(Expr e) {
+		return func("ln", e);
+	}
+	public static FuncExpr exp(Expr e) {
+		return func("exp", e);
+	}
+	public static FuncExpr sin(Expr e) {
+		return func("sin", e);
+	}
+	public static FuncExpr cos(Expr e) {
+		return func("cos", e);
 	}
 
 	
