@@ -1,0 +1,5 @@
+
+
+object ScalaObj {
+  def foo() {}  
+}
