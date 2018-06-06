@@ -13,7 +13,7 @@ public interface RevTreeDAO extends GraphRepository<RevTreeEntity> {
 	@Query("match(t) where t.sha1 in ({0}) return t")  // Blob | :DirTree | :GitLink | :SymLink
 	List<RevTreeEntity> findBySHA1s(Collection<String> sha1s);
 	
-	@Query("match(root:DirTree{sha1:{0}}) -[:childFile*]-> (child:) return child") // (DirTree|Blob|SymLink|GitLink)
+	@Query("match(root:DirTree{sha1:{0}}) -[:has_entry*]-> (child:) return child") // (DirTree|Blob|SymLink|GitLink)
 	List<RevTreeEntity> findRecursiveChildFileBySHA1(String sha1);
 	
 }

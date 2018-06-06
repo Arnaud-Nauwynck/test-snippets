@@ -1,0 +1,8 @@
+version: '2'
+services:
+    service1:
+        image: debian
+        command: echo test service1
+    service2:
+        image: debian
+        command: echo test service2

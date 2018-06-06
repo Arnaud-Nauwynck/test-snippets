@@ -20,33 +20,45 @@
 	
 	<dependencies>
 		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.12</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 			<exclusions>
+				<!-- default use hibernate ... explicit exclude to use another -->
 				<exclusion>
 					<artifactId>hibernate-entitymanager</artifactId>
 					<groupId>org.hibernate</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
 			 <version>${eclipselink.version}</version>
 		</dependency>
 
-<!-- 
-		<dependency>
-	        <groupId>com.querydsl</groupId>
-	        <artifactId>querydsl-core</artifactId>
-	        <version>${querydsl.version}</version>
-	    </dependency>
- -->		
 	    <dependency>
 	        <groupId>com.querydsl</groupId>
 	        <artifactId>querydsl-jpa</artifactId>
 	        <version>${querydsl.version}</version>
 	    </dependency>
+		<!-- implicit
+		<dependency>
+	        <groupId>com.querydsl</groupId>
+	        <artifactId>querydsl-core</artifactId>
+	        <version>${querydsl.version}</version>
+	    </dependency>
+ 		-->		
+	    
+	    <!-- can also perform query in-memory on List<T> -->
 	    <dependency>
 	        <groupId>com.querydsl</groupId>
 	        <artifactId>querydsl-collections</artifactId>
@@ -58,11 +70,40 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		
+		<!-- implicit 
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+		</dependency>
+	    <dependency>
+			<groupId>org.apache.tomcat</groupId>
+	  		<artifactId>tomcat-jdbc</artifactId>
+		</dependency>
+		 -->
+		
+		<dependency>
+		    <groupId>org.postgresql</groupId>
+		    <artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- 
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		 -->
 		
 		<!-- cause error in weaver : "invalid constant type: 18" !!??
 		.. so moved weaver out to profile -Pstatic-weaver 

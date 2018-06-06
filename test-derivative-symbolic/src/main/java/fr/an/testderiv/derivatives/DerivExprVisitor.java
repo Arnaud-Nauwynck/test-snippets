@@ -39,14 +39,17 @@ public class DerivExprVisitor extends ExprVisitor {
 	
 	@Override
 	public void caseNumber(NumberExpr p) {
+		// (cst)' = 0
 		this.result = Exprs.C_0;
 	}
 
 	@Override
 	public void caseVar(VarExpr p) {
 		if (p.getName().equals(derivVarName)) {
+			// (x)' = 1
 			this.result = Exprs.C_1;
 		} else {
+			// (y)' = 0
 			this.result = Exprs.C_0;
 		}
 	}
@@ -56,6 +59,7 @@ public class DerivExprVisitor extends ExprVisitor {
 		String op = p.getOp();
 		switch(op) {
 		case "-":
+			// (-f)' = - (f')
 			Expr e = eval(p.getExpr());
 			this.result = new UnaryOpExpr("-", e);
 			break;
@@ -75,10 +79,12 @@ public class DerivExprVisitor extends ExprVisitor {
 		Expr derRhs = eval(rhs);
 		switch(op) {
 		case "+":
+			// (f+g)' = f' + g'
 			this.result = Exprs.plus(derLhs, derRhs);
 			break;
 
 		case "-":
+			// (f-g)' = f' - g'
 			this.result = Exprs.minus(derLhs, derRhs);
 			break;
 

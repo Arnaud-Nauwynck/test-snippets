@@ -38,8 +38,8 @@ angular.module('myapp', [ 'draganddrop' ])
     self.selectedFileWithContents = [];
     self.uploadStatus = '';
     
-    self.onInputFileChange = function(e) {
-      console.log("onInputFileChange ", e);
+    self.onInputFileChange = function() {
+      console.log("onInputFileChange: selected files: ", self.selectedFiles1);
     };
     
     self.addSelectedFiles2 = function(files) {

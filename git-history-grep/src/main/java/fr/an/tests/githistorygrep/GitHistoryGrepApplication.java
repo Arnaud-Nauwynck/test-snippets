@@ -13,7 +13,8 @@ public class GitHistoryGrepApplication {
 	}
 	
 	public void run() {
-		File gitDir = new File("src/test/gitrepo1-bare");
+		File gitDir = // new File("src/test/gitrepo1-bare");
+				new File("src/test/gitrepo2");
 		gitGrepHelper = new JGitGrepHelper(gitDir);
 		
 		grepDisplay("a=.*");

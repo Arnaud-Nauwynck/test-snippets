@@ -17,8 +17,6 @@ public class Spring5ChatRoomSSE implements ChatRoomMessageListener  {
 
 	private ReplayProcessor<ServerSentEvent<ChatMessageEntry>> replayProcessor;
 	
-	private int idGenerator = 1;
-	
 	public Spring5ChatRoomSSE(ChatRoomEntry chatRoom) {
 		this.chatRoom = chatRoom;
 		this.replayProcessor = ReplayProcessor.<ServerSentEvent<ChatMessageEntry>>create(100);
@@ -28,20 +26,13 @@ public class Spring5ChatRoomSSE implements ChatRoomMessageListener  {
 	public void onPostMessage(ChatMessageEntry msg) {
 		ServerSentEvent<ChatMessageEntry> event = ServerSentEvent.builder(msg)
 				.event("chat")
-				.id(generateNewId()).build();
+				.id(Integer.toString(msg.id)).build();
 		replayProcessor.onNext(event);
-	}
-
-	private String generateNewId() {
-		return Integer.toString(idGenerator++);
 	}
 
 	public Flux<ServerSentEvent<ChatMessageEntry>> subscribe(String lastEventId) {
 		Integer lastId = (lastEventId != null)? Integer.parseInt(lastEventId) : null;
-		return replayProcessor
-				.filter(x -> lastId == null || x.data().get().id > lastId)
-				// .log()
-				;
+		return replayProcessor.filter(x -> lastId == null || x.data().get().id > lastId);
 	}
 
 }

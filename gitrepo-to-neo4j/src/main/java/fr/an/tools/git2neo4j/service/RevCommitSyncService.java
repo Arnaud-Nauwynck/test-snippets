@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectIdRef;
@@ -104,12 +105,21 @@ public class RevCommitSyncService {
 		
 		int revCiCount = revCi2Entities.size();
 		int revCiIndex = 0;
-		for(Map.Entry<RevCommit, RevCommitEntity>  e : revCi2Entities.entrySet()) {
-			RevCommit commit = e.getKey();
-			RevCommitEntity commitEntity = e.getValue();
-			LOG.info("[" +  (++revCiIndex) + "/" + revCiCount + "] update Tree for Commit " + commit.getName());
-			xaHelper.doInXA(() -> syncRevCommitTree(ctx, commit, commitEntity));
+		int batchSize = 50;
+		List<Map<RevCommit, RevCommitEntity>> splitMaps = splitMap(revCi2Entities, batchSize);
+		for(Map<RevCommit, RevCommitEntity> split : splitMaps) {
+			xaHelper.doInXA(() -> {
+				for(Map.Entry<RevCommit, RevCommitEntity>  e : split.entrySet()) {
+					RevCommit commit = e.getKey();
+					RevCommitEntity commitEntity = e.getValue();
+					syncRevCommitTree(ctx, commit, commitEntity);
+				}
+			});
+			revCiIndex += batchSize;
+			LOG.info("\n[" + revCiIndex + "/" + revCiCount + "] update Tree for Commit\n");
 		}
+		
+		
 		
 		// OutOfMemoryError + very very slow ...
 		// update RevTree
@@ -118,6 +128,22 @@ public class RevCommitSyncService {
 		LOG.info("done sync git repo");
 	}
 
+	public static <K,V> List<Map<K,V>> splitMap(Map<K,V> map, int batchSize) {
+		List<Map<K,V>> res = new ArrayList<>();
+		Map<K,V> curr = new LinkedHashMap<>();
+		int currCount = 0;
+		for(Map.Entry<K, V> e : map.entrySet()) {
+			curr.put(e.getKey(), e.getValue());
+			currCount++;
+			if (currCount >= batchSize) {
+				currCount = 0;
+				res.add(curr);
+				curr = new LinkedHashMap<>();
+			}
+		}
+		return res;
+	}
+	
 	private void syncRefCommitRevTree(SyncCtx ctx, Ref ref, ObjectIdRepoRefEntity refEntity) {
 		ObjectId commitId = ref.getObjectId();
 		RevCommit commit;
@@ -138,7 +164,7 @@ public class RevCommitSyncService {
 	private void syncRevCommitTree(SyncCtx ctx, RevCommit commit, RevCommitEntity commitEntity) {
 		RevTreeEntity revTreeEntity = commitEntity.getRevTree();
 		if (revTreeEntity != null) {
-			// return;// TODO TEMPORARY ... immutable => assume sync ok .. no need to update
+			return;// TODO TEMPORARY ... immutable => assume sync ok .. no need to update
 		}
 		
 		ObjectId revTreeId = commit.getTree();

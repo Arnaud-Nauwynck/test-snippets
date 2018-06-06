@@ -50,7 +50,9 @@ public class SampleDataJpaApplication extends JpaBaseConfiguration {
 //		adapter.setShowSql(this.jpaProperties.isShowSql());
 //		adapter.setDatabase(this.jpaProperties.getDatabase());
 //		adapter.setDatabasePlatform(this.jpaProperties.getDatabasePlatform());
-		adapter.setDatabasePlatform("org.eclipse.persistence.platform.database.H2Platform");
+		
+//		adapter.setDatabasePlatform("org.eclipse.persistence.platform.database.H2Platform");
+		
 //		adapter.setGenerateDdl(this.jpaProperties.isGenerateDdl());
 		return adapter;
 	}
@@ -69,8 +71,9 @@ public class SampleDataJpaApplication extends JpaBaseConfiguration {
 	protected Map<String, Object> getVendorProperties() {
 		Map<String, Object> map = new HashMap<String, Object>();
 		// map.put(PersistenceUnitProperties.TARGET_DATABASE, "org.eclipse.persistence.platform.database.H2Platform"); // => ignored determineDatabase("H2")!
-		// map.put("eclipselink.ddl-generation", "drop-create-tables");
-		// map.put("eclipselink.ddl-generation.output-mode", "both");
+		map.put("eclipselink.ddl-generation", "create-tables");
+		map.put("eclipselink.ddl-generation.output-mode", "both");
+		// map.put("eclipselink.ddl-generation.output-mode", "database");
 		map.put("eclipselink.logging.level",
 //				"INFO"
 				"FINE"

@@ -65,25 +65,9 @@ angular.module('myapp', [ ])
 
     self.handleMessageEvent = function(e) {
         var msg = JSON.parse(e.data);
-        if (Array.isArray(msg)) { // sometimes event.eventPhase === 0 ... sometimes == 2
-            // reconnect? receive several messages since 'last-message-id' ?
-            console.log("event.data is Array?? ", msg);
-            for(var i = 0; i < msg.length; i++) {
-                console.log("msg[" + i + "]", msg[i]);
-                // var subevent = JSON.parse(msg[i]); 
-                // self.handleChatMsg(subevent.data);
-            }
-        } else {
-            self.handleChatMsg(msg);
-        }
-    }
-    
-    self.handleChatMsg = function(msg) {
         self.lastEventId = msg.id;
-        self.eventSource.id = self.lastEventId; // should be useless??
-        // if (msg.from !== self.from) {
-            self.addFormattedEvent(msg.id, new Date(msg.date), msg.from, msg.msg);
-        // }
+        self.eventSource.id = self.lastEventId;
+        self.addFormattedEvent(msg.id, new Date(msg.date), msg.from, msg.msg);
     };
     
     self.onClickSendMsg = function () {

@@ -6,10 +6,7 @@ import java.util.Map;
 import com.google.common.collect.ImmutableList;
 
 import fr.an.testderiv.model.Expr;
-import fr.an.testderiv.model.Expr.BinaryOpExpr;
-import fr.an.testderiv.model.Expr.FuncExpr;
 import fr.an.testderiv.model.Expr.NumberExpr;
-import fr.an.testderiv.model.Expr.UnaryOpExpr;
 import fr.an.testderiv.util.Exprs;
 
 public class BuiltinFuncDerivatives {
@@ -70,13 +67,21 @@ public class BuiltinFuncDerivatives {
 			return Exprs.mult(Exprs.ln(base), Exprs.pow(base, exponent)); 
 		});
 		
-		b.put("sqrt", (args) -> new BinaryOpExpr(Exprs.C_0_5 , "/", new FuncExpr("sqrt", args)));
+		// (x^2)' = 2 * x 
+		b.put("square", (args) -> Exprs.mult(Exprs.C_2, args.get(0)));
 		
-		b.put("sin", (args) -> new FuncExpr("cos", args));
-		b.put("cos", (args) -> new UnaryOpExpr("-", new FuncExpr("sin", args)));
+		// (sqrt(x))' = 1 / (2 * sqrt(x)) 
+		b.put("sqrt", (args) -> Exprs.div(Exprs.C_0_5 , Exprs.func("sqrt", args)));
+		
+		// (sin(x))' = cos(x) 
+		b.put("sin", (args) -> Exprs.cos(args.get(0)));
+		// (cos(x))' = sin(x) 
+		b.put("cos", (args) -> Exprs.unaryMinus(Exprs.sin(args.get(0))));
 
-		b.put("exp", (args) -> new FuncExpr("exp", args));
-		b.put("ln", (args) -> new BinaryOpExpr(Exprs.C_1, "/", args.get(0)));
+		// (exp(x))' = exp(x) 
+		b.put("exp", (args) -> Exprs.exp(args.get(0)));
+		// (ln(x))' = 1/x 
+		b.put("ln", (args) -> Exprs.inv(args.get(0)));
 		
 		builtinDerivatives = b;
 	}

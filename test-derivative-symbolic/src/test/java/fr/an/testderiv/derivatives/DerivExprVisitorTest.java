@@ -14,6 +14,29 @@ public class DerivExprVisitorTest {
 	static final Expr y = Exprs.var("y");
 	
 	private static boolean DEBUG = false;
+
+	@Test
+	public void test_6_x2_plus_3x_minus7() {
+		// 6.x^2 + 3.x - 7
+		Expr e = Exprs.minus(
+				Exprs.plus(
+							Exprs.mult(Exprs.of(6), Exprs.square(x)),
+							Exprs.mult(Exprs.of(3), x)),
+				Exprs.of(7)
+				);
+		// => 6.2.x + 3.1 - 0
+		// => 12 x + 3
+		Expr expectedDer = Exprs.plus(Exprs.mult(Exprs.of(12), x), Exprs.of(3));
+		assertDeriv(expectedDer, e);
+
+		// 6.x^2 + 3.x - 7
+		// 6 enter x enter square * 3 enter x * + 7 - 
+		// x deriv
+		
+	}
+
+	
+	
 	
 	@Test
 	public void test_2_x() {

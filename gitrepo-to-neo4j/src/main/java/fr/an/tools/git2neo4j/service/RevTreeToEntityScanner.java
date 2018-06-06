@@ -149,7 +149,7 @@ public class RevTreeToEntityScanner {
 							String parentPath = path.substring(0, pathSep);
 							parentEntity = path2DirEntities.get(parentPath);
 							if (parentEntity == null) {
-								LOG.error("parent not found " + parentPath);
+								// TODO LOG.error("parent not found " + parentPath);
 							}
 						} else {
 							parentEntity = rootDirEntity;
@@ -224,7 +224,7 @@ public class RevTreeToEntityScanner {
 			
 			// recursive save
 			DirTreeEntity rootDirEntity = (DirTreeEntity) res.revTree.get(rootTreeId);
-			LOG.info("save Tree ...");
+			// LOG.info("save Tree ...");
 			long saveStartTime = System.currentTimeMillis();
 			
 			if (rootDirEntity != null) {
@@ -234,7 +234,9 @@ public class RevTreeToEntityScanner {
 			}
 			
 			long saveMillis = System.currentTimeMillis() - saveStartTime;
-			LOG.info("... done save Tree, took " + saveMillis + " ms");
+			if (saveMillis > 200) {
+				LOG.info("... done save Tree, took " + saveMillis + " ms");
+			}
 			
 		}
 		

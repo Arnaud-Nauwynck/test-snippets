@@ -27,7 +27,7 @@ public class TestDroolsMain {
 	
 	public void run() {
 		URL kmoduleURL = getClass().getClassLoader().getResource("META-INF/kmodule.xml");
-		LOG.info("using kmodule:" + kmoduleURL);
+		LOG.info("default kmodule:" + kmoduleURL);
 		
         KieContainer kc = KieServices.Factory.get().getKieClasspathContainer();
         KieSession ksession = kc.newKieSession("Test1KS");

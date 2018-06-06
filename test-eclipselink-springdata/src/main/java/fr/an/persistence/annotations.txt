@@ -1,0 +1,17 @@
+
+
+@PersistenceUnits @NamedEntityGraphs @SequenceGenerator @DiscriminatorColumn @PersistenceProperty 
+@NamedQuery @JoinTable @GeneratedValue @SecondaryTables @DiscriminatorValue @Converter 
+@StoredProcedureParameter @PreRemove @MapKeyClass @CollectionTable @Version @PrimaryKeyJoinColumns 
+@IdClass @QueryHint @ElementCollection @Temporal @PersistenceContext @ManyToOne @Table @Convert @Transient 
+@NamedSubgraph @MapKeyEnumerated @PersistenceContexts @MapsId @Basic @SqlResultSetMappings @AssociationOverrides 
+@Entity @OrderColumn @AssociationOverride @PersistenceUnit @Inheritance @PrePersist @OrderBy @Id @Cacheable 
+@NamedNativeQuery @PostRemove @PreUpdate @Access @MapKey @NamedQueries @FieldResult @MappedSuperclass 
+@Embeddable @Lob @ExcludeSuperclassListeners @EntityListeners @JoinColumn @SecondaryTable @OneToOne 
+@Enumerated @EntityResult @PrimaryKeyJoinColumn @PostPersist @NamedAttributeNode @MapKeyColumn @UniqueConstraint 
+@JoinColumns @AttributeOverrides @ColumnResult @Converts @NamedEntityGraph @Index @TableGenerator 
+@StaticMetamodel @ManyToMany @AttributeOverride @PostUpdate @NamedStoredProcedureQuery @MapKeyTemporal 
+@SqlResultSetMapping @PostLoad @MapKeyJoinColumn @ForeignKey @Column @Embedded @EmbeddedId @NamedNativeQueries 
+@ExcludeDefaultListeners @NamedStoredProcedureQueries @ConstructorResult @OneToMany @MapKeyJoinColumns
+
+
