@@ -1,0 +1,6 @@
+
+hello ${name}
+
+#foreach($item in $repo.items())
+	item: ${item.id}
+#end 
