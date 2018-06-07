@@ -1,0 +1,42 @@
+header {
+    position: fixed; 
+    top: 0px; 
+    width: 100%; 
+    // height: 60px; 
+    background-color: #f0f0f0;
+}
+
+footer {
+    position: fixed; 
+    bottom: 0px; 
+    width: 100%; 
+    // height: 60px; 
+    background-color: #f0f0f0;
+}
+
+.grey-bar {
+    width: 100%; 
+    background-color: grey;
+}
+
+
+.border-blue {
+	border-style: solid;
+	border-color: blue;
+}
+
+.float-right {
+	float: right;
+	right:0;
+}
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.absolute-right {
+	position: absolute;	
+	right:0;
+}
