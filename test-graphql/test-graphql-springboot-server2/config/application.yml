@@ -1,0 +1,10 @@
+
+server:
+  port: 8092
+
+spring:
+  application:
+    name: test-graphql-springboot-server2
+
+test-graphql-server:
+    

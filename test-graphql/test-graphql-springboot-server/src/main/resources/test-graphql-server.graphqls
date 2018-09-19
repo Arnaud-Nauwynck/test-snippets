@@ -1,0 +1,20 @@
+
+type Query {
+    aById(id: Int!): A
+    a: [A]
+}
+
+
+type A {
+	id: Int!
+	name: String!
+	
+	bs: [B]
+}
+
+type B {
+	id: Int!
+	name: String!
+
+	a: A
+}
