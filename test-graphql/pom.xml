@@ -15,7 +15,7 @@
 
 		<graphql-java.version>5.2.4</graphql-java.version>
 		<graphql-springboot.version>5.0.3</graphql-springboot.version>	
-
+		<io-springfox-swagger.version>2.9.2</io-springfox-swagger.version>
 	</properties>
 
 	<repositories>
@@ -67,14 +67,41 @@
 				<groupId>com.graphql-java</groupId>
 				<artifactId>graphql-java-tools</artifactId>	
 				<version>${graphql-java.version}</version>	
-			</dependency>			
+			</dependency>
+			
+			<dependency>
+	     		<groupId>com.atlassian.braid</groupId>
+	    		<artifactId>graphql-braid</artifactId>
+	    		<version>0.14.1-SNAPSHOT</version>
+	 		</dependency>
+	 		
+	 		<dependency>
+			    <groupId>org.apache.httpcomponents</groupId>
+			    <artifactId>httpclient</artifactId>
+			    <version>4.5.6</version>
+			</dependency>
+
+			<dependency>
+			    <groupId>io.springfox</groupId>
+			    <artifactId>springfox-swagger2</artifactId>
+			    <version>${io-springfox-swagger.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>io.springfox</groupId>
+			    <artifactId>springfox-swagger-ui</artifactId>
+			    <version>${io-springfox-swagger.version}</version>
+			</dependency>
+						
 		</dependencies>
 	</dependencyManagement>
 	
 
 	<modules>
 		<module>test-graphql-springboot-server</module>
+		<module>test-graphql-springboot-server2</module>
 		<module>test-rest-server</module>
+		<module>test-graphql-braid-stitch-server</module>
+		<module>swagger-to-graphql</module>
 	</modules>
 	
 	<build>
