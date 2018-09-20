@@ -1,0 +1,19 @@
+
+type Query {
+    db1Data: [A]
+}
+
+
+type A {
+	id: Int!
+	name: String!
+	
+	bs: [B]
+}
+
+type B {
+	id: Int!
+	name: String!
+
+	# parent ref?? a: A
+}

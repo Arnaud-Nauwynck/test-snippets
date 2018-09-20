@@ -1,0 +1,10 @@
+
+server:
+  port: 8094
+
+spring:
+  application:
+    name: test-json-server
+
+test-json-server:
+    

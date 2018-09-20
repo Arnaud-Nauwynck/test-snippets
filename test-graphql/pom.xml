@@ -101,6 +101,7 @@
 		<module>test-graphql-springboot-server2</module>
 		<module>test-rest-server</module>
 		<module>test-graphql-braid-stitch-server</module>
+		<module>test-json-server</module>
 		<module>swagger-to-graphql</module>
 	</modules>
 	
