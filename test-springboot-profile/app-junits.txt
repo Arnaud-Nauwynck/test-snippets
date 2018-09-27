@@ -1,0 +1,238 @@
+###### app.AppProfile2Test.cinit
+########## app.ctx refreshed 1 StandardEnvironment {activeProfiles=[profile2, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile2.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 1 StandardEnvironment {activeProfiles=[profile2, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile2.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:profile2-value1
+app.key2:profile2-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+### app.testFoo
+### app.AppProfile2Test.testDumpPlaceholders
+app.key1:profile2-value1
+app.key2:profile2-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+###### app.AppProfile1Test.cinit
+########## app.ctx refreshed 2 StandardEnvironment {activeProfiles=[profile1, profile1a, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1a.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 2 StandardEnvironment {activeProfiles=[profile1, profile1a, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1a.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:profile1-value1
+app.key2:profile1-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:profile1a-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+### app.testFoo
+### app.AppProfile1Test.testDumpPlaceholders
+app.key1:profile1-value1
+app.key2:profile1-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:profile1a-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+###### app.AppProfile1Test.cinit
+########## app.ctx refreshed 3 StandardEnvironment {activeProfiles=[profile1, profile1a, other, ctx1config], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1a.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 3 StandardEnvironment {activeProfiles=[profile1, profile1a, other, ctx1config], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1a.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:profile1-value1
+app.key2:profile1-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:profile1a-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+### app.testFoo
+### app.AppProfile1Test.testDumpPlaceholders
+app.key1:profile1-value1
+app.key2:profile1-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:profile1a-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+###### app.App2Test.cinit
+########## app.ctx refreshed 4 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 4 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:config-value1
+app.key2:config-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: default
+### app.testFoo
+### app.testDumpPlaceholders
+app.key1:config-value1
+app.key2:config-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: default
+###### app.App2Test.cinit
+########## app.ctx refreshed 5 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 5 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:config-value1
+app.key2:config-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: default
+### app.testFoo
+### app.testDumpPlaceholders
+app.key1:config-value1
+app.key2:config-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: default
+###### app.App2Profile1Test.cinit
+########## app.ctx refreshed 6 StandardEnvironment {activeProfiles=[profile1, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 6 StandardEnvironment {activeProfiles=[profile1, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:profile1-value1
+app.key2:profile1-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+### app.testFoo
+### app.AppProfile1Test.testDumpPlaceholders
+app.key1:profile1-value1
+app.key2:profile1-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+###### app.AppProfile2Test.cinit
+########## app.ctx refreshed 7 StandardEnvironment {activeProfiles=[profile2, other, ctx2config], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile2.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 7 StandardEnvironment {activeProfiles=[profile2, other, ctx2config], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile2.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:profile2-value1
+app.key2:profile2-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+### app.testFoo
+### app.AppProfile2Test.testDumpPlaceholders
+app.key1:profile2-value1
+app.key2:profile2-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+###### app.AppMockProfile1Test.cinit
+########## app.ctx refreshed 8 StandardEnvironment {activeProfiles=[profile1, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 8 StandardEnvironment {activeProfiles=[profile1, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:profile1-value1
+app.key2:profile1-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+### app.testFoo
+### app.AppProfile1Test.testDumpPlaceholders
+app.key1:profile1-value1
+app.key2:profile1-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: other-value8
+###### app.AppTest.cinit
+### app.test1
+### app.testDumpPlaceholders
+app.key1:config-value1
+app.key2:config-value2
+app.main-resource-key3:default
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:test-resource-value4
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: default
+########## app.ctx closed 1 StandardEnvironment {activeProfiles=[profile1, profile1a, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1a.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.ctx closed 2 StandardEnvironment {activeProfiles=[profile1, profile1a, other, ctx1config], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1a.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.ctx closed 3 StandardEnvironment {activeProfiles=[profile2, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile2.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.ctx closed 4 StandardEnvironment {activeProfiles=[profile2, other, ctx2config], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile2.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.ctx closed 5 StandardEnvironment {activeProfiles=[profile1, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.ctx closed 6 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.ctx closed 7 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.ctx closed 8 StandardEnvironment {activeProfiles=[profile1, other], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='Inlined Test Properties'}, MapPropertySource {name='test'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-other.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application-profile1.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}

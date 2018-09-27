@@ -1,0 +1,6 @@
+
+
+app:
+  basedir-key3: basedir-value3
+  basedir-and-config-key3: basedir-value3
+  

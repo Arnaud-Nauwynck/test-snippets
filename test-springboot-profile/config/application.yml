@@ -1,0 +1,27 @@
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: test-springboot-profile
+
+#  profiles.active: shared
+
+app:
+  key1: config-value1
+  key2: config-value2
+
+  #main-resource-key3: config-value3
+  main-and-config-resource-key3: config-value3
+  basedir-key3: config-value3
+  basedir-and-config-key3: config-value3
+    
+  #test-resource-key4: config-value4
+  test-and-config-resource-key4: config-value4
+
+  profile1a-key5: config-value5
+  profile2a-key6: config-value6
+
+  profileshared-key7: config-value7
+    

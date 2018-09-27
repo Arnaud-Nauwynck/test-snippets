@@ -1,0 +1,14 @@
+########## app.ctx refreshed 1 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+########## app.started 1 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
+app.key1:config-value1
+app.key2:config-value2
+app.main-resource-key3:main-resource-value3
+app.main-and-config-resource-key3: config-value3
+app.basedir-and-config-key3: config-value3
+app.test-resource-key4:default
+app.test-and-config-resource-key4: config-value4
+app.profile1a-key5:config-value5
+app.profile2a-key6:config-value6
+app.profileshared-key7:config-value7
+app.other-key8: default
+########## app.ctx closed 1 StandardEnvironment {activeProfiles=[], defaultProfiles=[default], propertySources=[ConfigurationPropertySourcesPropertySource {name='configurationProperties'}, MapPropertySource {name='systemProperties'}, OriginAwareSystemEnvironmentPropertySource {name='systemEnvironment'}, RandomValuePropertySource {name='random'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./config/application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [file:./application.yml]'}, OriginTrackedMapPropertySource {name='applicationConfig: [classpath:/application.yml]'}]}
