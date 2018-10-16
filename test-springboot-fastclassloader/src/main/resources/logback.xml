@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <logger name="fr.an.testhibernatejpa" level="INFO"/>
+
+    <logger name="javax.xml.bind" level="WARN"/>
+    <logger name="ch.qos.logback" level="WARN"/>
+    <logger name="com.sun" level="WARN"/>
+
+	<logger name="org.hibernate" level="WARN" /> 
+	<logger name="org.hibernate.orm.connections.pooling" level="ERROR"/>
+	
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="info">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>
