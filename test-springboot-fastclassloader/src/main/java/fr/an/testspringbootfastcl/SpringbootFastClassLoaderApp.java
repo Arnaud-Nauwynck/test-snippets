@@ -1,17 +1,18 @@
 package fr.an.testspringbootfastcl;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Objects;
 
-import fr.an.testspringbootfastcl.classloader.IndexedClassLoader;
-import fr.an.testspringbootfastcl.classloader.IndexedClassLoader.PreloadMode;
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
-import sun.misc.Resource;
+import fr.an.testspringbootfastcl.classloader.BinaryIndexedURLClassLoader;
+import fr.an.testspringbootfastcl.classloader.ClassLoaderPreloadMode;
 
 /**
  * 
@@ -26,70 +27,85 @@ public class SpringbootFastClassLoaderApp {
 	}
 
 	private static void run(String[] args) {
-//		boolean verboseClass = ManagementFactory.getRuntimeMXBean().getInputArguments().contains("-verbose:class");
-		
-		ClassLoader sysClassLoader = Thread.currentThread().getContextClassLoader();
-		ClassLoader newClassLoader = null;
+        ClassLoader sysClassLoader = Thread.currentThread().getContextClassLoader();
 
-		// always create for test only.. to compare only pure springboot part
-		ClassGraph classGraph = new ClassGraph();
-		classGraph.addClassLoader(sysClassLoader);
-		ScanResult scanRes = classGraph.scan();
+        String classLoaderClass = System.getProperty("classLoaderClass",
+        		"BinaryIndexedURLClassLoader"
+//        		"default"
+        		);
+        		
+    	boolean preloadClasses = Boolean.valueOf(System.getProperty("preloadClasses", "true"));
+        // test for jvm args "-verbose:class"
+        boolean jvmVerboseClassArg = ManagementFactory.getRuntimeMXBean().getInputArguments().contains("-verbose:class");
+        boolean enableAudit = false; 
 
-		IndexedClassLoader indexedClassLoader = new IndexedClassLoader(sysClassLoader.getParent(), scanRes);
-		
-		// sanity checks
-		checkSame(sysClassLoader, indexedClassLoader, "", "/", "fr", "fr/");
-		if (sysClassLoader instanceof URLClassLoader) {
-			@SuppressWarnings("resource")
-			URLClassLoader sysUrlClassLoader = (URLClassLoader) sysClassLoader;
-			URL[] urls = sysUrlClassLoader.getURLs();
-			sun.misc.URLClassPath ucp = new sun.misc.URLClassPath(urls); 
-			Resource thisResource = ucp.getResource("fr/an/testspringbootfastcl/SpringbootFastClassLoaderApp.class");
-			URL codeSourceURL = thisResource.getCodeSourceURL(); // => ".../target/classes/"
-			System.out.println("this class codeSourceURL:" + codeSourceURL);
-		}
+        
+        if (sysClassLoader.getClass().getName().equals("org.springframework.boot.loader.LaunchedURLClassLoader")) {
+            // do not activate in spring fat-jar mode ... only in development mode!
+    	    classLoaderClass = "default"; 
+    	}
+    	
+        if (jvmVerboseClassArg) {
+            preloadClasses = false;
+        }
+        
+    	URL[] urls = null;
+    	if (sysClassLoader instanceof URLClassLoader) {
+    	    urls = ((URLClassLoader) sysClassLoader).getURLs();
+    	} else {
+    		classLoaderClass = "default";
+    	}
 
-		
-		boolean disableIndexed = 
-//			true;
-			Boolean.valueOf(System.getProperty("disableIndexedURLClassLoader", "false"));
-		
-		// TODO .. fat-jar => indexed not supported..
-		
-		if (!disableIndexed && sysClassLoader instanceof URLClassLoader) {
-			System.out.println("using IndexedClassLoader");
-			newClassLoader = indexedClassLoader;
-		} else {
-			System.out.println("keeping standard system ClassLoader");
-		}
-		
-		if (newClassLoader != null) {
-			Thread.currentThread().setContextClassLoader(newClassLoader);
-			
-			PreloadMode preloadMode =
-//					PreloadMode.RECORD;
-//					PreloadMode.DEFAULT;
-//					PreloadMode.PRELOAD_BY_NAME_PARALLEL_BLOCK;
-//					PreloadMode.PRELOAD_BY_NAME_PARALLEL;
-//					PreloadMode.RECORD_BINARY_CLASS_PRELOAD;
-					PreloadMode.PRELOAD_BINARY_CLASS;
-			
-			indexedClassLoader.preloaderInit(preloadMode);
-			
-			invokeRun(newClassLoader, args);
-			
-			indexedClassLoader.preloaderEnd();
-			
-			// PreloadMode.RECORD => indexedClassLoader.dumpPreloadableClassNames();
-			
-		} else {
-			SprinbootFastClassLoaderRunner.run(args);
-		}
+    	ClassLoaderPreloadMode preloadMode =
+    			ClassLoaderPreloadMode.PRELOAD_BINARY_CLASS_BLOCK;
+//                ClassLoaderPreloadMode.PRELOAD_BINARY_CLASS_ASYNC;
+
+    	switch(classLoaderClass) {
+    	case "BinaryIndexedURLClassLoader": {
+            sun.misc.URLClassPath ucp = new sun.misc.URLClassPath(urls);
+            File logDir = new File("log");
+            if (!logDir.exists()) {
+            	logDir.mkdirs();
+            }
+            File preloadBinaryFile = new File(logDir, "preload-BinaryIndexedURLClassLoader.data");
+            if (! preloadBinaryFile.exists()) {
+                preloadMode = ClassLoaderPreloadMode.RECORD_BINARY_CLASS_PRELOAD;
+                System.out.println("preload binary file '" + preloadBinaryFile + "' not found => using record mode");
+            }
+            List<String> prefixesURLNotInJar = Arrays.asList("file://" + new File("target/classes").getAbsolutePath().replace("\\", "/"));
+            List<String> prefixesClassnameNotInJar = Arrays.asList();
+            
+            BinaryIndexedURLClassLoader newClassLoader = new BinaryIndexedURLClassLoader(
+                    sysClassLoader.getParent(), ucp, 
+                    prefixesClassnameNotInJar,
+                    prefixesURLNotInJar,
+                    preloadBinaryFile, null);
+
+    		Thread.currentThread().setContextClassLoader(newClassLoader);
+    		
+    		newClassLoader.preloaderInit(preloadMode);
+    		
+    		invokeRun(newClassLoader, args);
+    		
+    		newClassLoader.preloaderEnd();
+    	} break;
+
+    	case "default":
+    	default:
+    		doRun(args);
+    		break;
+
+    	}
+    	
+
 	}
 	
 	
+	private static void doRun(String[] args) {
+		fr.an.testspringbootfastcl.SprinbootFastClassLoaderRunner.run(args);
+	}
 	
+	/** similar to doRun(args), but by introspection using ClassLoader */
 	private static void invokeRun(ClassLoader cl, String[] args) {
 		try {
 			Class<?> runnerClass = cl.loadClass("fr.an.testspringbootfastcl.SprinbootFastClassLoaderRunner");

@@ -1,4 +1,5 @@
 
+log/
 preload-classes.data
 target/
 !.mvn/wrapper/maven-wrapper.jar
