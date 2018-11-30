@@ -1,0 +1,14 @@
+
+server:
+  port: 8081
+    
+spring:
+
+  cloud:
+    gateway:
+      routes:
+      - id: route1 /rest/a*
+        uri: http://localhost:8091
+        predicates:
+        - Path=/rest/a*
+        
