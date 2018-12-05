@@ -62,7 +62,7 @@ docker run \
   bash -c "seq 42 | kafka-console-producer --request-required-acks 1 \
   --broker-list kafka:9092 --topic foo && echo 'Produced 42 messages.'"  
 
-echo "Running sample Kafka Producer"
+echo "Running sample Kafka Consumer"
 docker run \
   --net=confluent \
   --rm \

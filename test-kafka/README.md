@@ -156,51 +156,58 @@ added docker run option ...
 
 Re-running java code...
 ```
-00:10:05.704 30367 [kafka-producer-network-thread | producer-1] WARN  o.a.kafka.clients.NetworkClient - [Producer clientId=producer-1] 1 partitions have leader brokers without a matching listener, including [foo-0] 
-00:10:05.805 30468 [kafka-producer-network-thread | producer-1] WARN  o.a.kafka.clients.NetworkClient - [Producer clientId=producer-1] 1 partitions have leader brokers without a matching listener, including [foo-0] 
-00:10:05.908 30571 [kafka-producer-network-thread | producer-1] ERROR f.a.t.testkafka.SimpleKafkaProducer - Error while producing message to topic :foo-0@-1 
-org.apache.kafka.common.errors.TimeoutException: Expiring 5 record(s) for foo-0: 30087 ms has passed since batch creation plus linger time
-```
+07:45:35.244 137  [main] INFO  fr.an.tests.testkafka.App - Test Kafka Producer - Consumer 
+07:45:35.291 184  [main] INFO  fr.an.tests.testkafka.App - sleep 10s before exiting 
+07:45:35.291 184  [Thread-1] INFO  f.a.t.testkafka.SimpleKafkaProducer - new producer 
+07:45:35.312 205  [Thread-0] INFO  o.a.k.c.consumer.ConsumerConfig - ConsumerConfig values: 
+	auto.commit.interval.ms = 5000
 
+... 
+(truncated)
+...
 
-Checking??
-```
-$ docker run   --net=confluent   --rm   confluentinc/cp-kafka:5.0.1   kafka-topics --describe --topic foo --zookeeper zookeeper:2181
-Topic:foo	PartitionCount:1	ReplicationFactor:1	Configs:
-	Topic: foo	Partition: 0	Leader: 1001	Replicas: 1001	Isr: 1001
-```
-
-
-Trying docker kafka shell.. 
+07:45:35.432 325  [Thread-1] INFO  o.a.k.common.utils.AppInfoParser - Kafka commitId : 3402a8361b734732 
+07:45:35.435 328  [Thread-1] INFO  f.a.t.testkafka.SimpleKafkaProducer - producer.send(..0) 
+07:45:35.455 348  [Thread-0] INFO  o.a.k.common.utils.AppInfoParser - Kafka version : 2.0.0 
+07:45:35.455 348  [Thread-0] INFO  o.a.k.common.utils.AppInfoParser - Kafka commitId : 3402a8361b734732 
+07:45:35.455 348  [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.subscribe(foo) 
+07:45:35.455 348  [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.poll(timeout=1s) 
+07:45:35.572 465  [kafka-producer-network-thread | producer-1] INFO  org.apache.kafka.clients.Metadata - Cluster ID: lePZtxAZSommc5x4zSS36w 
+07:45:35.572 465  [Thread-0] INFO  org.apache.kafka.clients.Metadata - Cluster ID: lePZtxAZSommc5x4zSS36w 
+07:45:35.580 473  [Thread-0] INFO  o.a.k.c.c.i.AbstractCoordinator - [Consumer clientId=consumer-1, groupId=my-group] Discovered group coordinator localhost:29092 (id: 2147482646 rack: null) 
+07:45:35.582 475  [Thread-0] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-1, groupId=my-group] Revoking previously assigned partitions [] 
+07:45:35.582 475  [Thread-0] INFO  f.a.t.t.SimpleKafkaConsumer$TestConsumerRebalanceListener - Called onPartitionsRevoked with partitions:[] 
+07:45:35.582 475  [Thread-0] INFO  o.a.k.c.c.i.AbstractCoordinator - [Consumer clientId=consumer-1, groupId=my-group] (Re-)joining group 
+07:45:35.591 484  [Thread-1] INFO  f.a.t.testkafka.SimpleKafkaProducer - producer.send(..1) 
+07:45:35.591 484  [Thread-1] INFO  f.a.t.testkafka.SimpleKafkaProducer - producer.send(..2) 
+07:45:35.591 484  [Thread-1] INFO  f.a.t.testkafka.SimpleKafkaProducer - producer.close() 
+07:45:35.591 484  [Thread-1] INFO  o.a.k.c.producer.KafkaProducer - [Producer clientId=producer-1] Closing the Kafka producer with timeoutMillis = 9223372036854775807 ms. 
+07:45:35.604 497  [kafka-producer-network-thread | producer-1] INFO  f.a.t.testkafka.SimpleKafkaProducer - sent message to topic:foo partition:0  offset:5 
+07:45:35.604 497  [kafka-producer-network-thread | producer-1] INFO  f.a.t.testkafka.SimpleKafkaProducer - sent message to topic:foo partition:0  offset:6 
+07:45:35.604 497  [kafka-producer-network-thread | producer-1] INFO  f.a.t.testkafka.SimpleKafkaProducer - sent message to topic:foo partition:0  offset:7 
+07:45:35.608 501  [Thread-1] INFO  o.a.k.c.producer.KafkaProducer - [Producer clientId=producer-1] Closing the Kafka producer with timeoutMillis = 9223372036854775807 ms. 
+07:45:36.469 1362 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.commitSync() 
+07:45:36.469 1362 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.poll(timeout=1s) 
+07:45:37.471 2364 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.commitSync() 
+07:45:37.471 2364 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.poll(timeout=1s) 
+07:45:38.472 3365 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.commitSync() 
+07:45:38.473 3366 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.poll(timeout=1s) 
+07:45:38.605 3498 [Thread-0] INFO  o.a.k.c.c.i.AbstractCoordinator - [Consumer clientId=consumer-1, groupId=my-group] Successfully joined group with generation 3 
+07:45:38.606 3499 [Thread-0] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-1, groupId=my-group] Setting newly assigned partitions [foo-0] 
+07:45:38.606 3499 [Thread-0] INFO  f.a.t.t.SimpleKafkaConsumer$TestConsumerRebalanceListener - Called onPartitionsAssigned with partitions:[foo-0] 
+07:45:38.623 3516 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - Received Message topic =foo, partition =0, offset = 5, key = key-0, value = message-0
+ 
+07:45:38.623 3516 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - Received Message topic =foo, partition =0, offset = 6, key = key-1, value = message-1
+ 
+07:45:38.623 3516 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - Received Message topic =foo, partition =0, offset = 7, key = key-2, value = message-2
+ 
+07:45:38.623 3516 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.commitSync() 
+07:45:38.628 3521 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.poll(timeout=1s) 
+07:45:39.630 4523 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.commitSync() 
+07:45:39.636 4529 [Thread-0] INFO  f.a.t.testkafka.SimpleKafkaConsumer - consumer.close() 
+07:45:45.291 10184 [main] INFO  fr.an.tests.testkafka.App - producer.shutdown() 
+07:45:45.292 10185 [main] INFO  fr.an.tests.testkafka.App - .. producer stopped 
+07:45:45.292 10185 [main] INFO  fr.an.tests.testkafka.App - consumer.shutdown() 
+07:45:45.292 10185 [main] INFO  fr.an.tests.testkafka.App - .. consumer stopped 
+07:45:45.292 10185 [main] INFO  fr.an.tests.testkafka.App - exiting 
 `̀``
-$ docker run   --net=confluent  -it  confluentinc/cp-kafka:5.0.1 bash
-root@e38025204190:/# 
-
-root@e38025204190:/# kafka-
-kafka-acls                        kafka-consumer-perf-test          kafka-preferred-replica-election  kafka-server-stop
-kafka-broker-api-versions         kafka-delegation-tokens           kafka-producer-perf-test          kafka-streams-application-reset
-kafka-configs                     kafka-delete-records              kafka-reassign-partitions         kafka-topics
-kafka-console-consumer            kafka-dump-log                    kafka-replica-verification        kafka-verifiable-consumer
-kafka-console-producer            kafka-log-dirs                    kafka-run-class                   kafka-verifiable-producer
-kafka-consumer-groups             kafka-mirror-maker                kafka-server-start       
-
-root@e38025204190:/# kafka-topics --list --zookeeper zookeeper:2181
-__confluent.support.metrics
-__consumer_offsets
-_schemas
-foo
-
-root@e38025204190:/# kafka-topics --describe --topic foo --zookeeper zookeeper:2181
-Topic:foo	PartitionCount:1	ReplicationFactor:1	Configs:
-	Topic: foo	Partition: 0	Leader: 1001	Replicas: 1001	Isr: 1001
-
-
-root@e38025204190:/# kafka-console-consumer --bootstrap-server kafka:9092 --topic foo 
-[2018-12-04 23:33:48,175] WARN [Consumer clientId=consumer-1, groupId=console-consumer-60900] 1 partitions have leader brokers without a matching listener, including [foo-0] (org.apache.kafka.clients.NetworkClient)
-[2018-12-04 23:33:48,277] WARN [Consumer clientId=consumer-1, groupId=console-consumer-60900] 1 partitions have leader brokers without a matching listener, including [foo-0] (org.apache.kafka.clients.NetworkClient)
-`̀``
-
-The wraning is reproduced by using directly docker + kafka-console-consumer ... but what's wrong? 
-
-??
-

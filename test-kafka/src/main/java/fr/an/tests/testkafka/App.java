@@ -10,7 +10,7 @@ public class App {
 	
 	private static final Logger log = LoggerFactory.getLogger(App.class);
 
-    public static void main( String[] args ) {
+    public static void main(String[] args) {
         log.info("Test Kafka Producer - Consumer");
         
         String bootstrapServers = "localhost:29092";
@@ -18,12 +18,12 @@ public class App {
         SimpleKafkaConsumer consumer = new SimpleKafkaConsumer(bootstrapServers, topic);
         SimpleKafkaProducer producer = new SimpleKafkaProducer(bootstrapServers, topic);
         
-        new Thread(() -> consumer.runPoll(10)).start();
-        new Thread(() -> producer.runProduces(5)).start();
+        new Thread(() -> consumer.runPoll(5)).start();
+        new Thread(() -> producer.runProduces(3)).start();
 
         try {
-            log.info("sleep 15s before exiting");
-			Thread.sleep(15_000);
+            log.info("sleep 4s before exiting");
+			Thread.sleep(4_000);
 		} catch (InterruptedException e) {
 		}
 
