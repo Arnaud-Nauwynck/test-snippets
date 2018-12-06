@@ -1,0 +1,4 @@
+# included from spring.profiles.include .. from application-bootprofile1.yml 
+
+app:
+  bootprofile1a-prop1: config/application-bootprofile1a.yml-bootprofile1a-prop1

@@ -1,0 +1,5 @@
+
+app:
+  commonProp: application.yml-commonProp
+
+  

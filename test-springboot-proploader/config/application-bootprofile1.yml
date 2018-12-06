@@ -1,0 +1,7 @@
+
+
+spring.profiles.include:
+  - bootprofile1a
+
+app:
+  bootprofile1-prop1: config/application-bootprofile1.yml-bootprofile1-prop1
