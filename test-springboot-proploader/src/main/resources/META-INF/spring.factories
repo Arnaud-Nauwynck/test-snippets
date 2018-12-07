@@ -18,3 +18,8 @@ fr.an.tests.springbootproploader.AppEnvironmentPostProcessor
 # Caused by: java.lang.IllegalArgumentException: No enum constant org.springframework.boot.ansi.AnsiOutput.Enabled.customDynResource1Resolver.getProperty(spring.output.ansi.enabled)
 
 
+#org.springframework.cloud.bootstrap.BootstrapConfiguration=\
+#fr.an.tests.springbootproploader.AppBootstrapConfiguration
+
+#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+#fr.an.tests.springbootproploader.AppEnableAutoConfiguration

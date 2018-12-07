@@ -1,21 +1,17 @@
 package fr.an.tests.springbootproploader;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.ResourcePropertySource;
-import org.springframework.stereotype.Component;
+
+import com.ulisesbocchio.jasyptspringboot.encryptor.DefaultLazyEncryptor;
 
 // cf directly referenced in META-INF/spring.factories
 public class AppEnvironmentPostProcessor implements EnvironmentPostProcessor {

@@ -10,8 +10,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
+
+import com.ulisesbocchio.jasyptspringboot.encryptor.DefaultLazyEncryptor;
 
 // referenced from META-INF/spring.factories
 public class AppSpringApplicationRunListener implements SpringApplicationRunListener {

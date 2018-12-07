@@ -4,6 +4,9 @@ import java.io.File;
 
 import javax.annotation.PostConstruct;
 
+import org.jasypt.encryption.StringEncryptor;
+import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
+import org.jasypt.encryption.pbe.config.SimpleStringPBEConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +18,34 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
+
+import com.ulisesbocchio.jasyptspringboot.annotation.EnableEncryptableProperties;
+import com.ulisesbocchio.jasyptspringboot.annotation.EncryptablePropertySource;
+import com.ulisesbocchio.jasyptspringboot.encryptor.DefaultLazyEncryptor;
 
 @SpringBootApplication
 public class PropLoaderApp {
 
 	public static void main(String[] args) {
+		
+        PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
+        SimpleStringPBEConfig config = new SimpleStringPBEConfig();
+        config.setPassword("master-password!123"); // getRequiredProperty(e, "jasypt.encryptor.password"));
+        config.setAlgorithm("PBEWithMD5AndDES"); // getProperty(e, "jasypt.encryptor.algorithm", "PBEWithMD5AndDES"));
+        config.setKeyObtentionIterations(1000); // getProperty(e, "jasypt.encryptor.keyObtentionIterations", "1000"));
+        config.setPoolSize(1); // getProperty(e, "jasypt.encryptor.poolSize", "1"));
+        config.setProviderName(null); // getProperty(e, "jasypt.encryptor.providerName", null));
+        config.setProviderClassName(null); // getProperty(e, "jasypt.encryptor.providerClassName", null));
+        config.setSaltGeneratorClassName("org.jasypt.salt.RandomSaltGenerator"); // getProperty(e, "jasypt.encryptor.saltGeneratorClassname", "org.jasypt.salt.RandomSaltGenerator"));
+        config.setStringOutputType("base64"); // getProperty(e, "jasypt.encryptor.stringOutputType", "base64"));
+        encryptor.setConfig(config);
+
+        String encrypted = encryptor.encrypt("This is a secret");
+        System.out.println("encrypted: " + encrypted);
+        
 		SpringApplication.run(PropLoaderApp.class, args);
 	}
 	
@@ -61,6 +85,64 @@ class AppResolverConfiguration {
 		return bean;
 	}
 
+}
+
+// cf JasyptSpringBootAutoConfiguration, from META-INF/spring.factories
+@Configuration
+@EnableEncryptableProperties // ?? default
+@EncryptablePropertySource("file:src/data/jasypt-encryptedPropSource1.properties")
+class AppJasyptConfiguration {
+	
+//	@Bean
+//	public StringEncryptor anotherStringEncryptor() {
+//	    PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
+//	    SimpleStringPBEConfig config = new SimpleStringPBEConfig();
+//	    config.setPassword("another-master-password!123");
+//	    config.setAlgorithm("PBEWithMD5AndDES");
+//	    config.setKeyObtentionIterations("1000");
+//	    config.setPoolSize("1");
+//	    config.setProviderName("SunJCE");
+//	    config.setSaltGeneratorClassName("org.jasypt.salt.RandomSaltGenerator");
+//	    config.setStringOutputType("base64");
+//	    encryptor.setConfig(config);
+//	    return encryptor;
+//	}
+
+	// cf encryption.. org.jasypt.intf.cli.JasyptPBEStringEncryptionCLI.main(String[])
+	
+	@Bean(name="lazyEncryptor")
+	public DefaultLazyEncryptor lazyEncryptor(Environment env) {
+		return new DefaultLazyEncryptor(env);
+	}
+
+	@Autowired 
+	Environment env;
+	
+	@PostConstruct
+	public void init() {
+		DefaultLazyEncryptor encryptor = new DefaultLazyEncryptor(env);
+		String encrypted = encryptor.encrypt("this is a another secret");
+		System.out.println("another test encrypted: " + encrypted);
+	}
+	
+	
+//	@Bean(name="encryptorBean")
+//    static public StringEncryptor stringEncryptor() {
+//        PooledPBEStringEncryptor encryptor = new PooledPBEStringEncryptor();
+//        SimpleStringPBEConfig config = new SimpleStringPBEConfig();
+//        config.setPassword("password");
+//        config.setAlgorithm("PBEWithMD5AndDES");
+//        config.setKeyObtentionIterations("1000");
+//        config.setPoolSize("1");
+//        config.setProviderName("SunJCE");
+//        config.setSaltGeneratorClassName("org.jasypt.salt.RandomSaltGenerator");
+//        config.setIvGeneratorClassName("org.jasypt.salt.NoOpIVGenerator");
+//        config.setStringOutputType("base64");
+//        encryptor.setConfig(config);
+//        return encryptor;
+//    }
+
+	
 }
 
 @Component
@@ -104,6 +186,12 @@ class AppFoo {
 	private String fieldOverrideFalseNull;
 	@Value("${app.fieldOverrideFalseProp1:default}")
 	private String fieldOverrideFalseProp1 = "value1";
+
+	@Value("${app.jasyptEncrypted-prop1}")
+	private String appJasyptEncryptedProp1;
+
+	@Value("${app.jasyptEncryptedPropSource1-prop1}")
+	private String appJasyptEncryptedPropSource1Prop1;
 	
 	public AppFoo() {
 		log.info("AppFoo");
@@ -182,7 +270,12 @@ class AppFoo {
 				"appFoo.fieldOverrideTrueNull:" + fieldOverrideTrueNull + "  .. cf @Bean fieldOverrideProp1().. new PropertyOverrideConfigurer(), location:src/data/bean-override.properties localOverride:true\n" +
 				"appFoo.fieldOverrideTrueProp1:" + fieldOverrideTrueProp1 + "  .. cf @Bean fieldOverrideProp1().. new PropertyOverrideConfigurer(), location:src/data/bean-override.properties localOverride:true\n" +
 				"appFoo.fieldOverrideFalseNull:" + fieldOverrideFalseNull + "  .. cf @Bean fieldOverrideProp2().. new PropertyOverrideConfigurer(), location:src/data/bean-override-false.properties localOverride:false\n" +
-				"appFoo.fieldOverrideFalseProp1:" + fieldOverrideFalseProp1 + "  .. cf @Bean fieldOverrideProp2().. new PropertyOverrideConfigurer(), location:src/data/bean-override-false.properties localOverride:false\n"
+				"appFoo.fieldOverrideFalseProp1:" + fieldOverrideFalseProp1 + "  .. cf @Bean fieldOverrideProp2().. new PropertyOverrideConfigurer(), location:src/data/bean-override-false.properties localOverride:false\n" + 
+				
+				"app.jasyptEncrypted-prop1:" + appJasyptEncryptedProp1 + " .. cf Jasypt-springboot-starter ... config/application.yml using ENC() with master password\n" +
+				"app.jasyptEncryptedPropSource1-prop1:" + appJasyptEncryptedPropSource1Prop1 + " .. cf Jasypt-springboot-starter ... @EncryptablePropertySource -> src/data/jasypt-encryptedPropSource1.properties + ENC() with master password\n" +
+				
+				""
 				);
 	}
 	
