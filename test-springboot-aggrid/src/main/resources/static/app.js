@@ -5,6 +5,8 @@ var module = angular.module("app", ["agGrid"]);
 module.controller("todoCtrl", function($http) {
 	var self = this;
 	self.rows = [];
+	self.task = '';
+	self.comment = '';
 
     var columnDefs = [
         {headerName: "Task", field: "task"},
@@ -17,6 +19,22 @@ module.controller("todoCtrl", function($http) {
         rowData: self.rows
     };
 
+
+	self.addTodo = function() {
+		// self.todos.push({ todoMessage: self.todoMessage });
+		var req = {
+			task: self.task,
+			comment: self.comment
+		};
+		$http.post('/api/todo', req).then(function(resp,status) {
+			// reload all
+			self.loadAsync();
+		}, function(resp,status) {
+			console.log('Error ' + resp);
+		})
+	};
+	
+	
     self.loadAsync = function() {
     	$http.get("/api/todo").then(function(resp) {
     		self.rows = resp.data;
