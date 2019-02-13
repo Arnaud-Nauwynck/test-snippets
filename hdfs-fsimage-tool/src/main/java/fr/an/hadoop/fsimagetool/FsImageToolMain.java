@@ -20,7 +20,7 @@ public class FsImageToolMain {
 //		}
 //		FsEditDumpTool.dumpEditFile(editFile);
 
-		FsEditDumpTool.scanDumpEditFiles(nnDir, 1, -1);
+		new FsEditDumpTool().scanDumpEditFiles(nnDir, 1, -1);
 	
 	}
 	

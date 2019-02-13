@@ -2,9 +2,15 @@ package org.apache.hadoop.hdfs.server.namenode;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hdfs.server.namenode.AbstractFsChange.AddFileFsChange;
+import org.apache.hadoop.hdfs.server.namenode.AbstractFsChange.CompositeFsPathChange;
+import org.apache.hadoop.hdfs.server.namenode.AbstractFsChange.DeleteFileFsChange;
+import org.apache.hadoop.hdfs.server.namenode.AbstractFsChange.MkdirFsChange;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp.AddBlockOp;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp.AddCacheDirectiveInfoOp;
 import org.apache.hadoop.hdfs.server.namenode.FSEditLogOp.AddCachePoolOp;
@@ -67,6 +73,10 @@ public class FsEditDumpTool {
 
 	private static final Pattern editFileNamePattern = Pattern.compile("edits_(\\d*)-(\\d*)");
 
+	private Map<String,AbstractFsChange> currPathChange = new LinkedHashMap<>();
+	private Map<String,DeleteFileFsChange> pathDeletedChg = new LinkedHashMap<>();
+	
+	
 	@Value
 	private static class FirstLastTxId {
 		public final long firstTxId;
@@ -86,7 +96,7 @@ public class FsEditDumpTool {
 	
 
 	
-	public static void scanDumpEditFiles(File dir, long scanFromTxId, long scanToTxId) {
+	public void scanDumpEditFiles(File dir, long scanFromTxId, long scanToTxId) {
 		File[] scanEditFiles = dir.listFiles(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
@@ -112,9 +122,31 @@ public class FsEditDumpTool {
 			}
 			currTxId = editFileTxInfo.lastTxId + 1;
 		}
+
+		log.info("dumping accumulated file changes:");
+		for(Map.Entry<String,AbstractFsChange> e : currPathChange.entrySet()) {
+			System.out.println("path: " + e.getKey());
+			AbstractFsChange chg = e.getValue();
+			if (chg instanceof CompositeFsPathChange) {
+				CompositeFsPathChange opsChg = (CompositeFsPathChange) chg;
+				System.out.print(", " + opsChg.ops.size() + " ops: ");
+				for(val op : opsChg.ops) {
+					System.out.print(op.summaryString() + ", ");
+				}
+				System.out.println();
+			} else {
+				System.out.println("?" + chg);
+			}
+		}
+		
+		log.info("dumping accumulated file deletes:");
+		for(Map.Entry<String,DeleteFileFsChange> e : pathDeletedChg.entrySet()) {
+			System.out.println("delete " + e.getKey());
+		}
+
 	}
 	
-	public static File findFirstEditFileWithTxId(File[] files, long txId) {
+	public File findFirstEditFileWithTxId(File[] files, long txId) {
 		for(File file : files) {
 			val editFileTxInfo = FirstLastTxId.parseFromFilename(file.getName());
 			if (editFileTxInfo == null) {
@@ -128,7 +160,7 @@ public class FsEditDumpTool {
 		return null;
 	}
 	
-	public static void dumpEditFile(File editLogFile, long scanFromTxId, long scanToTxId) {
+	public void dumpEditFile(File editLogFile, long scanFromTxId, long scanToTxId) {
 		val editFileTxInfo = FirstLastTxId.parseFromFilename(editLogFile.getName());
 
 		try (EditLogInputStream in = new EditLogFileInputStream(editLogFile, 
@@ -158,8 +190,6 @@ public class FsEditDumpTool {
 //				System.out.println(displaySummary);
 				
 				visitEditOp(editOp);
-				
-				System.out.println();
 			}
 			
 		} catch(Exception ex) {
@@ -167,14 +197,23 @@ public class FsEditDumpTool {
 		}
 	}
 
-	private static void visitEditOp(FSEditLogOp editOp) {
+	private void visitEditOp(FSEditLogOp editOp) {
 		boolean usePrintToString = true;
+		boolean handleChg = false;
 		
 		// if (editOp instanceof AddCloseOp) {
 		  if (editOp instanceof AddOp) {
-			  // ..
+			  AddOp op = (AddOp) editOp;
+			  String path = op.getPath();
+			  CompositeFsPathChange chg = pathChangeOrCreate(path);
+			  chg.addOp(op);
+			  handleChg = true;
 		  } else if (editOp instanceof CloseOp) {
-			  // ..
+			  CloseOp op = (CloseOp) editOp;
+			  String path = op.getPath();
+			  CompositeFsPathChange chg = pathChangeOrCreate(path);
+			  chg.addCloseOp(op);
+			  handleChg = true;
 		  } else if (editOp instanceof AppendOp) {
 			  // 
 //			    String path;
@@ -183,20 +222,61 @@ public class FsEditDumpTool {
 //			    boolean newBlock;
 
 		  } else if (editOp instanceof AddBlockOp) {
-//			    private String path;
-//			    private Block penultimateBlock;
-//			    private Block lastBlock;
-
+			  AddBlockOp op = (AddBlockOp) editOp;
+			  // private String path;
+			  // private Block penultimateBlock;
+			  // private Block lastBlock;
+			  String path = op.getPath();
+			  CompositeFsPathChange chg = pathChangeOrCreate(path);
+			  chg.addBlockOp(op);
+			  handleChg = true;
 		  } else if (editOp instanceof UpdateBlocksOp) {
 		  } else if (editOp instanceof SetReplicationOp) {
 		  } else if (editOp instanceof ConcatDeleteOp) {
 		  } else if (editOp instanceof RenameOldOp) {
 		  } else if (editOp instanceof DeleteOp) {
+			  DeleteOp op = (DeleteOp) editOp;
+			  String path = op.path;
+			  CompositeFsPathChange prevChg = removeFileChange(path);
+			  boolean wasNew = false;
+			  if (prevChg != null) {
+				  if (!prevChg.ops.isEmpty()) {
+					  val firstChg = prevChg.ops.get(0);
+					  wasNew = firstChg.getClass().equals(AddFileFsChange.class)
+							  || firstChg.getClass().equals(MkdirFsChange.class)
+							  ;
+				  }
+			  }
+			  if (wasNew) {
+				  // temporary file created then deleted .. do nothing (modify parent dir modification time?)!
+			  } else {
+				  String prevPath = prevChg != null? prevChg.getOriginPath() : null;
+				  pathDeletedChg.put(path, new DeleteFileFsChange(prevPath, path));
+			  }
+			  handleChg = true;
+
 		  } else if (editOp instanceof MkdirOp) {
+			  MkdirOp op = (MkdirOp) editOp;
+			  String path = op.path;
+			  CompositeFsPathChange chg = pathChangeOrCreate(path);
+			  chg.addMkdirOp(op);
+			  handleChg = true;
 		  } else if (editOp instanceof SetGenstampV1Op) {
+			  // long genStampV1;
+			  handleChg = true;
 		  } else if (editOp instanceof SetGenstampV2Op) {
+			  // long genStampV2;
+			  handleChg = true;
 		  } else if (editOp instanceof AllocateBlockIdOp) {
+			  // long blockId;
+			  handleChg = true;
 		  } else if (editOp instanceof SetPermissionsOp) {
+			  SetPermissionsOp op = (SetPermissionsOp) editOp;
+			  String path = op.src;
+			  CompositeFsPathChange chg = pathChangeOrCreate(path);
+			  chg.addSetPermissionOp(op);
+			  handleChg = true;
+			  
 		  } else if (editOp instanceof SetOwnerOp) {
 		  } else if (editOp instanceof SetNSQuotaOp) {
 		  } else if (editOp instanceof ClearNSQuotaOp) {
@@ -213,8 +293,11 @@ public class FsEditDumpTool {
 		  } else if (editOp instanceof UpdateMasterKeyOp) {
 		  // abstract class LogSegmentOp                                         
 		  } else if (editOp instanceof StartLogSegmentOp) {
+			  handleChg = true;
 		  } else if (editOp instanceof EndLogSegmentOp) {
+			  handleChg = true;
 		  } else if (editOp instanceof InvalidOp) {
+			  handleChg = true;
 		  } else if (editOp instanceof CreateSnapshotOp) {
 		  } else if (editOp instanceof DeleteSnapshotOp) {
 		  } else if (editOp instanceof RenameSnapshotOp) {
@@ -242,12 +325,34 @@ public class FsEditDumpTool {
 			System.out.println("unrecognized op type");
 		}
 
-		if (usePrintToString) {
+		if (usePrintToString && !handleChg) {
 			println(editOp.toString());
 		}
 	}
 
-	private static void println(String text) {
+	private CompositeFsPathChange removeFileChange(String path) {
+		AbstractFsChange prevChg = currPathChange.remove(path);
+		CompositeFsPathChange chg;
+		if (prevChg instanceof CompositeFsPathChange) {
+			chg = (CompositeFsPathChange) prevChg;
+		} else {
+			chg = null;
+		}
+		return chg;
+	}
+	
+	private CompositeFsPathChange pathChangeOrCreate(String path) {
+		AbstractFsChange prevChg = currPathChange.get(path);
+		CompositeFsPathChange chg;
+		if (prevChg instanceof CompositeFsPathChange) {
+			chg = (CompositeFsPathChange) prevChg;
+		} else {
+			chg = new CompositeFsPathChange(null, path);
+		}
+		return chg;
+	}
+
+	private void println(String text) {
 		System.out.println(text);
 	}
 }
