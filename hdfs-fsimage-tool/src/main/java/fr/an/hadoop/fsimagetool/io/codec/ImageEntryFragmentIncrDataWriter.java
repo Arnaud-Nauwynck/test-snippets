@@ -7,12 +7,12 @@ import java.io.OutputStream;
 import fr.an.hadoop.fsimagetool.io.ImageEntry;
 import fr.an.hadoop.fsimagetool.io.ImageEntryHandler;
 
-public class ImageEntryFragmentDataWriter extends ImageEntryHandler {
+public class ImageEntryFragmentIncrDataWriter extends ImageEntryHandler {
 
 	private DataOutputStream out;
 	private StringBuilder prevPath = new StringBuilder(5000);
 	
-	public ImageEntryFragmentDataWriter(OutputStream out) {
+	public ImageEntryFragmentIncrDataWriter(OutputStream out) {
 		this.out = new DataOutputStream(out);
 	}
 

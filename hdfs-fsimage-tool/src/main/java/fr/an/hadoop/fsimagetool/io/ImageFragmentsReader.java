@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import fr.an.hadoop.fsimagetool.io.codec.ImageEntryFragmentDataReader;
+import fr.an.hadoop.fsimagetool.io.codec.ImageEntryFragmentIncrDataReader;
 import fr.an.hadoop.fsimagetool.io.utils.ImageEntrySortedMergedFragmentsReader;
 
 
@@ -32,7 +32,7 @@ public class ImageFragmentsReader {
 		}
 		System.out.println("hash:" + maxHash);
 
-		Collection<ImageEntryFragmentDataReader> fragReaders = new ArrayList<>();
+		Collection<ImageEntryFragmentIncrDataReader> fragReaders = new ArrayList<>();
 		for(int hash = 0; hash <= maxHash; hash++) {
 			int fragCount = 0;
 			for(int frag = 0; ; frag++) {
@@ -52,7 +52,7 @@ public class ImageFragmentsReader {
 				} catch (Exception ex) {
 					throw new RuntimeException("", ex);
 				}
-				fragReaders.add(new ImageEntryFragmentDataReader(in));
+				fragReaders.add(new ImageEntryFragmentIncrDataReader(in));
 			}
 		}
 		

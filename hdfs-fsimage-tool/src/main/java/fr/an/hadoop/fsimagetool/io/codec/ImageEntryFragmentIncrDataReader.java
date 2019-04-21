@@ -8,12 +8,12 @@ import java.io.InputStream;
 
 import fr.an.hadoop.fsimagetool.io.ImageEntry;
 
-public class ImageEntryFragmentDataReader implements Closeable {
+public class ImageEntryFragmentIncrDataReader implements Closeable {
 
 	private DataInputStream in;
 	private StringBuilder prevPath = new StringBuilder(5000);
 	
-	public ImageEntryFragmentDataReader(InputStream in) {
+	public ImageEntryFragmentIncrDataReader(InputStream in) {
 		this.in = new DataInputStream(in);
 	}
 

@@ -8,7 +8,7 @@ import java.util.TreeSet;
 
 import fr.an.hadoop.fsimagetool.io.ImageEntry;
 import fr.an.hadoop.fsimagetool.io.ImageEntryHandler;
-import fr.an.hadoop.fsimagetool.io.codec.ImageEntryFragmentDataWriter;
+import fr.an.hadoop.fsimagetool.io.codec.ImageEntryFragmentIncrDataWriter;
 
 public class ImageEntrySortedFragmentsBufferedWriter extends ImageEntryHandler {
 
@@ -48,7 +48,7 @@ public class ImageEntrySortedFragmentsBufferedWriter extends ImageEntryHandler {
 	private void flush() {
 		File currFile = new File(baseDir, baseFragmentName + "." + currFragmentIndex);
 		try (OutputStream out = new BufferedOutputStream(new FileOutputStream(currFile))) {
-			ImageEntryFragmentDataWriter writer = new ImageEntryFragmentDataWriter(out);
+			ImageEntryFragmentIncrDataWriter writer = new ImageEntryFragmentIncrDataWriter(out);
 			for(ImageEntry e : currSortedBuffer) {
 				writer.handle(e);
 			}

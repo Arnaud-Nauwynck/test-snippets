@@ -6,17 +6,17 @@ import java.util.Collection;
 import java.util.TreeMap;
 
 import fr.an.hadoop.fsimagetool.io.ImageEntry;
-import fr.an.hadoop.fsimagetool.io.codec.ImageEntryFragmentDataReader;
+import fr.an.hadoop.fsimagetool.io.codec.ImageEntryFragmentIncrDataReader;
 import lombok.val;
 
 public class ImageEntrySortedMergedFragmentsReader implements Closeable {
 
-	private TreeMap<ImageEntry,ImageEntryFragmentDataReader> currEntry2Iterator = new TreeMap<>();
+	private TreeMap<ImageEntry,ImageEntryFragmentIncrDataReader> currEntry2Iterator = new TreeMap<>();
 
 	public ImageEntrySortedMergedFragmentsReader(
-			Collection<ImageEntryFragmentDataReader> fragReaders
+			Collection<ImageEntryFragmentIncrDataReader> fragReaders
 			) {
-		for(ImageEntryFragmentDataReader fragReader : fragReaders) {
+		for(ImageEntryFragmentIncrDataReader fragReader : fragReaders) {
 			ImageEntry entry = fragReader.readEntry();
 			if (entry != null) {
 				currEntry2Iterator.put(entry, fragReader);
@@ -46,7 +46,7 @@ public class ImageEntrySortedMergedFragmentsReader implements Closeable {
 		
 		val firstEntry = currEntry2Iterator.firstEntry();
 		ImageEntry imageEntry = firstEntry.getKey();
-		ImageEntryFragmentDataReader fragReader = firstEntry.getValue();
+		ImageEntryFragmentIncrDataReader fragReader = firstEntry.getValue();
 		
 		currEntry2Iterator.remove(imageEntry);
 		// read next
