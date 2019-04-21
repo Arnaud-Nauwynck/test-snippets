@@ -119,6 +119,7 @@ public class SimpleKafkaConsumer {
 	
 				log.info("consumer.commitSync()");
 				consumer.commitSync();
+
 			}
 
 		    Map<MetricName, ? extends Metric> metrics = consumer.metrics();
