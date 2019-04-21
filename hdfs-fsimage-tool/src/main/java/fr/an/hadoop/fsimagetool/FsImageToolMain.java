@@ -27,7 +27,9 @@ public class FsImageToolMain {
 
 //		new FsEditDumpTool().scanDumpEditFiles(nnDir, 1, -1);
 	
-		File fsImage = new File(dataDir, "fsimage_small");
+		File fsImage = new File(dataDir, "fs2/fsimage_0000000000000017663");
+//		File fsImage = new File(dataDir, "fs2/fsimage_0000000000000010786");
+//		File fsImage = new File(dataDir, "fs1/fsimage_small");
 		EntryCallback callback = new FsImageEntryCallback();
 		
 		try {
