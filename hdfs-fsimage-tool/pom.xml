@@ -9,6 +9,17 @@
 	<properties>
 		<hadoop.version>3.1.0</hadoop.version>
 	</properties>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+			    <groupId>com.google.guava</groupId>
+    			<artifactId>guava</artifactId>
+    			<version>27.0.1-jre</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
@@ -37,7 +48,12 @@
 			<artifactId>leveldbjni-all</artifactId>
 			<version>1.8</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>org.iq80.leveldb</groupId>
+		    <artifactId>leveldb</artifactId>
+		    <version>0.11</version>
+		</dependency>
+    		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

@@ -16,6 +16,7 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.fusesource.leveldbjni.JniDBFactory;
 import org.iq80.leveldb.DBIterator;
 import org.iq80.leveldb.Options;
+import org.iq80.leveldb.impl.Iq80DBFactory;
 
 import fr.an.hadoop.fsimagetool.io.ImageEntry;
 import fr.an.hadoop.fsimagetool.io.ImageEntryHandler;
@@ -57,9 +58,14 @@ public class ImageEntryLevelDBStorage implements Closeable {
 		Options dbOptions = new Options();
 		dbOptions.createIfMissing(true);
 		try {
-			this.db = JniDBFactory.factory.open(dbDir, dbOptions );
-		} catch (IOException ex) {
-			throw new RuntimeException("Failed", ex);
+			this.db = JniDBFactory.factory.open(dbDir, dbOptions);
+		} catch (Throwable ex) {
+			try {
+				log.error("Failed to init levelDB jni .. fallback to java, ex:" + ex.getMessage());
+				this.db = Iq80DBFactory.factory.open(dbDir, dbOptions);
+			} catch (Exception ex2) {
+				throw new RuntimeException("Failed", ex);
+			}
 		}
 	}
 
@@ -104,7 +110,7 @@ public class ImageEntryLevelDBStorage implements Closeable {
 
 		boolean isFile = entry.isFile;
 		String crc = null;
-		if (entryData == null) {
+		if (entryData != null) {
 			DbImageEntry dbe = this.entryReader.read(path, entryData);
 			
 			crc = dbe.crc;
@@ -217,7 +223,7 @@ public class ImageEntryLevelDBStorage implements Closeable {
 				
 				out.writeInt(dbe.updateSeqNum);
 				if (isFile) {
-					out.writeUTF(dbe.crc);
+					out.writeUTF(dbe.crc != null? dbe.crc : "");
 				}
 
 			} catch(IOException ex) {

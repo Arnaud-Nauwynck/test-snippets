@@ -30,6 +30,9 @@ public class LevelDbImageUtilsTest {
 
 	@Test
 	public void testReadDb() {
+		if (!dbDir.exists()) {
+			dbDir.mkdirs();
+		}
 		try (ImageEntryLevelDBStorage db = new ImageEntryLevelDBStorage(dbDir)) {
 
 			File resFile = new File(dbDir, "img-result-sorted-all.txt");
