@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+package fr.an.test.protobuf;
+
+option java_package = "fr.an.test.protobuf";
+option java_outer_classname = "UserProtos";
+
+message User {
+  required string name = 1;
+  optional string email = 2;
+  required int32 intValue= 3;
+  optional User bestFriend = 4;
+  optional User friends = 5;
+}
+
