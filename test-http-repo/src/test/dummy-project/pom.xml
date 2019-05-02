@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>fr.an.tests</groupId>
+  <artifactId>dummy-project</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  
+  <distributionManagement>
+  	<repository>
+  		<id>test-release-repo</id>
+  		<url>http://localhost:8090/repo</url>
+  	</repository>
+  	<snapshotRepository>
+  		<id>test-snapshot-repo</id>
+  		<url>http://localhost:8090/repo</url>
+  		<uniqueVersion>false</uniqueVersion>
+  	</snapshotRepository>
+  </distributionManagement>
+
+</project>
