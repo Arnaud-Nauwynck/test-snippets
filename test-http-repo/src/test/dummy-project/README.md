@@ -166,6 +166,108 @@ logs:
 
 ## Step 4: deploy from local dir (to pom distributionManagment url)
 
-Maybe it would be even better to define a new Mojo "deploy-merge-repo", that is equivalent to "merge-maven-repos -Dwagon.target=pom"
+Instead of "merge-maven-repos -Dwagon.target=pom" that use a magic value "pom", let's patch again to create a new mojo called "repository-deploy"
+
+```
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.wagon.ConnectionException;
+import org.apache.maven.wagon.Wagon;
+import org.codehaus.mojo.wagon.shared.MavenRepoMerger;
+import org.codehaus.mojo.wagon.shared.WagonUtils;
+
+/**
+ * Deploy artifacts from a local repository to pom distributionManagement repository.
+ * <p>
+ * This can be used typically after 
+ * <PRE>
+ * mvn deploy -DaltDeploymentRepository=local::default::file:./target/staging-deploy
+ * </PRE>
+ */
+@Mojo( name = "repository-deploy" , requiresProject = true)
+public class RepositoryDeployMojo
+    extends AbstractWagonMojo
+{
+
+    /**
+     * The directory of the source repository.
+     */
+    @Parameter( property = "source", required = true)
+    protected String source;
+
+    /**
+     * Optimize the upload by locally compressed all files in one bundle, upload the bundle, and finally remote
+     * uncompress the bundle. This only works with SCP's URL
+     */
+    @Parameter( property = "wagon.optimize", defaultValue = "false")
+    protected boolean optimize = false;
+
+    @Component
+    private MavenRepoMerger mavenRepoMerger;
+
+    @Override
+    public void execute()
+        throws MojoExecutionException
+    {
+        if ( this.skip )
+        {
+            this.getLog().info( "Skip execution." );
+            return;
+        }
+
+        Wagon srcWagon = null;
+        Wagon targetWagon = null;
+        try
+        {
+            srcWagon = createWagon( "default", "file:" + source );
+            targetWagon = WagonUtils.createDistributionManagementWagon( wagonFactory, project, settings );
+
+            mavenRepoMerger.merge( srcWagon, targetWagon, optimize, this.getLog() );
+        }
+        catch ( Exception e )
+        {
+            throw new MojoExecutionException( "Error during performing repository deploy", e );
+        }
+        finally
+        {
+            WagonUtils.disconnectWagon( getLog(), srcWagon );
+            WagonUtils.disconnectWagon( getLog(), targetWagon );
+        }
+    }
+
+}
+```
+
+You can use it like this:
+```
+mvn org.codehaus.mojo:wagon-maven-plugin:2.0.1-SNAPSHOT:repository-deploy -Dsource=target/staging-deploy
+```
+
+logs:
+```
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ---------------------< fr.an.tests:dummy-project >----------------------
+[INFO] Building dummy-project 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- wagon-maven-plugin:2.0.1-SNAPSHOT:repository-deploy (default-cli) @ dummy-project ---
+[INFO] Scanning remote file system: file:target/staging-deploy ...
+[INFO] Downloading file:target/staging-deploy/fr/an/tests/dummy-project/0.0.1-SNAPSHOT/dummy-project-0.0.1-20190502.200139-1.jar to C:\cygwin64\tmp\wagon-maven-plugin41997402129764713611234190411700800\fr\an\tests\dummy-project\0.0.1-SNAPSHOT\dummy-project-0.0.1-20190502.200139-1.jar ...
+
+... (truncated)
+
+[INFO] Downloading file:target/staging-deploy/fr/an/tests/dummy-project/maven-metadata.xml.sha1 to C:\cygwin64\tmp\wagon-maven-plugin41997402129764713611234190411700800\fr\an\tests\dummy-project\maven-metadata.xml.sha1 ...
+[INFO] Uploading C:\cygwin64\tmp\wagon-maven-plugin41997402129764713611234190411700800\fr\an\tests\dummy-project\0.0.1-SNAPSHOT\dummy-project-0.0.1-20190502.200139-1.jar to http://localhost:8090/repo/fr/an/tests/dummy-project/0.0.1-SNAPSHOT/dummy-project-0.0.1-20190502.200139-1.jar ...
+
+... (truncated)
+
+[INFO] Uploading C:\cygwin64\tmp\wagon-maven-plugin41997402129764713611234190411700800\fr\an\tests\dummy-project\maven-metadata.xml.sha1 to http://localhost:8090/repo/fr/an/tests/dummy-project/maven-metadata.xml.sha1 ...
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+```
 
 
