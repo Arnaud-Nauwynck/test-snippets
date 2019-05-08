@@ -14,7 +14,8 @@
 		<java.version>1.8</java.version>
 
 		<graphql-java.version>5.2.4</graphql-java.version>
-		<graphql-springboot.version>5.0.3</graphql-springboot.version>	
+		<graphql-springboot.version>5.0.3</graphql-springboot.version>
+		<graphql-nadel>2018-11-13T03-33-03-354f9ec</graphql-nadel>	
 		<io-springfox-swagger.version>2.9.2</io-springfox-swagger.version>
 	</properties>
 
@@ -70,6 +71,12 @@
 			</dependency>
 			
 			<dependency>
+			  <groupId>com.graphql-java</groupId>
+			  <artifactId>nadel</artifactId>
+			  <version>${graphql-nadel}</version>
+			</dependency>
+
+			<dependency>
 	     		<groupId>com.atlassian.braid</groupId>
 	    		<artifactId>graphql-braid</artifactId>
 	    		<version>0.14.1-SNAPSHOT</version>
@@ -100,7 +107,11 @@
 		<module>test-graphql-springboot-server</module>
 		<module>test-graphql-springboot-server2</module>
 		<module>test-rest-server</module>
+		<module>test-graphql-stitch-nadel</module>
+
+<!-- 
 		<module>test-graphql-braid-stitch-server</module>
+ -->
 		<module>test-json-server</module>
 		<module>swagger-to-graphql</module>
 	</modules>

@@ -21,7 +21,7 @@
  <logger name="io.humble.video.Encoder" level="INFO" />
  <logger name="org.ffmpeg" level="INFO" />
  
- <root root-level="INFO">
+ <root level="INFO">
 	<appender-ref ref="CONSOLE" />
 	<appender-ref ref="FILE" />
  </root>

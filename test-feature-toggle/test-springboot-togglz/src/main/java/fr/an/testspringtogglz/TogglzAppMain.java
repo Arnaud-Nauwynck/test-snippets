@@ -82,7 +82,7 @@ class HelloController {
 
 	@GetMapping("/helloFeature2")
 	public String helloFeature2() {
-        if (manager.isActive(Feature2)) {
+        if (manager.isActive(log)) {
         	return "Hello Feature2";
         }
     	return "Hello";

@@ -133,7 +133,7 @@ public class App  {
 		try {
 			VolumeGetResponse volume = volumeApi.getVolume();
 			System.out.println("volume => " + volume);
-			int targetVol = Math.max(10, volume.getTargetVolume());
+			int targetVol = Math.min(30, volume.getTargetVolume());
 			volumeApi.setVolume(targetVol);
 		} catch (SoundTouchApiException e) {
 			e.printStackTrace();
@@ -265,7 +265,7 @@ public class App  {
 
 		// finally switch off ...
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(3000);
 			
 			System.out.println("power off !");
 			keyApi.power();

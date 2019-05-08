@@ -1,6 +1,4 @@
 
-XX
-
 app:
   activeprofile2-prop1: application-activeprofile2.yml-app.activeprofile2-prop1
   
