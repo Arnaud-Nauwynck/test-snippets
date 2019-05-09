@@ -1,7 +1,0 @@
-{
-  "name": "My File Plugin",
-  "id": "myapp",
-  "aspects": [
-    "fr.an.test.glowroot.FileAspect"
-  ]
-}

@@ -1,0 +1,23 @@
+{
+  "name": "File Plugin",
+  "id": "file",
+  "properties": [
+    {
+      "name": "writeRootPath",
+      "type": "String",
+      "default": "/home/",
+      "label": "File write root path",
+      "description": "File write root path"
+    },
+    {
+      "name": "writeSuffix",
+      "type": "String",
+      "default": "",
+      "label": "File write suffix",
+      "description": "File write suffix"
+    }
+  ],
+  "aspects": [
+    "fr.an.test.glowroot.FileAspect"
+  ]
+}
