@@ -1,6 +1,7 @@
 package fr.an.test.glowroot;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 import org.glowroot.agent.plugin.api.config.ConfigService;
 import org.glowroot.agent.plugin.api.weaving.BindParameter;
@@ -10,67 +11,154 @@ import org.glowroot.agent.plugin.api.weaving.Pointcut;
 
 public class FileAspect {
 
-	private static ConfigService serviceConfig;
 	private static String rootWritePath;
-	private static String writeSuffix;
+	private static Pattern writeFileNamePattern;
+	private static boolean showStackTrace;
+	private static boolean formatStackTraceSingleLine;
 	static {
 		System.out.println("**** cinit class fr.an.test.glowroot.FileAspect");
-		serviceConfig = org.glowroot.agent.plugin.api.Agent.getConfigService("file"); // cf value in META-INF/glowroot.plugin.json
+		ConfigService serviceConfig = org.glowroot.agent.plugin.api.Agent.getConfigService("file"); // cf value in META-INF/glowroot.plugin.json
+
 		rootWritePath = serviceConfig.getStringProperty("writeRootPath").value();
-		writeSuffix = serviceConfig.getStringProperty("writeSuffix").value();
+		String writeFileNamePatternText = serviceConfig.getStringProperty("writeFilePattern").value();
+		writeFileNamePattern = (writeFileNamePatternText != null && !writeFileNamePatternText.isEmpty())? 
+				Pattern.compile(writeFileNamePatternText) : null;
+		System.out.println("**** logging only java.io.File modifications under path:'" + rootWritePath + "' with pattern:" + writeFileNamePatternText);
+		
+		showStackTrace = serviceConfig.getBooleanProperty("showStackTrace").value();
+		formatStackTraceSingleLine = serviceConfig.getBooleanProperty("formatStackTraceSingleLine").value();
 	}
 	
 	static int writeCount = 0;
 	static int writeCountTotal = 0;
 	static int fileRenameCount = 0;
 	static int fileRenameCountTotal = 0;
+	static int fileMkdirCount = 0;
+	static int fileMkdirCountTotal = 0;
+	static int fileMkdirsCount = 0;
+	static int fileMkdirsCountTotal = 0;
+	static int fileDeleteCount = 0;
+	static int fileDeleteCountTotal = 0;
+	static int fileDeleteOnExitCount = 0;
+	static int fileDeleteOnExitCountTotal = 0;
 	
-	
-//    @Shim("java.io.FileOutputStream")
-//    public interface FileOutputStreamShim {
-//        String name();
-//    }
-
+    /**
+     * Instrument calls to <code>java.io.FileOutputStream.open()</code>
+     */
     @Pointcut(className = "java.io.FileOutputStream", methodName = "open", methodParameterTypes = {"java.lang.String", "boolean"})
     public static class FileOutputStreamOpenAdvice {
 
         @OnBefore
-        public static void onBefore(
-        		// @BindParameter FileOutputStreamOpenShim thisShim,
-        		@BindParameter String path
-        		) {
+        public static void onBefore(@BindParameter String path) {
         	writeCountTotal++;
-    		// System.out.println("***** open write '" + path + "' ... ");
-        	if (path.startsWith(rootWritePath) && path.endsWith(writeSuffix)) {
+        	if (matchWritePath(path)) {
         		writeCount++;
-        		System.out.println("***** (" + writeCount + "/" + writeCountTotal + ") write " + path + " from stack:" + ExUtils.currentStackTraceShortPath());
+        		logCall("(" + writeCount + "/" + writeCountTotal + ") FileOutputStream.open() '" + path + "'");
         	}
         }
-
     }
     
-    
-//    @Shim("java.io.File")
-//    public interface FileShim {
-//    }
-
-    @Pointcut(className = "java.io.File", methodName = "renameTo", methodParameterTypes = {"java.lang.String"})
-    public static class FileAdvice {
+    /**
+     * Instrument calls to <code>java.io.File.renameTo(File)</code>
+     */
+    @Pointcut(className = "java.io.File", methodName = "renameTo", methodParameterTypes = {"java.io.File"})
+    public static class FileRenameToAdvice {
 
         @OnBefore
-        public static void onBefore(
-        		@BindReceiver File thisFile,
-        		@BindParameter File dest) {
+        public static void onBefore(@BindReceiver File thisFile, @BindParameter File dest) {
         	String fromPath = thisFile.getAbsolutePath();
-        	String toPath = dest.getAbsolutePath();
-    		// System.out.println("***** renameTo " + toPath + " ... ");
+        	String path = dest.getAbsolutePath();
         	fileRenameCountTotal++;
-        	if (toPath.startsWith(rootWritePath) && toPath.endsWith(writeSuffix)) {
+        	if (matchWritePath(path)) {
         		fileRenameCount++;
-        		System.out.println("***** (" + fileRenameCount + "/" + fileRenameCountTotal + ") File.renameTo '" + toPath + "' src:'" + fromPath + "' from stack:" + ExUtils.currentStackTraceShortPath());
+        		logCall("(" + fileRenameCount + "/" + fileRenameCountTotal + ") File.renameTo() '" + path + "' src:'" + fromPath + "'");
         	}
         }
-
     }
 
+    
+    /**
+     * Instrument calls to <code>java.io.File.mkdir()</code>
+     */
+    @Pointcut(className = "java.io.File", methodName = "mkdir", methodParameterTypes = {})
+    public static class FileMkdirAdvice {
+        @OnBefore
+        public static void onBefore(@BindReceiver File thisFile) {
+            String path = thisFile.getAbsolutePath();
+        	fileMkdirCountTotal++;
+        	if (matchWritePath(path)) {
+            	fileMkdirCountTotal++;
+        		logCall("File.mkdir() '" + path + "'");
+        	}
+        }
+    }
+
+    /**
+     * Instrument calls to <code>java.io.File.mkdirs()</code>
+     */
+    @Pointcut(className = "java.io.File", methodName = "mkdirs", methodParameterTypes = {})
+    public static class FileMkdirsAdvice {
+        @OnBefore
+        public static void onBefore(@BindReceiver File thisFile) {
+            String path = thisFile.getAbsolutePath();
+        	fileMkdirsCountTotal++;
+        	if (matchWritePath(path)) {
+            	fileMkdirsCount++;
+        		logCall("File.mkdirs() '" + path + "'");
+        	}
+        }
+    }
+
+    /**
+     * Instrument calls to <code>java.io.File.delete()</code>
+     */
+    @Pointcut(className = "java.io.File", methodName = "delete", methodParameterTypes = {})
+    public static class FileDeleteAdvice {
+
+        @OnBefore
+        public static void onBefore(@BindReceiver File thisFile) {
+        	String path = thisFile.getAbsolutePath();
+        	fileDeleteCountTotal++;
+        	if (matchWritePath(path)) {
+        		fileDeleteCount++;
+        		logCall("(" + fileDeleteCount + "/" + fileDeleteCountTotal + ") File.delete() '" + path + "'");
+        	}
+        }
+    }
+
+    /**
+     * Instrument calls to <code>java.io.File.deleteOnExit()</code>
+     */
+    @Pointcut(className = "java.io.File", methodName = "deleteOnExit", methodParameterTypes = {})
+    public static class FileDeleteOnExitAdvice {
+
+        @OnBefore
+        public static void onBefore(@BindReceiver File thisFile) {
+        	String path = thisFile.getAbsolutePath();
+        	fileDeleteCountTotal++;
+        	if (matchWritePath(path)) {
+        		fileDeleteCount++;
+        		logCall("(" + fileDeleteOnExitCount + "/" + fileDeleteOnExitCountTotal + ") File.deleteOnExit() '" + path + "'");
+        	}
+        }
+    }
+
+    static boolean matchWritePath(String path) {
+    	return path.startsWith(rootWritePath) 
+    			&& (writeFileNamePattern == null || writeFileNamePattern.matcher(path).matches());
+    }
+    
+    static void logCall(String msg) {
+		System.out.println("***** " + msg);
+		if (showStackTrace) {
+			if (formatStackTraceSingleLine) {
+				System.out.println(" from stack:" ); // + ExUtils.currentStackTraceShortPath());
+			} else {
+				System.out.println(" from stack: (not an exception)");
+				new Exception().printStackTrace();
+			}
+		}
+    	
+    }
+    
 }

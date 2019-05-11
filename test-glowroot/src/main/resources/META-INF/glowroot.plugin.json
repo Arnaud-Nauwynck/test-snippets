@@ -5,17 +5,33 @@
     {
       "name": "writeRootPath",
       "type": "String",
-      "default": "/home/",
+      "default": "",
       "label": "File write root path",
       "description": "File write root path"
     },
     {
-      "name": "writeSuffix",
+      "name": "writeFilePattern",
       "type": "String",
-      "default": "",
-      "label": "File write suffix",
-      "description": "File write suffix"
+      "default": ".*",
+      "label": "writeFilePattern",
+      "description": "pattern for write file"
+    },
+    {
+      "name": "showStackTrace",
+      "type": "boolean",
+      "default": true,
+      "label": "showStackTrace",
+      "description": "show stack trace for calls"
+    },
+    {
+      "name": "formatStackTraceSingleLine",
+      "type": "boolean",
+      "default": false,
+      "label": "formatStackTraceSingleLine",
+      "description": "format stack trace horizontally for calls"
     }
+    
+    
   ],
   "aspects": [
     "fr.an.test.glowroot.FileAspect"

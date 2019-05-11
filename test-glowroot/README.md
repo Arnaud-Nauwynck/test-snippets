@@ -7,7 +7,7 @@ It used internally a custom plugin writen with Glowroot
 A sample usage is here to detect all file write access performed by maven in "/home" sub dirs.
 </br/>
 
-Internally, the plugin instrument all calls to "java.io.FileOutputStream.open()" and "java.io.File.renameTo()",
+Internally, the plugin instrument all calls to "java.io.FileOutputStream.open(" and "java.io.File.renameTo()",
 filter if the path starts with "/home/", and print the corresponding stack trace with the count/total of write access.
 
 
@@ -122,36 +122,29 @@ Every stack trace occurence is printed horizontally (to not misconfound with an 
 FileAspect$FileOutputStreamOpenAdvice.onBefore:46/FileOutputStream.open/<init>:213/<init>:162/XmlStreamWriter.<init>:60/WriterFactory.newXmlWriter:122/MavenMetadata.write:116/merge:78/DefaultInstaller.install:302/install:205/install:152/DefaultRepositorySystem.install:377/DefaultArtifactInstaller.install:107/InstallMojo.execute:115/DefaultBuildPluginManager.executeMojo:137/MojoExecutor.execute:208/execute:154/execute:146/LifecycleModuleBuilder.buildProject:117/buildProject:81/SingleThreadedBuilder.build:56/LifecycleStarter.execute:128/DefaultMaven.doExecute:305/doExecute:192/execute:105/MavenCli.execute:954/doMain:288/main:192/NativeMethodAccessorImpl.invoke0/invoke:62/DelegatingMethodAccessorImpl.invoke:43/Method.invoke:498/Launcher.launchEnhanced:289/launch:229/mainWithExitCode:415/main:356
 ```
 
-The print format for a stack trace element is "<className>.<methodName>:<lineNumber>/" or simply "<methodName>:<lineNumber>/" to avoid repeating the same className as the one before.
+The print format for a stack trace element is 
+    "className.methodName:lineNumber/" 
+or simply 
+    "methodName:lineNumber/" to avoid repeating the same className as the one before.
 Moreover, only the short classname are printed... it is pretty easy to find out the fully qualified name for the short name.
 
 The equivalent stack trace vertically is ..
 ```
 FileAspect$FileOutputStreamOpenAdvice.onBefore:46
-FileOutputStream.open
-                .<init>:213
-                .<init>:162
+FileOutputStream.open/<init>:213/<init>:162
 XmlStreamWriter.<init>:60
 WriterFactory.newXmlWriter:122
-MavenMetadata.write:116
-             .merge:78
-DefaultInstaller.install:302
-                .install:205
-                .install:152
+MavenMetadata.write:116/merge:78
+DefaultInstaller.install:302/install:205/install:152
 DefaultRepositorySystem.install:377
 DefaultArtifactInstaller.install:107
 InstallMojo.execute:115
 DefaultBuildPluginManager.executeMojo:137
-MojoExecutor.execute:208
-            .execute:154
-            .execute:146
-LifecycleModuleBuilder.buildProject:117
-                      .buildProject:81
+MojoExecutor.execute:208/execute:154/execute:146
+LifecycleModuleBuilder.buildProject:117/buildProject:81
 SingleThreadedBuilder.build:56
 LifecycleStarter.execute:128
-DefaultMaven.doExecute:305
-            .doExecute:192
-            .execute:105
+DefaultMaven.doExecute:305/doExecute:192/execute:105
 MavenCli.execute:954
 MavenCli.doMain:288
 MavenCli.main:192
@@ -159,10 +152,376 @@ NativeMethodAccessorImpl.invoke0
 NativeMethodAccessorImpl.invoke:62
 DelegatingMethodAccessorImpl.invoke:43
 Method.invoke:498
-Launcher.launchEnhanced:289
-        .launch:229
-        .mainWithExitCode:415
-        .main:356
+Launcher.launchEnhanced:289/launch:229/mainWithExitCode:415/main:356
+```
+
+
+# Test again .. log stacktrace for files downloaded and written to local repo
+
+Here is another test execution, to detect the files downloaded by maven and written to local repository
+
+
+```
+rm -rf ~/.m2/repository/org/glowroot/glowroot-agent-plugin-api/
+./mvn-glowroot-file.sh package
+```
+
+Results:
+written files:
+- .pom.part
+- .pom.sha1-$(uuid).tmp
+- .pom         (.pom.part renamedTo)
+- .pom.sha1    (.pom.sha1..tmp renamedTo)
+- .jar.part
+- .jar.sha1-$(uuid).tmp 
+- .jar         (.jar.part renamedTo)
+- .jar.sha1    (.pom.sha1 renamedTo)
+
+
+All following stack traces have in common this stack fragment, ommited next
+
+```
+    MojoExecutor.execute:202/execute:156/execute:148
+    LifecycleModuleBuilder.buildProject:117/buildProject:81
+    SingleThreadedBuilder.build:56
+    LifecycleStarter.execute:128
+    DefaultMaven.doExecute:305/doExecute:192/execute:105
+    MavenCli.execute:956/doMain:288/main:192
+    NativeMethodAccessorImpl.invoke0:62
+    DelegatingMethodAccessorImpl.invoke:43
+    Method.invoke:498
+    Launcher.launchEnhanced:289/launch:229/mainWithExitCode:415/main:356
+```
+
+
+
+
+```
+..
+
+Downloading from central: https://repo.maven.apache.org/maven2/org/glowroot/glowroot-agent-plugin-api/0.13.4/glowroot-agent-plugin-api-0.13.4.pom
+***** FileOutputStream.open '..\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.part 
+from stack:
+    FileOutputStream.open/<init>:213/<init>:162
+    LazyFileOutputStream.initialize:154
+    LazyFileOutputStream.write:126
+    AbstractWagon.transfer:581/getTransfer:372/getTransfer:315/getTransfer:284
+    StreamWagon.getIfNewer:97/get:61
+    WagonTransporter$GetTaskRunner.run:567
+    WagonTransporter.execute:435/get:412
+    BasicRepositoryConnector$GetTaskRunner.runTask:456
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215/resolveArtifact:192
+    DefaultArtifactDescriptorReader.loadPom:240/readArtifactDescriptor:171
+    DefaultDependencyCollector.resolveCachedArtifactDescriptor:530/getArtifactDescriptorResult:513/
+        processDependency:402/processDependency:356/process:344/collectDependencies:247
+    DefaultRepositorySystem.collectDependencies:269
+    DefaultProjectDependenciesResolver.resolve:169
+    LifecycleDependencyResolver.getDependencies:243/resolveProjectDependencies:147
+    MojoExecutor.ensureDependenciesAreResolved:248
+        
+***** FileOutputStream.open '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.sha1-77ce64e42112642211906003866.tmp 
+from stack:
+    FileOutputStream.open:213/<init>:162
+    LazyFileOutputStream.initialize:154/write:126
+    AbstractWagon.transfer:581/getTransfer:372/getTransfer:315/getTransfer:284
+    StreamWagon.getIfNewer:97/get:61
+    WagonTransporter$GetTaskRunner.run:567
+    WagonTransporter.execute:435/get:412
+    BasicRepositoryConnector$GetTaskRunner.fetchChecksum:423
+    ChecksumValidator.validateExternalChecksums:157/validate:103
+    BasicRepositoryConnector$GetTaskRunner.runTask:459
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215/resolveArtifact:192
+    DefaultArtifactDescriptorReader.loadPom:240/readArtifactDescriptor:171
+    DefaultDependencyCollector.resolveCachedArtifactDescriptor:530/getArtifactDescriptorResult:513/
+        processDependency:402/processDependency:356/process:344/collectDependencies:247
+    DefaultRepositorySystem.collectDependencies:269
+    DefaultProjectDependenciesResolver.resolve:169
+    LifecycleDependencyResolver.getDependencies:243/resolveProjectDependencies:147
+    MojoExecutor.ensureDependenciesAreResolved:248
+
+***** (1/1) File.renameTo() dest: '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom'
+    src:  '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.part' 
+from stack:
+    File.renameTo
+    DefaultFileProcessor.move:249
+    BasicRepositoryConnector$GetTaskRunner.runTask:481
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215/resolveArtifact:192
+    DefaultArtifactDescriptorReader.loadPom:240/readArtifactDescriptor:171
+    DefaultDependencyCollector.resolveCachedArtifactDescriptor:530/getArtifactDescriptorResult:513
+        /processDependency:402/processDependency:356/process:344
+    DefaultDependencyCollector.collectDependencies:247
+    DefaultRepositorySystem.collectDependencies:269
+    ProjectDependenciesResolver.resolve:169
+    LifecycleDependencyResolver.getDependencies:243
+    LifecycleDependencyResolver.resolveProjectDependencies:147
+    MojoExecutor.ensureDependenciesAreResolved:248
+
+***** (2/2) File.renameTo() dest: '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.sha1' 
+    src:  '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.sha1-ad24d7b01489881715896332211.tmp'
+from stack:
+    File.renameTo
+    DefaultFileProcessor.move:249
+    ChecksumValidator.commit:244
+    BasicRepositoryConnector$GetTaskRunner.runTask:484
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215/resolveArtifact:192
+    DefaultArtifactDescriptorReader.loadPom:240/readArtifactDescriptor:171
+    DefaultDependencyCollector.resolveCachedArtifactDescriptor:530/getArtifactDescriptorResult:513
+        /processDependency:402/processDependency:356/process:344/collectDependencies:247
+    DefaultRepositorySystem.collectDependencies:269
+    ProjectectDependenciesResolver.resolve:169
+    LifecycleDependencyResolver.getDependencies:243
+    LifecycleDependencyResolver.resolveProjectDependencies:147
+    MojoExecutor.ensureDependenciesAreResolved:248
+
+Downloaded from central: https://repo.maven.apache.org/maven2/org/glowroot/glowroot-agent-plugin-api/0.13.4/glowroot-agent-plugin-api-0.13.4.pom : https://repo.maven.apache.org/maven2/org/glowroot/glowroot-agent-plugin-api/0.13.4/glowroot-agent-plugin-api-0.13.4.jar
+
+***** FileOutputStream.open() ~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.jar.part 
+from stack:
+    FileOutputStream.open:213/<init>:162
+    LazyFileOutputStream.initialize:154/write:126
+    AbstractWagon.transfer:581/getTransfer:372/getTransfer:315/getTransfer:284
+    StreamWagon.getIfNewer:97/get:61
+    WagonTransporter$GetTaskRunner.run:567
+    WagonTransporter.execute:435/get:412
+    BasicRepositoryConnector$GetTaskRunner.runTask:456
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215
+    DefaultRepositorySystem.resolveDependencies:325
+    DefaultProjectDependenciesResolver.resolve:202
+    LifecycleDependencyResolver.getDependencies:243/resolveProjectDependencies:147
+    MojoExecutor.ensureDependenciesAreResolved:248
+    
+***** FileOutputStream.open() '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.jar.sha1-cebc165f7113521320898028675.tmp' 
+from stack:
+    FileOutputStream.open:213/<init>:162
+    LazyFileOutputStream.initialize:154/write:126
+    AbstractWagon.transfer:581/getTransfer:372/getTransfer:315/getTransfer:284
+    StreamWagon.getIfNewer:97/get:61
+    WagonTransporter$GetTaskRunner.run:567
+    WagonTransporter.execute:435/get:412
+    BasicRepositoryConnector$GetTaskRunner.fetchChecksum:423
+    ChecksumValidator.validateExternalChecksums:157
+    ChecksumValidator.validate:103
+    BasicRepositoryConnector$GetTaskRunner.runTask:459
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215
+    DefaultRepositorySystem.resolveDependencies:325
+    DefaultProjectDependenciesResolver.resolve:202
+    LifecycleDependencyResolver.getDependencies:243/resolveProjectDependencies:147
+    MojoExecutor.ensureDependenciesAreResolved:248
+    
+***** File.renameTo() '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.jar' 
+    src: '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.jar.part'
+from stack:
+    File.renameTo
+    DefaultFileProcessor.move:249
+    BasicRepositoryConnector$GetTaskRunner.runTask:481
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215
+    DefaultRepositorySystem.resolveDependencies:325
+    DefaultProjectDependenciesResolver.resolve:202
+    LifecycleDependencyResolver.getDependencies:243/resolveProjectDependencies:147
+    MojoExecutor.ensureDependenciesAreResolved:248)
+
+***** File.renameTo() dest: '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.jar.sha1'
+    src: '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.jar.sha1-5c65fc31805141540408522583.tmp'
+from stack:
+    File.renameTo
+    DefaultFileProcessor.move:249
+    ChecksumValidator.commit:244
+    BasicRepositoryConnector$GetTaskRunner.runTask:484
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215
+    DefaultRepositorySystem.resolveDependencies:325
+    DefaultProjectDependenciesResolver.resolve:202
+    LifecycleDependencyResolver.getDependencies:243/resolveProjectDependencies:147
+    MojoExecutor.ensureDependenciesAreResolved:248
+    
+```
+
+
+# Test again .. downloaded invalid checkSum files, with default checkSumPolicy=warn
+
+I am using here a dummy http repository server, that always answer http 200, with a welcome html page. Therefore, all pom, jar and sh1 files are invalid.
+
+
+For this, I use an additionnal maven profile "-Pdummy-repo"
+
+In the ~/.m2/settings.xml:
+```xml
+    <profile>
+        <id>dummy-repo</id>
+        <repositories>
+            <repository>
+                <id>central</id>
+                <url>http://localhost:8090/repo</url>
+            </repository>
+        </repositories>
+        <pluginRepositories>
+            <pluginRepository>
+                <id>central</id>
+                <url>http://localhost:8090/repo</url>
+            </pluginRepository>
+        </pluginRepositories>
+    </profile>
+```
+
+
+```
+rm -rf ~/.m2/repository/org/glowroot/glowroot-agent-plugin-api/
+./mvn-glowroot-file.sh -Pdummy-repo package
+```
+
+Now, we can see maven is still downloading pom.part, pom.sha1, and then does renameTo the same way !!!
+By debuggin it, this is becasue by default, repositories have checkSumPolicy="warn", instead of "fail"
+
+```
+[WARNING] Checksum validation failed, expected <!DOCTYPE but is 28db9960ddfec8ed449bb87ec4d17c139d9301fd from central for http://localhost:8090/repo/org/glowroot/glowroot-agent-plugin-api/0.13.4/glowroot-agent-plugin-api-0.13.4.pom
+
+[WARNING] Could not validate integrity of download from http://localhost:8090/repo/org/glowroot/glowroot-agent-plugin-api/0.13.4/glowroot-agent-plugin-api-0.13.4.pom: Checksum validation failed, expected <!DOCTYPE but is 28db9960ddfec8ed449bb87ec4d17c139d9301fd
+                   
+[WARNING] Checksum validation failed, expected <!DOCTYPE but is 28db9960ddfec8ed449bb87ec4d17c139d9301fd from central for http://localhost:8090/repo/org/glowroot/glowroot-agent-plugin-api/0.13.4/glowroot-agent-plugin-api-0.13.4.pom
+
+***** (1/1) File.renameTo() '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom'
+    src:'~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.part'
+from stack:
+    File.renameTo
+    DefaultFileProcessor.move:249
+    BasicRepositoryConnector$GetTaskRunner.runTask:481
+    BasicRepositoryConnector$TaskRunner.run:363)
+    RunnableErrorForwarder$1.run:75)
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215/resolveArtifact:192
+    DefaultArtifactDescriptorReader.loadPom:240/readArtifactDescriptor:171
+    DefaultDependencyCollector.resolveCachedArtifactDescriptor:530
+
+
+***** (2/2) File.renameTo() '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.sha1' 
+    src:'~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.sha1-1461f17f5117003776646361438.tmp'
+from stack:
+    File.renameTo
+    DefaultFileProcessor.move:249
+    ChecksumValidator.commit:244
+    BasicRepositoryConnector$GetTaskRunner.runTask:484
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489
+    DefaultArtifactResolver.resolve:390
+```
+
+
+# Test again .. downloaded invalid checkSum files, with forced checkSumPolicy=fail
+
+For this, I now use maven profile "-Pdummy-repo-fail"
+
+In the ~/.m2/settings.xml:
+```xml
+    <profile>
+        <id>dummy-repo-fail</id>
+        <repositories>
+            <repository>
+                <id>central</id>
+                <url>http://localhost:8090/repo</url>
+                <releases>
+                    <checksumPolicy>fail</checksumPolicy>
+                </releases>
+                <snapshots>
+                    <checksumPolicy>fail</checksumPolicy>
+                </snapshots>
+            </repository>
+        </repositories>
+        <pluginRepositories>
+            <pluginRepository>
+                <id>central</id>
+                <url>http://localhost:8090/repo</url>
+                <releases>
+                    <checksumPolicy>fail</checksumPolicy>
+                </releases>
+                <snapshots>
+                    <checksumPolicy>fail</checksumPolicy>
+                </snapshots>
+            </pluginRepository>
+        </pluginRepositories>
+    </profile>
+```
+
+
+```
+rm -rf ~/.m2/repository/org/glowroot/glowroot-agent-plugin-api/
+./mvn-glowroot-file.sh -Pdummy-repo-fail package
+```
+
+Now maven correctly detect a build failure
+```
+Downloading from central: http://localhost:8090/repo/org/glowroot/glowroot-agent-plugin-api/0.13.4/glowroot-agent-plugin-api-0.13.4.pom
+[WARNING] Checksum validation failed, expected <!DOCTYPE but is 28db9960ddfec8ed449bb87ec4d17c139d9301fd from central for http://localhost:8090/repo/org/glowroot/glowroot-agent-plugin-api/0.13.4/glowroot-agent-plugin-api-0.13.4.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.224 s
+[INFO] Finished at: 2019-05-11T15:42:35+02:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal on project test-glowroot: Could not resolve dependencies for project fr.an.tests:test-glowroot:jar:0.0.1-SNAPSHOT: Failed to collect dependencies at org.glowroot:glowroot-agent-plugin-api:jar:0.13.4: Failed to read artifact descriptor for org.glowroot:glowroot-agent-plugin-api:jar:0.13.4: Could not transfer artifact org.glowroot:glowroot-agent-plugin-api:pom:0.13.4 from/to central (http://localhost:8090/repo): Checksum validation failed, expected <!DOCTYPE but is 28db9960ddfec8ed449bb87ec4d17c139d9301fd -> [Help 1]
+```
+
+And we can check that only ".part" or ".tmp" files are written, and they are deleted correctly.
+
+```
+***** (2/2) File.delete() '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.part' from stack:
+    at java.io.File.delete:342)
+    BasicRepositoryConnector$GetTaskRunner.runTask:489
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215/resolveArtifact:192
+    DefaultArtifactDescriptorReader.loadPom:240/readArtifactDescriptor:171
+    DefaultDependencyCollector.collectDependencies:247
+
+***** (3/3 File.delete() '~\.m2\repository\org\glowroot\glowroot-agent-plugin-api\0.13.4\glowroot-agent-plugin-api-0.13.4.pom.part.lock' from stack:
+    File.delete
+    PartialFile$LockFile.close:236
+    PartialFile.close:349
+    BasicRepositoryConnector$GetTaskRunner.runTask:489
+    BasicRepositoryConnector$TaskRunner.run:363
+    RunnableErrorForwarder$1.run:75
+    BasicRepositoryConnector$DirectExecutor.execute:642
+    BasicRepositoryConnector.get:262
+    DefaultArtifactResolver.performDownloads:489/resolve:390/resolveArtifacts:215/resolveArtifact:192
+    DefaultArtifactDescriptorReader.loadPom:240/readArtifactDescriptor:171
+    DefaultDependencyCollector.collectDependencies:247
+
 ```
 
 
