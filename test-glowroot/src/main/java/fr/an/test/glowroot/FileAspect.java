@@ -16,14 +16,14 @@ public class FileAspect {
 	private static boolean showStackTrace;
 	private static boolean formatStackTraceSingleLine;
 	static {
-		System.out.println("**** cinit class fr.an.test.glowroot.FileAspect");
+		System.out.println("#### (glowroot-file)  cinit class fr.an.test.glowroot.FileAspect");
 		ConfigService serviceConfig = org.glowroot.agent.plugin.api.Agent.getConfigService("file"); // cf value in META-INF/glowroot.plugin.json
 
 		rootWritePath = serviceConfig.getStringProperty("writeRootPath").value();
 		String writeFileNamePatternText = serviceConfig.getStringProperty("writeFilePattern").value();
 		writeFileNamePattern = (writeFileNamePatternText != null && !writeFileNamePatternText.isEmpty())? 
 				Pattern.compile(writeFileNamePatternText) : null;
-		System.out.println("**** logging only java.io.File modifications under path:'" + rootWritePath + "' with pattern:" + writeFileNamePatternText);
+		System.out.println("#### (glowroot-file)  logging only java.io.File modifications under path:'" + rootWritePath + "' with pattern:" + writeFileNamePatternText);
 		
 		showStackTrace = serviceConfig.getBooleanProperty("showStackTrace").value();
 		formatStackTraceSingleLine = serviceConfig.getBooleanProperty("formatStackTraceSingleLine").value();
@@ -149,12 +149,12 @@ public class FileAspect {
     }
     
     static void logCall(String msg) {
-		System.out.println("***** " + msg);
+		System.out.println("#### (glowroot-file) " + msg);
 		if (showStackTrace) {
 			if (formatStackTraceSingleLine) {
-				System.out.println(" from stack:" ); // + ExUtils.currentStackTraceShortPath());
+				System.out.println("#### (glowroot-file) from stack: " + ExUtils.currentStackTraceShortPath());
 			} else {
-				System.out.println(" from stack: (not an exception)");
+				System.out.println("#### (glowroot-file) from stack: (not an exception)");
 				new Exception().printStackTrace();
 			}
 		}
