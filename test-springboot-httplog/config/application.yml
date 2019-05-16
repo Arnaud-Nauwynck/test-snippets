@@ -1,0 +1,7 @@
+
+security:
+   enable-csrf: false
+
+httplogging:
+   enable: true
+   
