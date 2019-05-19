@@ -1,12 +1,13 @@
 package fr.an.tests.webfluxservlerlog.ws;
 
-import java.util.Date;
-
 public class LogCriteriaDTO {
 	public String traceId;
 	public String username;
-	public Date fromDate;
+	public long fromTimestamp;
+	public long toTimestamp;
 	public String severity;
 	public String msgPattern;
+	public String msgTemplatePattern;
+
 	public int limit;
 }
