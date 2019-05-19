@@ -1,14 +1,17 @@
 
-<textarea [(ngModel)]="resultText" rows="10" cols="50"></textarea>
+<input [(ngModel)]="login">
+<br/>
+<input type="password" [(ngModel)]="password">
+<br/>
+<button (click)="onClickLogin()">Run As Login</button>
 <br/>
 
-{{statusMsg}}
-
-<br/>
-<br/>
-
-<!--
-
-<button (click)="onClickHello()">Post Hello</button>
-
--->
+<div class="row">
+    <div class="col-md-6">
+        <app-foo ></app-foo>
+    </div>
+    
+    <div class="col-md-6">
+        <app-bar class="col-md-6"></app-bar>
+    </div>
+</div>

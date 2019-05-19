@@ -8,60 +8,60 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/foo")
+@RequestMapping("/api/bar")
 @Slf4j
 
 @CrossOrigin(origins = "http://localhost:4200") // TODO
 
-public class FooController {
+public class BarController {
 
-	private int fooIdGenerator = 1;
+	private int barIdGenerator = 1;
 
 	@GetMapping("hello")
 	public void hello() {
-		log.info("foo hello");
+		log.info("bar hello");
 	}
 
 	@GetMapping("repeatHello")
 	public void repeatHello() {
-		log.info("foo repeatHello..");
+		log.info("bar repeatHello..");
 		int count = 10;
 		for (int i = 0; i < count; i++) {
-			log.info("foo hello " + fooIdGenerator++ + " (" + i + "/" + count + ")");
+			log.info("bar hello " + barIdGenerator++ + " (" + i + "/" + count + ")");
 			try {
 				Thread.sleep(200);
 			} catch (Exception ex) {
 			}
 		}
-		log.info(".. done foo repeatHello");
+		log.info(".. done bar repeatHello");
 	}
 
 	@GetMapping("repeatFastHello")
 	public void repeatFastHello() {
-		log.info("foo repeatFastHello");
+		log.info("bar repeatFastHello");
 		int count = 10;
 		for (int i = 0; i < count; i++) {
-			log.info("foo repeatFastHello " + fooIdGenerator++ + " (" + i + "/" + count + ")");
+			log.info("bar repeatFastHello " + barIdGenerator++ + " (" + i + "/" + count + ")");
 			try {
 				Thread.sleep(50);
 			} catch (Exception ex) {
 			}
 		}
-		log.info(".. done foo repeatFastHello");
+		log.info(".. done bar repeatFastHello");
 	}
 
 	@GetMapping("repeatSlowHello")
 	public void repeatSlowHello() {
-		log.info("foo repeatSlowHello");
+		log.info("bar repeatSlowHello");
 		int count = 10;
 		for (int i = 0; i < count; i++) {
-			log.info("foo repeatSlowHello " + fooIdGenerator++ + " (" + i + "/" + count + ")");
+			log.info("bar repeatSlowHello " + barIdGenerator++ + " (" + i + "/" + count + ")");
 			try {
 				Thread.sleep(1000);
 			} catch (Exception ex) {
 			}
 		}
-		log.info(".. done foo repeatSlowHello");
+		log.info(".. done bar repeatSlowHello");
 	}
 
 }

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 
+import fr.an.tests.webfluxservlerlog.dto.LogCriteriaDTO;
+import fr.an.tests.webfluxservlerlog.dto.LogEventDTO;
 import fr.an.tests.webfluxservlerlog.svc.RecentLogService;
 import reactor.core.publisher.Flux;
 
@@ -26,7 +28,7 @@ import reactor.core.publisher.Flux;
 @RestController
 @RequestMapping("/api/recentlog")
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200") // TODO
 
 public class RecentLogController {
 

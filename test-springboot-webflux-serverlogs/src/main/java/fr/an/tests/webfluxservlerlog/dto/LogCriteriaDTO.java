@@ -1,4 +1,4 @@
-package fr.an.tests.webfluxservlerlog.ws;
+package fr.an.tests.webfluxservlerlog.dto;
 
 public class LogCriteriaDTO {
 	public String traceId;

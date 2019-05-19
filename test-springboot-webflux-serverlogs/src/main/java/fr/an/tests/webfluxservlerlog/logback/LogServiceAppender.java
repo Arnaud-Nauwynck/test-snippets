@@ -2,8 +2,10 @@ package fr.an.tests.webfluxservlerlog.logback;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import fr.an.tests.webfluxservlerlog.dto.LogEventDTO;
+import fr.an.tests.webfluxservlerlog.svc.AppRequestTrace;
 import fr.an.tests.webfluxservlerlog.svc.RecentLogService;
-import fr.an.tests.webfluxservlerlog.ws.LogEventDTO;
+import lombok.val;
 
 public class LogServiceAppender extends AppenderBase<ILoggingEvent> {
 
@@ -23,9 +25,10 @@ public class LogServiceAppender extends AppenderBase<ILoggingEvent> {
 
 	@Override
 	protected void append(ILoggingEvent src) {
-		String traceId = null; // TODO
-		String userName = null;
-		String traceRequest = null;
+		val req = AppRequestTrace.curr();
+		String traceId = req.getTraceId();
+		String userName = req.getUsername();
+		String requestUrl = req.getRequestUrl();
 
 		LogEventDTO eventDTO = new LogEventDTO(
 				src.getThreadName(),
@@ -38,7 +41,7 @@ public class LogServiceAppender extends AppenderBase<ILoggingEvent> {
 				src.getArgumentArray(),
 				traceId,
 				userName, 
-				traceRequest);
+				requestUrl);
 
 		target.append(eventDTO);
 	}

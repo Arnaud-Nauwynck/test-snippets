@@ -14,10 +14,10 @@ import org.springframework.stereotype.Service;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import fr.an.tests.webfluxservlerlog.dto.LogCriteriaDTO;
+import fr.an.tests.webfluxservlerlog.dto.LogEventDTO;
 import fr.an.tests.webfluxservlerlog.logback.LogServiceAppender;
 import fr.an.tests.webfluxservlerlog.util.Ls;
-import fr.an.tests.webfluxservlerlog.ws.LogCriteriaDTO;
-import fr.an.tests.webfluxservlerlog.ws.LogEventDTO;
 import lombok.Value;
 import lombok.val;
 import reactor.core.publisher.Flux;

@@ -1,4 +1,4 @@
-package fr.an.tests.webfluxservlerlog.ws;
+package fr.an.tests.webfluxservlerlog.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +29,6 @@ public class LogEventDTO {
 
 	public final String traceId;
 	public final String userName;
-	public final String traceRequest;
+	public final String requestUrl;
 
 }
