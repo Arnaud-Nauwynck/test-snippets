@@ -9,5 +9,5 @@ public class WebfluxServerLogAppMain {
 	public static void main(String[] args) {
 		SpringApplication.run(WebfluxServerLogAppMain.class, args);
 	}
-	
+
 }

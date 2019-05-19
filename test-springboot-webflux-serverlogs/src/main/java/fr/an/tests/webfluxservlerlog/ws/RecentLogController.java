@@ -29,10 +29,10 @@ import reactor.core.publisher.Flux;
 @CrossOrigin(origins = "http://localhost:4200")
 
 public class RecentLogController {
-	
+
 	@Autowired
 	private RecentLogService recentLogService;
-	
+
 	/**
 	 * Get all in-memory recent logs
 	 * 
@@ -44,7 +44,7 @@ public class RecentLogController {
 	public List<LogEventDTO> listAll() {
 		return recentLogService.listAll();
 	}
-	
+
 	@GetMapping(path="/listByTracedId/{traceId}")
     public List<LogEventDTO> listByTraceId(
     		@PathVariable("traceId") String traceId) {
@@ -56,7 +56,7 @@ public class RecentLogController {
     		@RequestBody LogCriteriaDTO req) {
 		return recentLogService.filterBy(req);
     }
-	
+
 	// listen to Server-Sent-Events
 	// ------------------------------------------------------------------------
 

@@ -8,8 +8,8 @@ import fr.an.tests.webfluxservlerlog.ws.LogEventDTO;
 public class LogServiceAppender extends AppenderBase<ILoggingEvent> {
 
 	private RecentLogService target;	
-	
-	
+
+
 	public LogServiceAppender() {
 	}
 

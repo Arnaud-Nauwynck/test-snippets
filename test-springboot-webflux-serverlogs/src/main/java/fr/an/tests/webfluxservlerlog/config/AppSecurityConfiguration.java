@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, jsr250Enabled = true)  // otherwise @PreAuthorize would not work silently !!
 public class AppSecurityConfiguration extends WebSecurityConfigurerAdapter {
- 
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth)
       throws Exception {
@@ -26,18 +26,18 @@ public class AppSecurityConfiguration extends WebSecurityConfigurerAdapter {
           .withUser("admin").password("{noop}admin").roles("USER", "ADMIN") // 
           ;
     }
- 
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
     	http //
           .authorizeRequests() //
-          
+
           .antMatchers("/api/**").permitAll() //
 
           .and().httpBasic()
           	.and().csrf().disable() // otherwise POST,PUT?? do not work out of the box in curl, need to use X-XSS-Protection headers
-          
+
           ; //
     }
-    
+
 }

@@ -10,7 +10,7 @@ public final class Ls {
 
 	private Ls() {
 	}
-	
+
 	public static <T,TSrc> List<T> map(Collection<TSrc> src, Function<TSrc,T> func) {
 		List<T> res = new ArrayList<>(src.size());
 		for(TSrc e : src) {
@@ -18,7 +18,7 @@ public final class Ls {
 		}
 		return res;
 	}
-	
+
 	public static <T> List<T> filter(Collection<T> src, Predicate<T> pred) {
 		List<T> res = new ArrayList<>(src.size());
 		for(T e : src) {
