@@ -1,0 +1,9 @@
+
+   
+spring:
+   boot:
+      admin:
+         routes:
+            endpoints: env, metrics, trace, jolokia, info, configprops
+   
+   
