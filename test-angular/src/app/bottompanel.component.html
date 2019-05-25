@@ -1,0 +1,17 @@
+<div class="app-bottom-panel"
+    [@openClose]="showFooter ? 'open' : 'closed'"
+    (@openClose.start)="onAnimationStart($event)"
+    (@openClose.done)="onAnimationDone($event)" 
+    >
+
+    <span>test line1...</span>
+    <br/>
+    <span>test line2...</span>
+    <br/>
+    <span>test line3...</span>
+    <br/>
+    <span>test line4...</span>
+    <br/>
+    <span>test line5...</span>
+    
+</div>

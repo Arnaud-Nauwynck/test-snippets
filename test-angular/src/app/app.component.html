@@ -1,0 +1,15 @@
+
+<button (click)="onClickShow()">Show</button>
+<button (click)="onClickHide()">Hide</button>
+<button (click)="onClickShowHide()">ShowHide</button>
+
+<button (click)="onClick_getFoo()">http getFoo</button>
+<button (click)="onClick_getText()">http getText</button>
+<button (click)="onClick_getJsonText()">http getJsonText</button>
+
+<textarea [ngModel]="textResults" rows="10" cols="120">
+</textarea>
+
+<app-bottompanel [showFooter]="showFooter"
+    ></app-bottompanel>
+
