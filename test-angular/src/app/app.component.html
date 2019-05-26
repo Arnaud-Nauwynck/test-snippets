@@ -2,14 +2,22 @@
 <button (click)="onClickShow()">Show</button>
 <button (click)="onClickHide()">Hide</button>
 <button (click)="onClickShowHide()">ShowHide</button>
+&nbsp;
 
 <button (click)="onClick_getFoo()">http getFoo</button>
+&nbsp;
+
 <button (click)="onClick_getText()">http getText</button>
 <button (click)="onClick_getJsonText()">http getJsonText</button>
+&nbsp;
+
+<button (click)="onClick_getFooSlow()">http getFooSlow</button>
+<button (click)="onClick_getFoo4xx()">http getFoo4xx</button>
+<button (click)="onClick_getFooFailed5xx()">http getFoo5xx</button>
 
 <textarea [ngModel]="textResults" rows="10" cols="120">
 </textarea>
 
-<app-bottompanel [showFooter]="showFooter"
+<app-bottompanel [showFooter]="showFooter" [progressMsg]="progressMsg" [errorMsg]="errorMsg"
     ></app-bottompanel>
 

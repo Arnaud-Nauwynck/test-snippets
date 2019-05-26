@@ -38,6 +38,10 @@ http://localhost:8080/swagger-ui.html
 http://localhost:8080/v2/api-docs
 
 
+curl http://localhost:8080/v2/api-docs | jq '.' > apidoc.json
+
+
+ 
 # Swagger CodeGen
 
 ```
@@ -66,3 +70,15 @@ http://localhost:8080/v2/api-docs
 </plugin>
 ```
 
+# Testing generated Angular code ...
+
+```
+mvn -o -Pswagger-gen-patch generate-sources; 
+
+... copy generated typescript-angular
+... PATCH it ...
+
+(cd ../test-angular-bootstrap; npm run build ); 
+cp -rf ../test-angular-bootstrap/dist/app src/main/resources/static/; 
+mvn -o package
+```

@@ -10,9 +10,12 @@ import { FooRequest, FooResponse } from './swagger-generated/model/models';
 })
 export class AppComponent implements OnInit {
 
-  showFooter: boolean = false;
   textResults = "";
 
+  showFooter: boolean = false;
+  progressMsg: string = null;
+  errorMsg: string = null;
+  
   constructor(private fooSvc: FooService) {
   }
   
@@ -57,9 +60,77 @@ export class AppComponent implements OnInit {
           console.log('.. getJsonText', res);
           this.textResults += 'getJsonText => ' + res + '\n';
       }, err => {
-          console.error('Failed ..getJsonText', err);
-          this.textResults += 'Failed getJsonText => ' + err.error + '\n';
+          this.logAndFormatError('getJsonText', err);
       });
   }
 
+  onClick_getFooSlow() {
+      this.progressMsg = 'getFooSlow';
+      this.errorMsg = null;
+      this.showFooter = true;
+      this.fooSvc.getFooSlowUsingGET().subscribe(res => {
+          this.showFooter = false;
+          this.progressMsg = null;
+          console.log('.. getFooSlow', res);
+          this.textResults += 'getFooSlow => ' + res + '\n';
+      }, err => {
+          this.showFooter = false;
+          this.progressMsg = null;
+          this.logAndFormatError('getFooSlow', err);
+      });
+  }
+
+  onClick_getFoo4xx() {
+      this.progressMsg = 'getFoo4xx';
+      this.errorMsg = null;
+      this.showFooter = true;
+      this.fooSvc.getFoo4xxUsingGET().subscribe(res => {
+          this.progressMsg = null;
+          this.showFooter = false;
+          console.log('.. getFoo4xx', res);
+          this.textResults += 'getFoo4xx => ' + res + '\n';
+      }, err => {
+          this.progressMsg = null;
+          this.logAndFormatError('getFoo4xx', err);
+      });
+  }
+
+  onClick_getFooFailed5xx() {
+      this.progressMsg = 'getFoo5xx';
+      this.errorMsg = null;
+      this.showFooter = true;
+      this.fooSvc.getFoo5xxUsingGET().subscribe(res => {
+          this.progressMsg = null;
+          this.showFooter = false;
+          console.log('.. getFooFailed5xx', res);
+          this.textResults += 'getFooFailed5xx => ' + res + '\n';
+      }, err => {
+          this.progressMsg = null;
+          this.showFooter = true;
+          this.logAndFormatError('getFooFailed5xx', err);
+      });
+  }
+  
+  logAndFormatError(displayText: string, err: any) {
+      var errText = '';
+      if (err.message) {
+          errText += ' ' + err.message;
+      } else {
+          if (err.status) {
+              errText += ' status: ' + err.status;
+          }
+      }
+      // maybe an exception error..
+      if (err.error) {
+          if (err.error.message) {
+              errText += ' - exception: ' + err.error.message;
+          }
+      }
+      
+      console.error('Failed .. ' + displayText + ' ' + errText, err);
+      this.textResults += 'Failed ' + displayText + ' => ' + errText + '\n';
+
+      this.errorMsg = 'Failed ' + displayText + ' => ' + errText + '\n';
+
+  }
 }

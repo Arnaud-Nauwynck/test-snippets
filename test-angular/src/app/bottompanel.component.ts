@@ -18,7 +18,7 @@ import {
    trigger('openClose', [
      
      state('open', style({
-         'max-height': '100px',
+         'max-height': '200px',
          height: 'auto',
      })),
      
@@ -40,6 +40,11 @@ export class BottomPanelComponent {
 
   @Input()
   showFooter: boolean = false;
+
+  @Input()
+  progressMsg: string = null;
+  @Input()
+  errorMsg: string = null;
 
   onAnimationStart(event: any) {
       console.log('onAnimationStart');

@@ -58,6 +58,114 @@ export class FooService {
 
 
     /**
+     * getFoo4xx
+     * 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getFoo4xxUsingGET(observe?: 'body', reportProgress?: boolean): Observable<FooResponse>;
+    public getFoo4xxUsingGET(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<FooResponse>>;
+    public getFoo4xxUsingGET(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<FooResponse>>;
+    public getFoo4xxUsingGET(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            '*/*'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<FooResponse>(`${this.basePath}/api/v1/foo/getFoo401`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * getFoo5xx
+     * 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getFoo5xxUsingGET(observe?: 'body', reportProgress?: boolean): Observable<FooResponse>;
+    public getFoo5xxUsingGET(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<FooResponse>>;
+    public getFoo5xxUsingGET(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<FooResponse>>;
+    public getFoo5xxUsingGET(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            '*/*'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<FooResponse>(`${this.basePath}/api/v1/foo/getFooFailed5xx`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * getFooSlow
+     * 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getFooSlowUsingGET(observe?: 'body', reportProgress?: boolean): Observable<FooResponse>;
+    public getFooSlowUsingGET(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<FooResponse>>;
+    public getFooSlowUsingGET(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<FooResponse>>;
+    public getFooSlowUsingGET(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            '*/*'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<FooResponse>(`${this.basePath}/api/v1/foo/getFooSlow`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
      * getFoo
      * 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

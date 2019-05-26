@@ -13,5 +13,19 @@
     <span>test line4...</span>
     <br/>
     <span>test line5...</span>
+
+    <div *ngIf="progressMsg">
+        <br>/
+        <span>.. Processing</span>
+        <br>/
+        <span>{{progressMsg}}</span>
+    </div>
+    
+    <div *ngIf="errorMsg">
+        <br>/
+        <span>An Error as occured!</span>
+        <br>/
+        <span style="{ foreground-color: red; }">{{errorMsg}}</span>
+    </div>
     
 </div>
