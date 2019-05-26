@@ -32,7 +32,7 @@ public class Spring5ChatRoomSSE implements ChatRoomMessageListener  {
 
 	public Flux<ServerSentEvent<ChatMessageEntry>> subscribe(String lastEventId) {
 		Integer lastId = (lastEventId != null)? Integer.parseInt(lastEventId) : null;
-		return replayProcessor.filter(x -> lastId == null || x.data().get().id > lastId);
+		return replayProcessor.filter(x -> lastId == null || x.data().id > lastId);
 	}
 
 }

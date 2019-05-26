@@ -1,0 +1,108 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.an.tests</groupId>
+	<artifactId>test-snippets</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<modules>
+
+<module>dyn-adapter</module>
+<module>file-patch-copier</module>
+<module>git-history-grep</module>
+<module>gitrepo-to-neo4j</module>
+<module>google-hashcode2015</module>
+<module>hdfs-fsimage-tool</module>
+<module>jgits-mirror</module>
+<module>log-parser</module>
+<module>my.eclipse.mirror</module>
+<module>qrcodetest</module>
+<module>reverse-ambari-jpa</module>
+<module>reverse-yarn-model</module>
+<module>socket-remote-worker</module>
+<module>spring-boot-sample-activemq</module>
+<module>test-antlr</module>
+<module>test-avro</module>
+<module>test-cassandra</module>
+<module>test-cassandra-client</module>
+<module>test-collections</module>
+<module>test-current-method</module>
+<module>test-derivative-symbolic</module>
+<module>test-detect-object-cycle</module>
+<module>test-docker-java</module>
+<module>test-docker-jib</module>
+<module>test-drools</module>
+<!-- 
+<module>test-eclipselink-springdata</module>
+-->
+<module>test-fs-scan-compare</module>
+<module>test-glowroot</module>
+<module>test-graphiql-github</module>
+<module>test-graphql</module>
+<!-- 
+<module>test-groovy</module>
+ -->
+<module>test-hadoop-minicluster-hdfs</module>
+<module>test-hbase-admin</module>
+<module>test-hdfs-filesystem</module>
+<module>test-hibernate-jpa</module>
+<module>test-hibernate-jpa-lazyfk</module>
+<module>test-http-repo</module>
+<module>test-jackson</module>
+<module>test-javaio</module>
+<module>test-jdk10</module>
+<module>test-jdk11</module>
+<module>test-jdk12</module>
+<module>testjdk8mojo-maven-plugin</module>
+<module>test-jdk9</module>
+<module>test-jedis</module>
+<module>test-jersey-swagger</module>
+<!-- 
+<module>test-json</module>
+ -->
+<module>test-kafka</module>
+<module>test-kalman</module>
+<module>test-kryo</module>
+<module>test-ldap</module>
+<module>test-lombok</module>
+<module>test-map-flatMap</module>
+<module>test-minimal-mockito-springdata</module>
+<module>test-mockito</module>
+<module>test-mockito-userdefined</module>
+<!-- 
+<module>test-ora-storedproc-struct-array</module>
+ -->
+<module>test-orika</module>
+<module>test-overthere</module>
+<module>test-protobuf</module>
+<module>test-soundtouch4j</module>
+<module>test-spring4-reactive-web</module>
+<module>test-springboot</module>
+<module>test-springboot-admin</module>
+<module>test-springboot-aggrid</module>
+<module>test-springboot-angularjs</module>
+<module>test-springboot-fastclassloader</module>
+<module>test-springboot-gateway</module>
+<module>test-springboot-httplog</module>
+<module>test-springboot-profile</module>
+<module>test-springboot-proploader</module>
+<module>test-springboot-sse</module>
+<module>test-springboot-swagger</module>
+<module>test-springboottest</module>
+<module>test-springboottestctx</module>
+<module>test-springboot-tx</module>
+<module>test-springboot-webflux-serverlogs</module>
+<module>test-springboot-websocket</module>
+<module>test-spring-reactive-web</module>
+<!-- 
+<module>test-threaddumps-sampling</module>
+ -->
+<module>test-velocity</module>
+<module>test-web-js-files</module>
+<module>test-xmpp-rocks</module>
+
+</modules>
+</project>
+

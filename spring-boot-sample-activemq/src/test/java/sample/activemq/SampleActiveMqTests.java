@@ -16,18 +16,17 @@
 
 package sample.activemq;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import javax.jms.JMSException;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.OutputCapture;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for demo application.
@@ -35,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Eddú Meléndez
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(SampleActiveMQApplication.class)
+@SpringBootTest() // SampleActiveMQApplication.class
 public class SampleActiveMqTests {
 
 	@Rule

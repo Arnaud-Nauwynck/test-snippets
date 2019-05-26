@@ -14,7 +14,7 @@ import java.util.TreeMap;
 import org.junit.Assert;
 import org.junit.Test;
 
-import fr.an.mem4j.lightweight.SortedArrayDic;
+import fr.an.mem4j.collection.lightweight.SortedArrayDic;
 
 public class SortedMapBenchmarkTest {
     

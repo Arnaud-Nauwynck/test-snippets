@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>fr.an.tests</groupId>
-  <artifactId>test-springboot-websocket</artifactId>
+  <artifactId>test-springboot-sse</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
     <name>Test SpringBoot SSE</name>
@@ -18,7 +18,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.1.4.RELEASE</version>
+                <version>2.1.5.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

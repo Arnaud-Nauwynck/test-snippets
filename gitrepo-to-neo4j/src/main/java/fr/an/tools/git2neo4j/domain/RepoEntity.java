@@ -3,14 +3,14 @@ package fr.an.tools.git2neo4j.domain;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 
 @NodeEntity(label="Repo")
 public class RepoEntity {
 
-	@GraphId 
+	@Id 
 	private Long id;
 
 	private String name;

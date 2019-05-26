@@ -1,6 +1,7 @@
 package fr.an.test.fsscancomp.io;
 
 import java.io.File;
+import java.util.function.Function;
 
 import fr.an.test.fsscancomp.img.ImageEntry;
 import fr.an.test.fsscancomp.img.ImageEntryHandler;
@@ -41,9 +42,11 @@ public class JavaIoDirScannerImageBuilder {
 	public static void scanDirWriteImage(File dir, 
 			File toBaseDir, String destImageName, int hashSize, int maxFragmentSize,
 			File debugTextFile) {
-		ImageEntryHandler entryHandler = ImageFragmentsWriterUtils.createSplitThenSortBufferedWriter(toBaseDir, destImageName, hashSize,
-				maxFragmentSize, debugTextFile);
-		
+		ImageEntryHandler entryHandler = ImageFragmentsWriterUtils.createSplitThenSortBufferedWriter(
+				toBaseDir, destImageName, 
+				hashSize, maxFragmentSize, debugTextFile, 
+				null);
+
 		JavaIoDirScannerImageBuilder scanner = new JavaIoDirScannerImageBuilder(entryHandler);
 		
 		// *** The Biggy ***

@@ -29,7 +29,7 @@
 		<dependency>
 		  <groupId>ma.glasnost.orika</groupId>
 		  <artifactId>orika-core</artifactId>
-		  <version>1.5.2</version>
+		  <version>1.5.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>

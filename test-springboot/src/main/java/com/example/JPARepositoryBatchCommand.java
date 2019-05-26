@@ -21,7 +21,7 @@ public class JPARepositoryBatchCommand implements CommandLineRunner {
 	
 	@Override
 	public void run(String... args) throws Exception {
-		Employee empById1 = employeeDAO.findOne(1);
+		Employee empById1 = employeeDAO.findById(1).orElse(null);
 		if (empById1 != null) LOG.info("Hello employee #1 : " + empById1.getFirstName() + " " + empById1.getLastName());
 		Employee empJohn = employeeDAO.findOneByEmail("john.smith@gmail.com");
 		if (empJohn == null) {

@@ -1,16 +1,11 @@
 package fr.an.test.ambarijpa;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EntityManager;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -23,14 +18,12 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.PreRemove;
 import javax.persistence.QueryHint;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.UniqueConstraint;
-import javax.validation.metadata.Scope;
 
-import fr.an.test.ambarijpa.state.AlertState;
+import fr.an.test.ambarijpa.state.Scope;
 import fr.an.test.ambarijpa.state.SourceType;
 
 /**

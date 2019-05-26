@@ -3,14 +3,14 @@ package fr.an.tools.git2neo4j.domain;
 import java.util.List;
 
 import org.eclipse.jgit.lib.ObjectId;
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
 
 @NodeEntity(label="RevCi")
 public class RevCommitEntity {
 
-	@GraphId 
+	@Id 
 	private Long id; // internal generated id, not the SHA1 !!
 	
 	/** SHA-1 .. cf ObjectId */
