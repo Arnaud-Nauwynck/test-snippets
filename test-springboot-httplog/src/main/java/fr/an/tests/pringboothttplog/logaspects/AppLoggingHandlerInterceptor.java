@@ -2,6 +2,7 @@ package fr.an.tests.pringboothttplog.logaspects;
 
 import java.nio.charset.Charset;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -10,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import fr.an.tests.pringboothttplog.annotation.NoLog;
@@ -24,6 +26,16 @@ public class AppLoggingHandlerInterceptor extends HandlerInterceptorAdapter {
 		if (isNoLogHandler(handler)) {
 			return true;
 		}
+
+		// only allows the REQUEST dispatcher and ignores the ERROR and any other dispatchers
+        // this prevents the preHandle function from running multiple times
+		// cf https://stackoverflow.com/questions/26995395/spring-mvc-interceptorhandler-called-twice-with-deferredresult
+		DispatcherType dispatcherType = request.getDispatcherType();
+		if (dispatcherType != DispatcherType.REQUEST) {
+            log.info("ignore preHandle dispatcherType:" + dispatcherType);
+        	return true;
+        }
+
 		String currAuthInfo = currAuthInfo();
 
 		// to consume request body, we need to change the ServletRequest to a ServletRequestWrapper,
@@ -74,6 +86,7 @@ public class AppLoggingHandlerInterceptor extends HandlerInterceptorAdapter {
 		return true;
 	}
 
+    
 	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
 			Exception ex) {
@@ -110,6 +123,24 @@ public class AppLoggingHandlerInterceptor extends HandlerInterceptorAdapter {
 			log.error("afterCompletion " + currAuthInfo + request.getMethod() + " " + request.getRequestURI() + " => "
 					+ response.getStatus() + " ex=" + ex.getMessage());
 		}
+	}
+
+	@Override
+	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+			ModelAndView modelAndView) throws Exception {
+		if (isNoLogHandler(handler)) {
+			return;
+		}
+		log.info("postHandle");
+	}
+
+	@Override
+	public void afterConcurrentHandlingStarted(HttpServletRequest request, HttpServletResponse response, Object handler)
+			throws Exception {
+		if (isNoLogHandler(handler)) {
+			return;
+		}
+		log.info("afterConcurrentHandlingStarted");
 	}
 
 	private String currAuthInfo() {

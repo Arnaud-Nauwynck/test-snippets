@@ -407,3 +407,33 @@ log:
 ```
 No interceptor log!
 ```
+
+
+### Async Method Handler using DeferredResult ... preHandle called multiple times!
+
+java code:
+```
+    @GetMapping("/getFooDeferred")
+    public DeferredResult<FooResponse> getFooDeferred() {
+        DeferredResult<FooResponse> df = new DeferredResult<>();
+        df.setResult(new FooResponse("hello", 123));
+        return df;
+    }
+```
+
+
+curl:
+```
+curl -u user:password http://localhost:8080/api/v1/foo/getFooDeferred
+```
+
+
+log:
+```
+INFO  f.a.t.p.l.AppLoggingHandlerInterceptor - preHandle username:user GET /api/v1/foo/getFooDeferred
+INFO  f.a.t.p.l.AppLoggingHandlerInterceptor - afterConcurrentHandlingStarted
+INFO  f.a.t.p.l.AppLoggingHandlerInterceptor - ignore preHandle dispatcherType:ASYNC
+INFO  f.a.t.p.l.AppLoggingHandlerInterceptor - postHandle
+INFO  f.a.t.p.l.AppLoggingHandlerInterceptor - afterCompletion username:user GET /api/v1/foo/getFooDeferred => 200
+```
+
