@@ -99,6 +99,7 @@
 <!-- 
 <module>test-threaddumps-sampling</module>
  -->
+<module>test-tensorflow-java</module>
 <module>test-velocity</module>
 <module>test-web-js-files</module>
 <module>test-xmpp-rocks</module>
