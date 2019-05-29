@@ -10,4 +10,4 @@ JVM_ARGS=""
 CLASSPATH="target/benchmark-jansi-${pomVersion}.jar;target/dependency/jansi-${jansiVersion}.jar"
 
 echo ... java ${JVM_ARGS} -cp "${CLASSPATH}" org.fusesource.jansi.BenchmarkMain 
-#java ${JVM_ARGS} -cp "${CLASSPATH}" org.fusesource.jansi.BenchmarkMain
+java ${JVM_ARGS} -cp "${CLASSPATH}" org.fusesource.jansi.BenchmarkMain

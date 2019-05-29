@@ -201,8 +201,9 @@ public class BenchmarkMain {
 	 */
 	private static long benchOverheadAnsiJansiPrintStream(int outerLoop, int innerLoop) {
 		OutputStream devNull = new NullOutputStream();
-		PrintStream devNullPrintStream = new PrintStream(devNull);
-		AnsiPrintStream ansiPrintStream = new AnsiPrintStream(devNullPrintStream, true);
+		AnsiOutputStream ansiStream = new AnsiOutputStream(
+				devNull, new TerminalCommandProcessor(devNull));
+		PrintStream ansiPrintStream = new PrintStream(ansiStream);
 		
 		long nanos = 0;
 		long prevInnerMillis = 0;
@@ -235,8 +236,9 @@ public class BenchmarkMain {
 	 */
 	private static long benchOverheadRawJansiPrintStream(int outerLoop, int innerLoop) {
 		OutputStream devNull = new NullOutputStream();
-		PrintStream devNullPrintStream = new PrintStream(devNull);
-		AnsiPrintStream ansiPrintStream = new AnsiPrintStream(devNullPrintStream, true);
+		AnsiOutputStream ansiStream = new AnsiOutputStream(
+				devNull, new TerminalCommandProcessor(devNull));
+		PrintStream ansiPrintStream = new PrintStream(ansiStream);
 		
 		long nanos = 0;
 		long prevInnerMillis = 0;
@@ -298,8 +300,9 @@ public class BenchmarkMain {
 	 */
 	private static int countFlushAnsiJansiPrintStream(int outerLoop, int innerLoop) {
 		FlushCallsCountNullOutputStream countFlushDevNull = new FlushCallsCountNullOutputStream();
-		PrintStream devNullPrintStream = new PrintStream(countFlushDevNull, true);
-		AnsiPrintStream ansiPrintStream = new AnsiPrintStream(devNullPrintStream, true);
+		AnsiOutputStream ansiStream = new AnsiOutputStream(
+				countFlushDevNull, new TerminalCommandProcessor(countFlushDevNull));
+		PrintStream ansiPrintStream = new PrintStream(ansiStream, true);
 		
 		long prevInnerMillis = 0;
         for(int i = 0; i < outerLoop; i++) {
@@ -325,8 +328,9 @@ public class BenchmarkMain {
 	 */
 	private static int countFlushRawJansiPrintStream(int outerLoop, int innerLoop) {
 		FlushCallsCountNullOutputStream countFlushDevNull = new FlushCallsCountNullOutputStream();
-		PrintStream devNullPrintStream = new PrintStream(countFlushDevNull, true);
-		AnsiPrintStream ansiPrintStream = new AnsiPrintStream(devNullPrintStream, true);
+		AnsiOutputStream ansiStream = new AnsiOutputStream(
+				countFlushDevNull, new TerminalCommandProcessor(countFlushDevNull));
+		PrintStream ansiPrintStream = new PrintStream(ansiStream, true);
 		
 		long prevInnerMillis = 0;
         for(int i = 0; i < outerLoop; i++) {
