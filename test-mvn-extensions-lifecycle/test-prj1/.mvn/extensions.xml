@@ -1,0 +1,9 @@
+<extensions>
+       
+       <extension>
+		  <groupId>fr.an.tests</groupId>
+		  <artifactId>test-mvn-extensions-lifecycle</artifactId>
+		  <version>0.0.1</version>
+       </extension>
+       
+</extensions>
