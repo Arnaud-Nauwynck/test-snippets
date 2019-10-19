@@ -14,14 +14,14 @@ public class MvnLifecycleParticipant
     public void afterSessionStart( MavenSession session )
         throws MavenExecutionException
     {
-        System.out.println( "#### afterSessionStart" );
+        DisplayStackUtils.message("LifecycleParticipant", "afterSessionStart" );
     }
 
     @Override
     public void afterProjectsRead( MavenSession session )
         throws MavenExecutionException
     {
-        System.out.println( "#### afterProjectsRead" );
+        DisplayStackUtils.message("LifecycleParticipant", "afterProjectsRead" );
     }
 
     

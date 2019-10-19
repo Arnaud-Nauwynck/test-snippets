@@ -31,6 +31,38 @@
           <target>1.8</target>
         </configuration>
       </plugin>
+      
+      <plugin>
+        <groupId>fr.an.tests</groupId>
+        <artifactId>test-mojo</artifactId>
+        <version>0.0.1</version>
+        <configuration>
+            <param1>test1</param1>
+        </configuration>
+        <executions>
+            <execution>
+                <id>exec1</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>test1</goal>
+                </goals>
+                <configuration>
+                    <param1>test1-exec1</param1>
+                    <paramUnkown>test1-exec1</paramUnkown>
+                </configuration>
+            </execution>
+            <execution>
+                <id>exec2</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>test1</goal>
+                </goals>
+                <configuration>
+                    <param1>test1-exec2</param1>
+                </configuration>
+            </execution>
+        </executions>         
+      </plugin>
     </plugins>
   </build>
 

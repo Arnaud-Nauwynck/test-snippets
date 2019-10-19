@@ -11,103 +11,103 @@ public class MvnExecutionListener implements ExecutionListener
     @Override
     public void projectDiscoveryStarted( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.projectDiscoveryStarted" );
+        DisplayStackUtils.message("ExecutionListener", "projectDiscoveryStarted" );
     }
 
     @Override
     public void sessionStarted( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.sessionStarted" );
+        DisplayStackUtils.message("ExecutionListener", "sessionStarted" );
     }
 
     @Override
     public void sessionEnded( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.sessionEnded" );
+        DisplayStackUtils.message("ExecutionListener", "sessionEnded" );
     }
 
     @Override
     public void projectSkipped( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.projectSkipped" );
+        DisplayStackUtils.message("ExecutionListener", "projectSkipped" );
     }
 
     @Override
     public void projectStarted( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.projectStarted" );
+        DisplayStackUtils.message("ExecutionListener", "projectStarted" );
     }
 
     @Override
     public void projectSucceeded( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.projectSucceeded" );
+        DisplayStackUtils.message("ExecutionListener", "projectSucceeded" );
     }
 
     @Override
     public void projectFailed( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.projectFailed" );
+        DisplayStackUtils.message("ExecutionListener", "projectFailed" );
     }
 
     @Override
     public void mojoSkipped( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.mojoSkipped" );
+        DisplayStackUtils.message("ExecutionListener", "mojoSkipped" );
     }
 
     @Override
     public void mojoStarted( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.mojoStarted" );
+        DisplayStackUtils.message("ExecutionListener", "mojoStarted" );
     }
 
     @Override
     public void mojoSucceeded( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.mojoSucceeded" );
+        DisplayStackUtils.message("ExecutionListener", "mojoSucceeded" );
     }
 
     @Override
     public void mojoFailed( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.mojoFailed" );
+        DisplayStackUtils.message("ExecutionListener", "mojoFailed" );
     }
 
     @Override
     public void forkStarted( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.forkStarted" );
+        DisplayStackUtils.message("ExecutionListener", "forkStarted" );
     }
 
     @Override
     public void forkSucceeded( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.forkSucceeded" );
+        DisplayStackUtils.message("ExecutionListener", "forkSucceeded" );
     }
 
     @Override
     public void forkFailed( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.forkFailed" );
+        DisplayStackUtils.message("ExecutionListener", "forkFailed" );
     }
 
     @Override
     public void forkedProjectStarted( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.forkedProjectStarted" );
+        DisplayStackUtils.message("ExecutionListener", "forkedProjectStarted" );
     }
 
     @Override
     public void forkedProjectSucceeded( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.forkedProjectSucceeded" );
+        DisplayStackUtils.message("ExecutionListener", "forkedProjectSucceeded" );
     }
 
     @Override
     public void forkedProjectFailed( ExecutionEvent event )
     {
-        System.out.println( "### ExecutionListener.forkedProjectFailed" );
+        DisplayStackUtils.message("ExecutionListener", "forkedProjectFailed" );
     }
 
 }

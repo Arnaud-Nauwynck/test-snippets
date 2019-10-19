@@ -15,22 +15,21 @@ public class MvnEventSpy extends AbstractEventSpy
     public void init( Context context )
         throws Exception
     {
-        System.out.println( "####### EventSpy.init" );
+        DisplayStackUtils.message( "EventSpy", "init" );
     }
 
     @Override
     public void onEvent( Object event )
         throws Exception
     {
-        try {
-            if (event instanceof org.eclipse.aether.RepositoryEvent) {
-                // ARTIFACT_RESOLVING..
-                // ARTIFACT_RESOLVED
-                return;
-            }
-            if (event instanceof ExecutionEvent) {
-                ExecutionEvent executionEvent = (ExecutionEvent) event;
-                Type execType = executionEvent.getType();
+        if (event instanceof org.eclipse.aether.RepositoryEvent) {
+            // ARTIFACT_RESOLVING..
+            // ARTIFACT_RESOLVED
+            return;
+        }
+        if (event instanceof ExecutionEvent) {
+            ExecutionEvent executionEvent = (ExecutionEvent) event;
+            Type execType = executionEvent.getType();
 //                ProjectDiscoveryStarted,
 //                SessionStarted,
 //                SessionEnded,
@@ -49,35 +48,31 @@ public class MvnEventSpy extends AbstractEventSpy
 //                ForkedProjectSucceeded,
 //                ForkedProjectFailed,
 
-                MojoExecution mojoExec = executionEvent.getMojoExecution();
-                if (mojoExec == null) {
-                    System.out.println( "####### EventSpy.onEvent ExecutionEvent " 
-                                    + execType
-                                    );
-                    return;
-                }
-                System.out.println( "####### EventSpy.onEvent ExecutionEvent " 
+            MojoExecution mojoExec = executionEvent.getMojoExecution();
+            if (mojoExec == null) {
+                DisplayStackUtils.message("EventSpy", "onEvent ExecutionEvent " 
                                 + execType
-                                + " "
-                                + mojoExec.getGroupId() + ":" + mojoExec.getArtifactId()
-                                + ":" + mojoExec.getGoal()
-                                + " (" + mojoExec.getExecutionId() + ")"
                                 );
-                
                 return;
             }
-            System.out.println( "####### EventSpy.onEvent " + event.getClass().getName() + " " + event );
-        } catch(Exception ex) {
-            System.out.println( "####### FAILED EventSpy.onEvent " + ex.getMessage() );
-            ex.printStackTrace(System.out);
+            DisplayStackUtils.message("EventSpy", "onEvent ExecutionEvent " 
+                            + execType
+                            + " "
+                            + mojoExec.getGroupId() + ":" + mojoExec.getArtifactId()
+                            + ":" + mojoExec.getGoal()
+                            + " (" + mojoExec.getExecutionId() + ")"
+                            );
+            
+            return;
         }
+        DisplayStackUtils.message("EventSpy", "onEvent " + event.getClass().getName() + " " + event );
     }   
 
     @Override
     public void close()
         throws Exception
     {
-        System.out.println( "####### EventSpy.close" );
+        DisplayStackUtils.message("EventSpy", "close" );
     }
 
     

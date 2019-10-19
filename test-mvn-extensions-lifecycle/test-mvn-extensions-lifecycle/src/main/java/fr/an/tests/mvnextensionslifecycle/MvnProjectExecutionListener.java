@@ -12,26 +12,26 @@ public class MvnProjectExecutionListener
     public void beforeProjectExecution( ProjectExecutionEvent event )
         throws LifecycleExecutionException
     {
-        System.out.println( "#### ProjectExecutionListener.beforeProjectExecution" );
+        DisplayStackUtils.message("ProjectExecutionListener", "beforeProjectExecution" );
     }
 
     public void beforeProjectLifecycleExecution( ProjectExecutionEvent event )
         throws LifecycleExecutionException
     {
-        System.out.println( "#### ProjectExecutionListener.beforeProjectLifecycleExecution" );
+        DisplayStackUtils.message("ProjectExecutionListener", "beforeProjectLifecycleExecution" );
 
     }
 
     public void afterProjectExecutionSuccess( ProjectExecutionEvent event )
         throws LifecycleExecutionException
     {
-        System.out.println( "#### ProjectExecutionListener.afterProjectExecutionSuccess" );
+        DisplayStackUtils.message("ProjectExecutionListener", "afterProjectExecutionSuccess" );
 
     }
 
     public void afterProjectExecutionFailure( ProjectExecutionEvent event )
     {
-        System.out.println( "#### ProjectExecutionListener.afterProjectExecutionFailure" );
+        DisplayStackUtils.message("ProjectExecutionListener", "afterProjectExecutionFailure" );
     }
 
 }

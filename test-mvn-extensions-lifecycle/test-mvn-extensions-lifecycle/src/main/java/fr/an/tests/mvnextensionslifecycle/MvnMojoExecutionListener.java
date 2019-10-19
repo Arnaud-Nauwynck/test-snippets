@@ -12,18 +12,18 @@ public class MvnMojoExecutionListener
     public void beforeMojoExecution( MojoExecutionEvent event )
         throws MojoExecutionException
     {
-        System.out.println( "#### MojoExecutionListener.beforeMojoExecution" );
+        DisplayStackUtils.message("MojoExecutionListener", "beforeMojoExecution" );
     }
 
     public void afterMojoExecutionSuccess( MojoExecutionEvent event )
         throws MojoExecutionException
     {
-        System.out.println( "#### MojoExecutionListener.afterMojoExecutionSuccess" );
+        DisplayStackUtils.message("MojoExecutionListener", "afterMojoExecutionSuccess" );
     }
 
     public void afterExecutionFailure( MojoExecutionEvent event )
     {
-        System.out.println( "#### MojoExecutionListener.afterExecutionFailure" );
+        DisplayStackUtils.message("MojoExecutionListener", "afterExecutionFailure" );
     }
 
 }

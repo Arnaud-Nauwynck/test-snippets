@@ -1,0 +1,147 @@
+##### EventSpy.init
+	 stack=
+	   MvnEventSpy.init:18/EventSpyDispatcher.init:85
+	   /MavenCli.container:670/doMain:281/main:192/
+	   Launcher.launchEnhanced:282/launch:225/mainWithExitCode:406/main:347
+##### EventSpy.onEvent org.apache.maven.settings.building.DefaultSettingsBuildingRequest org.apache.maven.settings.building.DefaultSettingsBuildingRequest@3a71c100
+	 stack=MvnEventSpy.onEvent:68/EventSpyDispatcher.onEvent:104/
+	 SettingsXmlConfigurationProcessor.process:135/
+	 MavenCli.configure:1165/doMain:283/main:192/Launcher.launchEnhanced:282/launch:225/mainWithExitCode:406/main:347
+##### EventSpy.onEvent org.apache.maven.settings.building.DefaultSettingsBuildingResult org.apache.maven.settings.building.DefaultSettingsBuildingResult@5b69fd74
+	 stack=MvnEventSpy.onEvent:68/EventSpyDispatcher.onEvent:104/
+	 SettingsXmlConfigurationProcessor.process:147/
+	 MavenCli.configure:1165/doMain:283/main:192/Launcher.launchEnhanced:282/launch:225/mainWithExitCode:406/main:347
+##### EventSpy.onEvent org.apache.maven.toolchain.building.DefaultToolchainsBuildingRequest org.apache.maven.toolchain.building.DefaultToolchainsBuildingRequest@77b325b3
+	 stack=MvnEventSpy.onEvent:68/EventSpyDispatcher.onEvent:104/
+	 MavenCli.toolchains:1258/doMain:284/main:192/Launcher.launchEnhanced:282/launch:225/mainWithExitCode:406/main:347
+##### EventSpy.onEvent org.apache.maven.toolchain.building.DefaultToolchainsBuildingResult org.apache.maven.toolchain.building.DefaultToolchainsBuildingResult@4201a617
+	 stack=MvnEventSpy.onEvent:68/EventSpyDispatcher.onEvent:104/
+	 MavenCli.toolchains:1267/doMain:284/main:192/Launcher.launchEnhanced:282/launch:225/mainWithExitCode:406/main:347
+##### EventSpy.onEvent org.apache.maven.execution.DefaultMavenExecutionRequest org.apache.maven.execution.DefaultMavenExecutionRequest@66b72664
+	 stack=MvnEventSpy.onEvent:68/EventSpyDispatcher.onEvent:104/
+	 MavenCli.execute:954/doMain:288/main:192/Launcher.launchEnhanced:282/launch:225/mainWithExitCode:406/main:347
+##### LifecycleParticipant.afterSessionStart
+	 stack=MvnLifecycleParticipant.afterSessionStart:17/
+	 DefaultMaven.doExecute:208/doExecute:192/execute:105/
+	 
+##### EventSpy.onEvent ExecutionEvent ProjectDiscoveryStarted
+	 stack=MvnEventSpy.onEvent:53/EventSpyDispatcher.onEvent:104/EventSpyExecutionListener.projectDiscoveryStarted:47/DefaultExecutionEventCatapult.fire:57/fire:42/
+	 DefaultMaven.doExecute:217/doExecute:192/execute:105/
+	 
+[INFO] Scanning for projects...
+##### LifecycleParticipant.afterProjectsRead
+	 stack=MvnLifecycleParticipant.afterProjectsRead:24/
+	 DefaultMaven.doExecute:264/doExecute:192/execute:105/
+	 
+##### EventSpy.onEvent ExecutionEvent SessionStarted
+	 stack=MvnEventSpy.onEvent:53/EventSpyDispatcher.onEvent:104/EventSpyExecutionListener.sessionStarted:54/DefaultExecutionEventCatapult.fire:61/fire:42/
+	 LifecycleStarter.execute:74/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+	 
+##### ProjectExecutionListener.beforeProjectExecution
+	 stack=MvnProjectExecutionListener.beforeProjectExecution:15/CompoundProjectExecutionListener.beforeProjectExecution:43/
+	 LifecycleModuleBuilder.buildProject:106/buildProject:81/
+	 SingleThreadedBuilder.build:56/
+	 LifecycleStarter.execute:128/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+	 
+##### EventSpy.onEvent ExecutionEvent ProjectStarted
+	 stack=MvnEventSpy.onEvent:53/EventSpyDispatcher.onEvent:104/EventSpyExecutionListener.projectStarted:75/DefaultExecutionEventCatapult.fire:71/fire:42/
+	 LifecycleModuleBuilder.buildProject:108/buildProject:81/
+	 SingleThreadedBuilder.build:56/
+	 LifecycleStarter.execute:128/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+	 
+[INFO] 
+[INFO] -----------------------< fr.an.tests:test-prj1 >------------------------
+[INFO] Building test-prj1 0.0.1
+[INFO] --------------------------------[ jar ]---------------------------------
+##### ProjectExecutionListener.beforeProjectLifecycleExecution
+	 stack=MvnProjectExecutionListener.beforeProjectLifecycleExecution:21/CompoundProjectExecutionListener.beforeProjectLifecycleExecution:52/
+	 LifecycleModuleBuilder.buildProject:114/buildProject:81/
+	 SingleThreadedBuilder.build:56/
+	 LifecycleStarter.execute:128/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+	 
+##### EventSpy.onEvent org.apache.maven.project.DefaultDependencyResolutionRequest org.apache.maven.project.DefaultDependencyResolutionRequest@3359c978
+	 stack=MvnEventSpy.onEvent:68/EventSpyDispatcher.onEvent:104/
+	 LifecycleDependencyResolver.getDependencies:241/resolveProjectDependencies:147/
+	 MojoExecutor.ensureDependenciesAreResolved:248/execute:202/execute:156/execute:148/
+	 LifecycleModuleBuilder.buildProject:117/buildProject:81/
+	 SingleThreadedBuilder.build:56/
+	 LifecycleStarter.execute:128/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+	 
+##### EventSpy.onEvent org.apache.maven.project.DefaultDependencyResolutionResult org.apache.maven.project.DefaultDependencyResolutionResult@4943defe
+	 stack=MvnEventSpy.onEvent:68/EventSpyDispatcher.onEvent:104/
+	 LifecycleDependencyResolver.getDependencies:273/resolveProjectDependencies:147/
+	 MojoExecutor.ensureDependenciesAreResolved:248/execute:202/execute:156/execute:148/
+	 LifecycleModuleBuilder.buildProject:117/buildProject:81/
+	 SingleThreadedBuilder.build:56/LifecycleStarter.execute:128/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+	 
+.....
+
+
+##### EventSpy.onEvent ExecutionEvent MojoStarted fr.an.tests:test-mojo:test1 (exec1)
+	 stack=MvnEventSpy.onEvent:58/EventSpyDispatcher.onEvent:104/EventSpyExecutionListener.mojoStarted:124/DefaultExecutionEventCatapult.fire:84/fire:42/
+	 MojoExecutor.execute:204/execute:156/execute:148/
+	 LifecycleModuleBuilder.buildProject:117/buildProject:81/
+	 SingleThreadedBuilder.build:56/
+	 LifecycleStarter.execute:128/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+[INFO] 
+[INFO] --- test-mojo:0.0.1:test1 (exec1) @ test-prj1 ---
+################ Mojo1.setParam1 Mojo1.setParam1:31/
+    CompositeBeanHelper.setProperty:181/
+    ObjectWithFieldsConverter.processConfiguration:101/
+    BasicComponentConfigurator.configureComponent:34/
+    DefaultMavenPluginManager.populatePluginFields:635/getConfiguredMojo:597/
+    DefaultBuildPluginManager.executeMojo:124/
+    MojoExecutor.execute:210/execute:156/execute:148/
+    LifecycleModuleBuilder.buildProject:117/buildProject:81/
+    SingleThreadedBuilder.build:56/
+    LifecycleStarter.execute:128/
+    DefaultMaven.doExecute:305/doExecute:192/execute:105/
+################ Mojo1.setParam2 Mojo1.setParam2:43/CompositeBeanHelper.setProperty:181/ObjectWithFieldsConverter.processConfiguration:101/BasicComponentConfigurator.configureComponent:34/DefaultMavenPluginManager.populatePluginFields:635/getConfiguredMojo:597/DefaultBuildPluginManager.executeMojo:124/MojoExecutor.execute:210/execute:156/execute:148/LifecycleModuleBuilder.buildProject:117/buildProject:81/SingleThreadedBuilder.build:56/LifecycleStarter.execute:128/DefaultMaven.doExecute:305/doExecute:192/execute:105/
+##### MojoExecutionListener.beforeMojoExecution
+	 stack=MvnMojoExecutionListener.beforeMojoExecution:15/CompoundMojoExecutionListener.beforeMojoExecution:43/DefaultBuildPluginManager.executeMojo:135/MojoExecutor.execute:210/execute:156/execute:148/LifecycleModuleBuilder.buildProject:117/buildProject:81/SingleThreadedBuilder.build:56/LifecycleStarter.execute:128/DefaultMaven.doExecute:305/doExecute:192/execute:105/
+#### Mojo1.execute
+##### MojoExecutionListener.afterMojoExecutionSuccess
+	 stack=MvnMojoExecutionListener.afterMojoExecutionSuccess:21/CompoundMojoExecutionListener.afterMojoExecutionSuccess:52/DefaultBuildPluginManager.executeMojo:139/MojoExecutor.execute:210/execute:156/execute:148/LifecycleModuleBuilder.buildProject:117/buildProject:81/SingleThreadedBuilder.build:56/LifecycleStarter.execute:128/DefaultMaven.doExecute:305/doExecute:192/execute:105/
+##### EventSpy.onEvent ExecutionEvent MojoSucceeded fr.an.tests:test-mojo:test1 (exec1)
+	 stack=MvnEventSpy.onEvent:58/EventSpyDispatcher.onEvent:104/EventSpyExecutionListener.mojoSucceeded:131/DefaultExecutionEventCatapult.fire:87/fire:42/
+	 MojoExecutor.execute:218/execute:156/execute:148/
+	 LifecycleModuleBuilder.buildProject:117/buildProject:81/
+	 SingleThreadedBuilder.build:56/
+	 LifecycleStarter.execute:128/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+
+
+
+.....
+
+
+##### ProjectExecutionListener.afterProjectExecutionSuccess
+	 stack=MvnProjectExecutionListener.afterProjectExecutionSuccess:28/CompoundProjectExecutionListener.afterProjectExecutionSuccess:61/LifecycleModuleBuilder.buildProject:121/buildProject:81/SingleThreadedBuilder.build:56/LifecycleStarter.execute:128/DefaultMaven.doExecute:305/doExecute:192/execute:105/
+##### EventSpy.onEvent ExecutionEvent ProjectSucceeded
+	 stack=MvnEventSpy.onEvent:53/EventSpyDispatcher.onEvent:104/EventSpyExecutionListener.projectSucceeded:82/DefaultExecutionEventCatapult.fire:74/fire:42/
+	 LifecycleModuleBuilder.buildProject:127/buildProject:81/
+	 SingleThreadedBuilder.build:56/
+	 LifecycleStarter.execute:128/
+	 DefaultMaven.doExecute:305/doExecute:192/execute:105/
+##### EventSpy.onEvent ExecutionEvent SessionEnded
+	 stack=MvnEventSpy.onEvent:53/EventSpyDispatcher.onEvent:104/EventSpyExecutionListener.sessionEnded:61/DefaultExecutionEventCatapult.fire:64/fire:42/
+	 LifecycleStarter.execute:137/DefaultMaven.doExecute:305/doExecute:192/execute:105/
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.292 s
+[INFO] Finished at: 2019-10-19T20:51:08+02:00
+[INFO] ------------------------------------------------------------------------
+##### EventSpy.onEvent org.apache.maven.execution.DefaultMavenExecutionResult org.apache.maven.execution.DefaultMavenExecutionResult@4fc142ec
+	 stack=MvnEventSpy.onEvent:68/EventSpyDispatcher.onEvent:104/
+	 MavenCli.execute:958/doMain:288/main:192/Launcher.launchEnhanced:282/launch:225/mainWithExitCode:406/main:347
+##### EventSpy.close
+	 stack=MvnEventSpy.close:75/EventSpyDispatcher.close:123/
+	 MavenCli.execute:960/doMain:288/main:192/Launcher.launchEnhanced:282/launch:225/mainWithExitCode:406/main:347
