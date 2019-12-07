@@ -11,23 +11,30 @@ conf/core-site.xml :
 <configuration>
 
   <property>
+    <name>fs.default.name</name>
+    <value>fs1:///</value>
+  </property>
+
+  <property>
     <name>fs.defaultFS</name>
-    <value>fs1:///D:/arn/hadoop/rootfs</value>
+    <value>fs1:///</value>
   </property>
 
   <property>
     <name>fs.fs1.impl</name>
     <value>fr.an.tests.hadoopfs.JavaioFileSystem</value>
   </property>
-  
+  <property>
+    <name>fs.fs1.baseStorageDir</name>
+    <value>D:/arn/hadoop/rootfs</value>
+  </property>
 
 </configuration>
 
 
-Testing with debugger of GlowRoot instrumentation agent... 
-using GlowRoot
-set HADOOP_OPTS=
+Testing with debugger 
 set HADOOP_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000
+or GlowRoot instrumentation agent... 
 set HADOOP_OPTS=-javaagent:glowroot.jar -Xbootclasspath/a:d:/arn/devPerso/mygithub/test-snippets/test-glowroot/target/test-glowroot-0.0.1-SNAPSHOT.jar
 
 

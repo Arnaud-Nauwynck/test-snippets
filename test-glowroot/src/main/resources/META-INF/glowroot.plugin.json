@@ -35,7 +35,6 @@
   ],
   "aspects": [
     "fr.an.test.glowroot.FileAspect",
-    "fr.an.test.glowroot.ThreadAspect",
-    "fr.an.test.glowroot.ThreadPoolExecutorAspect"
+    "fr.an.test.glowroot.SystemAspect"
   ]
 }

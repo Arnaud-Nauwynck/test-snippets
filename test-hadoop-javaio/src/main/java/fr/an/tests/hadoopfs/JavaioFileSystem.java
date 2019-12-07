@@ -48,14 +48,45 @@ import org.apache.hadoop.util.Progressable;
  */
 public class JavaioFileSystem extends FileSystem {
 
-    static final URI NAME = URI.create("file:///");
-
+    static final URI NAME = URI.create("fs1:///");
+    
+    // private String fsScheme;
+    private URI fsURI;
+    
     private File baseStorageDir;
 
     private Path workingDirPath;
 
     public JavaioFileSystem() {
         baseStorageDir = new File("data").getAbsoluteFile(); // cf next initialize() !!
+    }
+
+    @Override
+    public void initialize(URI uri, Configuration conf) throws IOException {
+        super.initialize(uri, conf);
+        setConf(conf);
+        String scheme = uri.getScheme();
+        this.fsURI = URI.create(scheme + ":///");
+        
+        String baseStoragePath = conf.get("fs." + scheme + ".baseStorageDir");
+        // System.out.println("using uri=" + uri);
+        // System.out.println("baseStoragePath=" + baseStoragePath);
+        if (baseStoragePath.startsWith("/D:")) {
+            baseStoragePath = baseStoragePath.substring(1);
+            // System.out.println("=> using baseStoragePath=" + baseStoragePath);
+        }
+        this.baseStorageDir = new File(baseStoragePath).getAbsoluteFile();
+        if (! baseStorageDir.exists()) {
+            throw new RuntimeException("baseStoragePath " + baseStoragePath + "does not exist");
+        }
+        
+        this.workingDirPath = new Path("/"); // ?? 
+
+    }
+
+    @Override
+    public URI getUri() {
+        return (fsURI != null)? fsURI : NAME;
     }
 
     private Path makeAbsolute(Path f) {
@@ -80,31 +111,6 @@ public class JavaioFileSystem extends FileSystem {
         return new File(baseStorageDir, subPath);
     }
 
-    @Override
-    public URI getUri() {
-        return NAME;
-    }
-
-    @Override
-    public void initialize(URI uri, Configuration conf) throws IOException {
-        super.initialize(uri, conf);
-        setConf(conf);
-
-        String baseStoragePath = uri.getPath();
-        // System.out.println("using uri=" + uri);
-        // System.out.println("baseStoragePath=" + baseStoragePath);
-        if (baseStoragePath.startsWith("/D:")) {
-            baseStoragePath = baseStoragePath.substring(1);
-            // System.out.println("=> using baseStoragePath=" + baseStoragePath);
-        }
-        this.baseStorageDir = new File(baseStoragePath).getAbsoluteFile();
-        if (! baseStorageDir.exists()) {
-            throw new RuntimeException("baseStoragePath " + baseStoragePath + "does not exist");
-        }
-        
-        this.workingDirPath = new Path("/"); // ?? 
-
-    }
 
     /*******************************************************
      * For open()'s FSInputStream.

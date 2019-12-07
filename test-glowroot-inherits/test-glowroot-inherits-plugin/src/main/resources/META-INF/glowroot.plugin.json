@@ -1,0 +1,9 @@
+{
+  "name": "Test inherits plugin",
+  "id": "test-inherits",
+  "properties": [
+  ],
+  "aspects": [
+    "fr.an.test.glowroot.InheritsTestGlowrootAspect"
+  ]
+}
