@@ -1,0 +1,16 @@
+
+spring:
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/db1?currentSchema=testdb1
+    username: testdb1owner
+    password: testdb1owner
+
+  jpa:
+    properties:
+      hibernate.jdbc.lob.non_contextual_creation: true
+      
+    hibernate:
+      ddl-auto: update
+
+

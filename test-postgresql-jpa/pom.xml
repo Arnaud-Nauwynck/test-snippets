@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.4.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>fr.an.test</groupId>
+	<artifactId>test-postgresql-jpa</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>test-postgresql-jpa</name>
+	<description> project for Spring Boot</description>
+
+	<properties>
+		<java.version>1.8</java.version>
+        <eclipselink.version>2.7.5</eclipselink.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<exclusions>
+				<exclusion>
+		            <groupId>org.hibernate</groupId>
+		            <artifactId>hibernate-entitymanager</artifactId>
+		        </exclusion>
+				<exclusion>
+					<groupId>org.hibernate</groupId>
+					<artifactId>hibernate-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+<!-- 
+		<dependency>
+		   <groupId>org.eclipse.persistence</groupId>
+		   <artifactId>eclipselink</artifactId>
+		   <version>${eclipselink.version}</version>
+		</dependency>
+ -->
+
+        <dependency>
+           <groupId>org.eclipse.persistence</groupId>
+           <artifactId>org.eclipse.persistence.jpa</artifactId>
+           <version>${eclipselink.version}</version>
+        </dependency>
+
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
+		<dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+	               <groupId>de.empulse.eclipselink</groupId>
+	               <artifactId>staticweave-maven-plugin</artifactId>
+	               <version>1.0.0</version>
+	               <executions>
+	                   <execution>
+	                       <phase>process-classes</phase>
+	                       <goals>
+	                           <goal>weave</goal>
+	                       </goals>
+	                       <configuration>
+	                           <persistenceXMLLocation>META-INF/persistence.xml</persistenceXMLLocation>
+	                           <logLevel>FINE</logLevel>
+	                       </configuration>
+	                   </execution>
+	               </executions>
+	               <dependencies>
+	                   <dependency>
+	                       <groupId>org.eclipse.persistence</groupId>
+	                       <artifactId>org.eclipse.persistence.jpa</artifactId>
+	                       <version>${eclipselink.version}</version>
+	                   </dependency>
+	               </dependencies>
+	           </plugin>
+	           
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											de.empulse.eclipselink
+										</groupId>
+										<artifactId>
+											staticweave-maven-plugin
+										</artifactId>
+										<versionRange>
+											[1.0.0,)
+										</versionRange>
+										<goals>
+											<goal>weave</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+</project>
