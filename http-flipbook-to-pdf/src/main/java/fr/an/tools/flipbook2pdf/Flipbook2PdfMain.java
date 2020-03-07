@@ -1,77 +1,31 @@
 package fr.an.tools.flipbook2pdf;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.Proxy.Type;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfWriter;
+import fr.an.tools.flipbook2pdf.impl.BookConfig;
+import fr.an.tools.flipbook2pdf.impl.DownloadBookCtx;
+import fr.an.tools.flipbook2pdf.impl.Flipbook2PdfParams;
+import fr.an.tools.flipbook2pdf.impl.HttpClientHelper;
+import fr.an.tools.flipbook2pdf.impl.OrderBookInfo;
+import fr.an.tools.flipbook2pdf.impl.PdfBookWriter;
+import fr.an.tools.flipbook2pdf.impl.SiteHtmlAnalyzer;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-import fr.an.tools.flipbook2pdf.utils.TrustAllX509TrustManager;
-import lombok.Builder;
-import okhttp3.FormBody;
-import okhttp3.JavaNetCookieJar;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-import okhttp3.logging.HttpLoggingInterceptor;
-
+@Slf4j
 public class Flipbook2PdfMain {
 
-    private static final String PATH_FLIPBBOOKS = "/modules/dmdpdfstamper/flipbooks/";
-    private static final String PATH_FILES_MOBILE = "/files/mobile/";
-    private static final String PATH_MOBILE_JAVASCRIPT_CONFIGJS = "/mobile/javascript/config.js";
-    private String baseUrl = "https://boutique.ed-diamond.com";
-
-    private File outputDir;
-    private String outputFilename;
+    private Flipbook2PdfParams params = new Flipbook2PdfParams();
     
-    private String bookTitle = "misc108";
-    private String orderDetail = "1882893";
-    
-    private String httpProxyHost = null; // "localhost";
-    private int httpProxyPort = 8080;
-    
-    private boolean debugHttpCalls = true;
-    
-    private OkHttpClient httpClient;
-    
-    /** info loaded from book config.js */
-    @Builder // @AllArgsConstructor
-    private static class BookConfig {
-        long createdTime;
-        int totalPageCount;
-        int largePageWidth;
-        int largePageHeight;
-    }
-    private BookConfig bookConfig;
+    private HttpClientHelper httpHelper = new HttpClientHelper();
     
     public static void main(String[] args) {
         try {
@@ -84,39 +38,64 @@ public class Flipbook2PdfMain {
     }
     
     public void run(String[] args) throws Exception {
-        parseArgs(args);
+        params.parseArgs(args);
+        File baseOutputDir = params.getBaseOutputDir();
         
-        initHttpClient();
+        httpHelper.initHttpClient(params);
         
-        httpRequestAuthenticate();
-                
-        this.bookConfig = httpDownloadBookConfig();
-        System.out.println("loaded book config: totalPageCount=" + bookConfig.totalPageCount);
-        
-        int pageCount = bookConfig.totalPageCount;
-        for (int page = 1; page <= pageCount; page++) {
-            httpDownloadPageImage(page);
+        loginAuthenticate();
+
+        String bookTitle = params.getBookTitle();
+        if (bookTitle == null) {
+            List<OrderBookInfo> orderBooks = scanBooksPage();
+            for (val orderBook : orderBooks) {
+                checkOrDownloadBook(baseOutputDir, orderBook.bookTitle, orderBook.orderDetailId);
+            }
         }
         
-        System.out.println("write Pdf");
-        writePdf();
+        String orderDetail = params.getOrderDetail();
+        if (orderDetail != null && bookTitle != null) {
+            checkOrDownloadBook(baseOutputDir, bookTitle, orderDetail);
+        }
+    }
+
+    private void checkOrDownloadBook(File baseOutputDir, String bookTitle, String orderDetail) throws Exception {
+        File bookOutputDir = new File(baseOutputDir, bookTitle);
+        if (! bookOutputDir.exists()) {
+            bookOutputDir.mkdirs();
+            downloadBook(baseOutputDir, bookOutputDir, bookTitle, orderDetail);
+        } else {
+            log.info("dir for book '" + bookTitle + " already exist => skip");
+        }
+    }
+
+    private void downloadBook(File baseOutputDir, File bookOutputDir, String bookTitle, String orderDetail)
+            throws Exception {
+        log.info("download book " + bookTitle);
+        BookConfig bookConfig = downloadBookConfigAndParse(bookOutputDir, bookTitle, orderDetail);
+        
+        DownloadBookCtx downloadCtx = new DownloadBookCtx(
+                bookOutputDir, bookTitle, orderDetail, bookConfig);
+        
+        int totalPageCount = bookConfig.getTotalPageCount();
+        log.info("loaded book config: totalPageCount=" + totalPageCount);
+        
+        for (int page = 1; page <= totalPageCount; page++) {
+            downloadPage(downloadCtx, page);
+        }
+        
+        File outputFile = new File(baseOutputDir, bookTitle + ".pdf");
+        if (! outputFile.exists()) {
+            log.info("write Pdf file '" + outputFile + "'");
+            PdfBookWriter pdfWriter = new PdfBookWriter();
+            pdfWriter.writePdf(bookConfig, bookOutputDir, outputFile);
+        } else {
+            log.info("skip already generated Pdf file '" + outputFile + "'");            
+        }
     }
 
 
-    private void parseArgs(String[] args) {
-        
-        this.outputDir = new File("out/" + bookTitle);
-        if (! outputDir.exists()) {
-            outputDir.mkdirs();
-        }
-        outputFilename = bookTitle + ".pdf";
-        
-    }
-
-
-    private void httpRequestAuthenticate() throws Exception {
-        String authUrl = baseUrl + "/authentification";
-
+    private void loginAuthenticate() throws Exception {
         Properties authProps = new Properties();
         String homeDir = System.getProperty("user.home");
         try (InputStream in = new FileInputStream(new File(homeDir, "linuxmag.properties"))) {
@@ -125,77 +104,36 @@ public class Flipbook2PdfMain {
         String authEmail = authProps.getProperty("email");
         String authPasswd = authProps.getProperty("passwd");
 
-        FormBody authReqBody = new FormBody.Builder()
-              .addEncoded("email", authEmail)
-              .addEncoded("passwd", authPasswd)
-              .addEncoded("back", "my-account")
-              .addEncoded("SubmitLogin", "")
-              .build();        
-        
-        Request authRequest = new Request.Builder()
-                .url(authUrl)
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-                .header("Cache-Control", "max-age=0")
-                .header("Sec-Fetch-Dest", "document")
-                .header("Sec-Fetch-Mode", "navigate")
-                .header("Sec-Fetch-Site", "same-origin")
-                .header("Sec-Fetch-User", "?1")
-                .header("Upgrade-Insecure-Requests", "1")
-                .header("Origin", baseUrl)
-                .header("Referer", baseUrl + "/authentification?back=my-account")
-                .post(authReqBody)
-                .build();
-        try (Response response = httpClient.newCall(authRequest).execute()) {
-            int code = response.code();
-            System.out.println("auth => resp:" + code);
-            System.out.println(response.headers());
-            System.out.println();
-            if (response.isRedirect() || response.isSuccessful()) { // code == 302 .. then GET 200
-                System.out.println("authenticated..");
-            } else {
-                throw new RuntimeException("Failed to authenticate");
-            }
-        }
+        httpHelper.httpAuthenticate(authEmail, authPasswd);
     }
 
-    private BookConfig  httpDownloadBookConfig() throws Exception {
-        // cf from "config.js"  https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/mobile/javascript/config.js
-//      .... ;bookConfig.BookTemplateName="metro";bookConfig.loadingCaptionColor="#DDDDDD";bookConfig.loadingBackground="#1F2232";bookConfig.appLogoIcon="https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/files/mobile-ext/appLogoIcon.png";bookConfig.appLogoOpenWindow="Blank";bookConfig.logoHeight="0";bookConfig.logoPadding="0";bookConfig.logoTop="0";bookConfig.toolbarColor="#000000";bookConfig.iconColor="#ECF5FB";bookConfig.pageNumColor="#000000";bookConfig.iconFontColor="#FFFFFF";bookConfig.toolbarAlwaysShow="No";bookConfig.formFontColor="#FFFFFF";bookConfig.formBackgroundColor="#27181A";bookConfig.showBookInstructionOnStart="false";bookConfig.InstructionsButtonVisible="Hide";bookConfig.showInstructionOnStart="No";bookConfig.showGotoButtonsAtFirst="No";bookConfig.QRCode="Hide";bookConfig.HomeButtonVisible="Show";bookConfig.HomeURL="%4e%";bookConfig.aboutButtonVisible="Hide";bookConfig.enablePageBack="Show";bookConfig.ShareButtonVisible="Hide";shareObj = [];bookConfig.isInsertFrameLinkEnable=" Hide";bookConfig.addCurrentPage="No";bookConfig.EmailButtonVisible="Hide";bookConfig.btnShareWithEmailBody="{link}";bookConfig.ThumbnailsButtonVisible="Show";bookConfig.thumbnailColor="#333333";bookConfig.thumbnailAlpha="70";bookConfig.BookMarkButtonVisible="Hide";bookConfig.TableOfContentButtonVisible="Show";bookConfig.isHideTabelOfContentNodes="yes";bookConfig.SearchButtonVisible="Show";bookConfig.leastSearchChar="3";bookConfig.searchKeywordFontColor="#FFB000";bookConfig.searchHightlightColor="#ffff00";bookConfig.SelectTextButtonVisible="Show";bookConfig.PrintButtonVisible="Hide";bookConfig.BackgroundSoundButtonVisible="Hide";bookConfig.FlipSound="No";bookConfig.BackgroundSoundLoop="-1";bookConfig.AutoPlayButtonVisible="Hide";bookConfig.autoPlayAutoStart="No";bookConfig.autoPlayDuration="9";bookConfig.autoPlayLoopCount="1";bookConfig.ZoomButtonVisible="Show";bookConfig.maxZoomWidth="1400";bookConfig.defaultZoomWidth="700";bookConfig.mouseWheelFlip="Yes";bookConfig.DownloadButtonVisible="Hide";bookConfig.PhoneButtonVisible="Hide";bookConfig.AnnotationButtonVisible="Hide";bookConfig.FullscreenButtonVisible="Show";bookConfig.bgBeginColor="#E2E2E2";bookConfig.bgEndColor="#E2E2E2";bookConfig.bgMRotation="90";bookConfig.backGroundImgURL="https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/files/mobile-ext/backGroundImgURL.jpg";bookConfig.backgroundPosition="stretch";bookConfig.backgroundOpacity="100";bookConfig.backgroundScene="None";bookConfig.LeftShadowWidth="90";bookConfig.LeftShadowAlpha="0.6";bookConfig.RightShadowWidth="55";bookConfig.RightShadowAlpha="0.6";bookConfig.ShowTopLeftShadow="Yes";bookConfig.HardPageEnable="No";bookConfig.hardCoverBorderWidth="8";bookConfig.borderColor="#572F0D";bookConfig.outerCoverBorder="Yes";bookConfig.cornerRound="8";bookConfig.leftMarginOnMobile="0";bookConfig.topMarginOnMobile="0";bookConfig.rightMarginOnMobile="0";bookConfig.bottomMarginOnMobile="0";bookConfig.pageBackgroundColor="#E8E8E8";bookConfig.flipshortcutbutton="Hide";bookConfig.BindingType="side";bookConfig.RightToLeft="No";bookConfig.FlipDirection="0";bookConfig.flippingTime="0.6";bookConfig.retainBookCenter="Yes";bookConfig.FlipStyle="Flip";bookConfig.autoDoublePage="Yes";bookConfig.isTheBookOpen="No";bookConfig.thicknessWidthType="Thinner";bookConfig.thicknessColor="#ffffff";bookConfig.SingleModeBanFlipToLastPage="No";bookConfig.showThicknessOnMobile="No";bookConfig.isSingleBookFullWindowOnMobile="no";bookConfig.isStopMouseMenu="yes";bookConfig.restorePageVisible="No";bookConfig.topMargin="10";bookConfig.bottomMargin="10";bookConfig.leftMargin="20";bookConfig.rightMargin="20";bookConfig.hideMiniFullscreen="no";bookConfig.maxWidthToSmallMode="400";bookConfig.maxHeightToSmallMode="300";bookConfig.leftRightPnlShowOption="None";bookConfig.highDefinitionConversion="yes";bookConfig.LargeLogoPosition="top-left";bookConfig.LargeLogoTarget="Blank";bookConfig.isFixLogoSize="No";bookConfig.logoFixWidth="0";bookConfig.logoFixHeight="0";bookConfig.updateURLForPage="No";bookConfig.LinkDownColor="#800080";bookConfig.LinkAlpha="0.2";bookConfig.OpenWindow="Blank";bookConfig.showLinkHint="No";bookConfig.MidBgColor="#515609";
-//      bookConfig.totalPageCount=132;
-//      bookConfig.largePageWidth=1800;bookConfig.largePageHeight=2320;
-//      ;bookConfig.securityType="1";
-//      bookConfig.CreatedTime ="200224094056";
-//      bookConfig.bookTitle="lmhs107";
-//      bookConfig.bookmarkCR="d7baa83e367445b563977ab88d72710b6409aa30";bookConfig.productName="Flip PDF Professional";bookConfig.homePage="http://www.flipbuilder.com";bookConfig.searchPositionJS="https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/mobile/javascript/text_position[1].js";bookConfig.searchTextJS="https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/mobile/javascript/search_config.js";bookConfig.normalPath="https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/files/mobile/";bookConfig.largePath="https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/files/mobile/";bookConfig.thumbPath="https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/files/thumb/";bookConfig.userListPath="https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/files/extfiles/users.js";bookConfig.UIBaseURL='https://boutique.ed-diamond.com/modules/dmdpdfstamper/flipbooks/lmhs107/mobile/';var language = [{ language : "French",btnFirstPage:"Première page",btnNextPage:"Page suivante",btnLastPage:"Dernière page",btnPrePage:"Page précédente",btnDownload:"Télécharger",btnPrint:"Imprimer",btnSearch:"Recherche",btnClearSearch:"Vider",frmSearchPrompt:"Clear",btnBookMark:"Table des matières",btnHelp:"Aide",btnHome:"Home",btnFullScreen:"Plein écran",btnDisableFullScreen:"Fenêtre",btnSoundOn:"Son",btnSoundOff:"Muet",btnShareEmail:"Partager",btnSocialShare:"Réseaux sociaux",btnZoomIn:"Zoom en",btnZoomOut:"Zoom hors",btnDragToMove:"Drag move mode",btnAutoFlip:"Auto Flip",btnStopAutoFlip:"Stop Auto Flip",btnGoToHome:"Début",frmHelpCaption:"Aide",frmHelpTip1:"Double click pour zoom In ou OUT",frmHelpTip2:"Tirer sur le coin de page",frmPrintCaption:"Imprimer",frmPrintBtnCaption:"Imprimer",frmPrintPrintAll:"Imprimer toutes les pages",frmPrintPrintCurrentPage:"Imprimer la page actuelle",frmPrintPrintRange:"Print Range",frmPrintExampleCaption:"Exemple: 2,5,8-26",frmPrintPreparePage:"Préparation de la page :",frmPrintPrintFailed:"Défaillance de l'impression",pnlSearchInputInvalid:"(La requette minimale et de 3 caractères",loginCaption:"Connexion",loginInvalidPassword:"Mot de passe invalide",loginPasswordLabel:"Mot de passe :",loginBtnLogin:"Connexion",loginBtnCancel:"Annuler",btnThumb:"Thumbnails",lblPages:"Pages :",lblPagesFound:"Pages :",lblPageIndex:"Page",btnAbout:"A propos",frnAboutCaption:"A propos et contact",btnSinglePage:"Page simple",btnDoublePage:"Double page",btnSwicthLanguage:"Changer de langue",tipChangeLanguage:"SVP sélectionnez la langue ci-contre",btnMoreOptionsLeft:"Plus d'options",btnMoreOptionsRight:"Plus d'options",btnFit:"Ajuster à la fenêtre",smallModeCaption:"Cliquez pour voir en plein écran",btnAddAnnotation:"Ajouter Annotations",btnAnnotation:"Annotations",FlipPageEditor_SaveAndExit:"Sauvegardez et quittez",FlipPageEditor_Exit:"Quitter",DrawToolWindow_Redo:"Refaire",DrawToolWindow_Undo:"Annuler",DrawToolWindow_Clear:"Vider",DrawToolWindow_Brush:"Brosse",DrawToolWindow_Width:"Largeur ",DrawToolWindow_Alpha:"Alpha",DrawToolWindow_Color:"Couleur",DrawToolWindow_Eraser:"Gomme",DrawToolWindow_Rectangular:"Rectangulaire",DrawToolWindow_Ellipse:"Ellipse",TStuff_BorderWidth:"Bordure Largeur",TStuff_BorderAlph:"Bordure Alpha",TStuff_BorderColor:"Bordure Couleur",DrawToolWindow_TextNote:"Text Note",AnnotMark:"Marque page",lastpagebtnHelp:"Dernière page",firstpagebtnHelp:"Première page",homebtnHelp:"Retour à la page d'accueil",aboubtnHelp:"À propos",screenbtnHelp:"Ouvrez cette application dans une fenêtre plein",helpbtnHelp:"Ouvrez la fenêtre d'aide",searchbtnHelp:"Recherche de pages",pagesbtnHelp:"Jetez un oeil à la miniaturede cette brochure",bookmarkbtnHelp:"Ouvrez un marque-page",AnnotmarkbtnHelp:"Ouvrez Table des matières",printbtnHelp:"Imprimer la brochure",soundbtnHelp:"Activer ou désactiver le son",sharebtnHelp:"Envoyer un message",socialSharebtnHelp:"Envoyer un message",zoominbtnHelp:"Zoomer",downloadbtnHelp:"Télécharger la brochure",pagemodlebtnHelp:"Page Uniqe et double",languagebtnHelp:"Mettez Lauguage",annotationbtnHelp:"Ajouter des Annotations",addbookmarkbtnHelp:"Ajouter Marque-page",removebookmarkbtnHelp:"Supprimer Marque-page",updatebookmarkbtnHelp:"Mettre à jour Marque-page",btnShoppingCart:"Panier d'Achat",Help_ShoppingCartbtn:"Panier d'Achat",Help_btnNextPage:"Page Suivante",Help_btnPrePage:"Page Précédente",Help_btnAutoFlip:"Auto filp",Help_StopAutoFlip:"Arrêter atuo filp",btnaddbookmark:"Ajouter",btndeletebookmark:"Supprimer",btnupdatebookmark:"Mettre à Jour",frmyourbookmarks:"Vos marque-pages",frmitems:"articles",DownloadFullPublication:"Publication Complète ",DownloadCurrentPage:"Page Actuelle",DownloadAttachedFiles:"Fichiers Joints",lblLink:"Lien",btnCopy:"Copier Bouton",infCopyToClipboard:"Your browser does not support clipboard. ",restorePage:"Voulez-vous restaurer la session précédente",tmpl_Backgoundsoundon:"Acitver Son de Fond",tmpl_Backgoundsoundoff:"Désactiver Son de Fond",tmpl_Flipsoundon:"Acitver Son de Flip",tmpl_Flipsoundoff:"Désactiver Son de Flip",Help_PageIndex:"Le numéro de la page actuelle",tmpl_PrintPageRanges:"Intervalle de Pages",tmpl_PrintPreview:"Pré-visualiser",btnSelection:"Sélectionnez Texte",loginNameLabel:"Nom:",btnGotoPage:"Aller",btnSettings:"Paramètres",soundSettingTitle:"Paramètres de Son",closeFlipSound:"Fermer Son de Flip",closeBackgroundSound:"Fermer Son de Fond",frmShareCaption:"Partager",frmShareLinkLabel:"Lien:",frmShareBtnCopy:"Copier",frmShareItemsGroupCaption:"Partager sur Réseaux Sociaux",TAnnoActionPropertyStuff_GotoPage:"Aller à La Page",btnPageBack:"Reculer",btnPageForward:"Avancer",SelectTextCopy:"Copier Texte",selectCopyButton:"Copier",TStuffCart_TypeCart:"Panier d'Achat",TStuffCart_DetailedQuantity:"Quantité ",TStuffCart_DetailedPrice:"Prix",ShappingCart_Close:"Fermer",ShappingCart_CheckOut:"Caisse",ShappingCart_Item:"Article",ShappingCart_Total:"Total",ShappingCart_AddCart:"Ajouter au Panier",ShappingCart_InStock:"en Stock",TStuffCart_DetailedCost:"Livraison",TStuffCart_DetailedTime:"Délai de livraison",TStuffCart_DetailedDay:"jour(s)",ShappingCart_NotStock:"Not enough en stock",btnCrop:"Couper",btnDragButton:"Drag",btnFlipBook:"Flip Book",btnSlideMode:"Slide Mode",btnSinglePageMode:"Single Page Mode",btnVertical:"Vertical Mode",btnHotizontal:"Horizontal Mode",btnClose:"Close",btnDoublePage:"Double page",btnBookStatus:"Book View",checkBoxInsert:"Insérer cette page",lblLast:"Ceci est la dernière page.",lblFirst:"Ceci est la première page.",lblFullscreen:"Cliquez pour voir en plein écran",lblName:"nom",lblPassword:"Mot de passe",lblLogin:"S'identifier",lblCancel:"annuler",lblNoName:"Nom d'utilisateur ne peut pas être vide.",lblNoPassword:"Mot de passe ne peut pas être vide.",lblNoCorrectLogin:"S'il vous plaît entrez le nom d'utilisateur et mot de passe.",btnVideo:"Galerie Vidéo",btnSlideShow:"diaporama",pnlSearchInputInvalid:"(La requette minimale et de 3 caractères",btnDragToMove:"Drag move mode",btnPositionToMove:"Move de position de la souris",lblHelp1:"Faites glisser le coin de la page pour voir",lblHelp2:"Double-cliquez pour zoomer, sur",lblCopy:"copie",lblAddToPage:"ajouter à la page",lblPage:"page",lblTitle:"Titre",lblEdit:"Modifier",lblDelete:"Effacer",lblRemoveAll:"Enlever tout",tltCursor:"curseur",tltAddHighlight:"ajouter clou",tltAddTexts:"ajouter des textes",tltAddShapes:"ajouter des formes",tltAddNotes:"ajouter des notes",tltAddImageFile:"ajouter fichier image",tltAddSignature:"ajouter la signature",tltAddLine:"ajouter la ligne",tltAddArrow:"ajouter flèche",tltAddRect:"ajouter rect",tltAddEllipse:"ajouter ellipse",lblDoubleClickToZoomIn:"Double-cliquez pour agrandir.",frmShareCaption:"Partager",frmShareLabel:"Share",frmShareInfo:"You can easily share this publication to social networks.Just cilck the appropriate button below.",frminsertLabel:"Insert to Site",frminsertInfo:"Use the code below to embed this publication to your website.",btnQRCode:"Click to scan QR code",btnRotateLeft:"Rotate Left",btnRotateRight:"Rotate Right",lblSelectMode:"Select view mode please.",frmDownloadPreview:"Preview",frmHowToUse:"How To Use",lblHelpPage1:"Move your finger to flip the book page.",lblHelpPage2:"Zoom in by using gesture or double click on the page.",lblHelpPage3:"Click on the logo to reach the official website of the company.",lblHelpPage4:"Add bookmarks, use search function and auto flip the book.",lblHelpPage5:"Switch horizontal and vertical view on mobile devices.",TTActionQuiz_PlayAgain:"Do you wanna play it again",TTActionQuiz_Ration:"Your ratio is",frmTelephone:"Telephone list",btnDialing:"Dialing",lblSelectMessage:"Please copy the the text content in the text box",btnSelectText:"Select Text",btnNote:"Annotation",btnPhoneNumber:"Telephone",btnWeCharShare:"WeChat Share",frmBookMark:"Marque du livre",btnFullscreen:"Plein écran",btnExitFullscreen:"Quitter le mode plein écran",btnMore:"Plus",frmPrintall:"Imprimer toutes les pages",frmPrintcurrent:"Imprimer la page en cours",frmPrintRange:"Plage d'impression",frmPrintexample:"Exemple: 2,3,5-10",frmPrintbtn:"Imprimer",frmaboutcaption:"Contacter",frmaboutcontactinformation:"Coordonnées",frmaboutADDRESS:"Adresse",frmaboutEMAIL:"Courriel",frmaboutWEBSITE:"Site web",frmaboutMOBILE:"Mobile",frmaboutAUTHOR:"Auteur",frmaboutDESCRIPTION:"Description",frmSearch:"Recherche",frmToc:"Table des matières",btnTableOfContent:"Afficher Table des matières",lblDescription:"Titre",frmLinkLabel:"Lien",infNotSupportHtml5:"Votre navigateur ne supporte pas HTML5.",frmQrcodeCaption:"Numérisez le code bidimensionnel inférieur pour le visualiser à l'aide du téléphone mobile."}];;function orgt(s){ return binl2hex(core_hx(str2binl(s), s.length * chrsz));};; var pageEditor = {"setting":{"annoPlaying":"true","shoppingCartHTML":"false","shoppingCartOptinon":{"type":"PayPal","paypal":"","method":"POST","sandbox":"false","address":"","theme":"","body":"Hi xxx     I'm going to buy below product(s):      ${shopping}  Full Name","showPrice":"true","showTime":"true"}}, "pageAnnos":[[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926446568","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link1","x":"0.5926715690117437","y":"-0.0012164710175780063","width":"0.40765769297104065","height":"0.2104494860409951","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"26"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926445484","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link2","x":"-0.0015679142037347718","y":"0.2311294933398212","width":"1.0018971761865192","height":"0.6192445714980841","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"32"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926444742","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link3","x":"0.2916320418946675","y":"0.8722097196034305","width":"0.30731118393201523","height":"0.12894592786326867","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"122"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926447481","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link4","x":"0.631869424105113","y":"0.8734261906210085","width":"0.3480769532291193","height":"0.12894592786326867","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"8"}}],[],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926448071","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link5","x":"0.07996362439047336","y":"0.8673438355331184","width":"0.3104470123394848","height":"0.03284471747460617","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}}],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926445424","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link6","x":"0.08780319540914722","y":"0.21774831214646312","width":"0.3386694680067107","height":"0.23149443464509462","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"6"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926447930","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link7","x":"0.0830994527979429","y":"0.45252721853901834","width":"0.343373210617915","height":"0.04063013198710541","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"8"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926446269","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link8","x":"0.08780319540914722","y":"0.5534943129979929","width":"0.3261261543768325","height":"0.3491271820448878","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"26"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926443889","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link9","x":"0.45312720487934904","y":"0.6848731828964175","width":"0.5428902930431647","height":"0.2335624353749772","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"32"}}],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926441262","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link10","x":"0.15051976355853808","y":"0.766376741074144","width":"0.4139293497859797","height":"0.02189647831640411","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"34"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926444480","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link11","x":"0.15679142037347718","y":"0.7931391034608601","width":"0.4092256071747754","height":"0.018247065263670093","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"40"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926441451","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link12","x":"0.15365559196600762","y":"0.8150355817772642","width":"0.4107935213785102","height":"0.036494130527340185","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"66"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926443865","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link13","x":"0.15208767776227286","y":"0.8527461833221824","width":"0.4107935213785102","height":"0.020680007298826106","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"92"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926447173","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link14","x":"0.15208767776227286","y":"0.8746426616385865","width":"0.4092256071747754","height":"0.02311294933398212","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"100"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926443452","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link15","x":"0.6428448235312564","y":"0.18247065263670095","width":"0.31201492654321955","height":"0.4269813271698802","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"122"}}],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926445886","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link16","x":"0.6444127377349912","y":"0.5230825375585427","width":"0.30887909813575004","height":"0.034061188492184175","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926443538","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link17","x":"0.5487699713071701","y":"0.75664497293352","width":"0.412361435582245","height":"0.08150355817772642","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926448574","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link18","x":"0.5440662286959658","y":"0.8758591326561646","width":"0.4249047492121231","height":"0.08880238428319445","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://connect.ed-diamond.com/","linkTarget":"_blank"}}],[],[],[],[],[],[],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926443547","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link19","x":"0.1709026482070901","y":"0.766376741074144","width":"0.24773044419009393","height":"0.030411775439450155","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"34"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926449268","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link20","x":"0.1724705624108249","y":"0.8004379295663281","width":"0.2649775004311764","height":"0.031628246457028164","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"40"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926447969","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link21","x":"0.1709026482070901","y":"0.8357155890760903","width":"0.363756095266467","height":"0.04500942765038623","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"66"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926447614","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link22","x":"0.5675849417519874","y":"0.7675932120917219","width":"0.2649775004311764","height":"0.04622589866796424","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"92"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926443453","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link23","x":"0.5722886843631917","y":"0.8211179368651542","width":"0.26340958622744165","height":"0.05109178273827626","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionGotoPage","pageIndex":"100"}}],[],[],[],[],[],[],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926449454","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link24","x":"0.3182865833581587","y":"0.7615108570038319","width":"0.5393624860847614","height":"0.0377106015449182","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926445099","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link25","x":"0.25243418680129825","y":"0.8503132412870263","width":"0.3214224117656282","height":"0.12164710175780062","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926447988","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link26","x":"0.6240298530864391","y":"0.8490967702694484","width":"0.3386694680067107","height":"0.12164710175780062","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://connect.ed-diamond.com/","linkTarget":"_blank"}}],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926444793","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link27","x":"0.6428448235312564","y":"0.5230825375585427","width":"0.3057432697282805","height":"0.02676236238671614","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926449656","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link28","x":"0.5424983144922311","y":"0.7505626178456298","width":"0.4217689208046536","height":"0.08758591326561645","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"20202492644766","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link29","x":"0.5424983144922311","y":"0.8807250167264765","width":"0.4311764060270622","height":"0.08636944224803844","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://connect.ed-diamond.com/","linkTarget":"_blank"}}],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926443394","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link30","x":"0.0501732545195127","y":"0.9099203211483486","width":"0.9062544097586981","height":"0.059607079861322305","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://connect.ed-diamond.com/","linkTarget":"_blank"}}],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926445762","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link31","x":"0.3182865833581587","y":"0.7578614439510979","width":"0.5456341428997006","height":"0.04622589866796424","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926444214","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link32","x":"0.25243418680129825","y":"0.8503132412870263","width":"0.3151507549506891","height":"0.11921415972264461","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926441296","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link33","x":"0.6271656814939087","y":"0.8503132412870263","width":"0.32455824017309776","height":"0.11921415972264461","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://connect.ed-diamond.com/","linkTarget":"_blank"}}],[],[],[],[],[],[],[],[{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"20202492644851","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link34","x":"0.6271656814939087","y":"0.8551791253573384","width":"0.322990325969363","height":"0.11313180463475458","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://connect.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926449768","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link35","x":"0.3041753555245457","y":"0.7688096831093","width":"0.5519057997146396","height":"0.04379295663280822","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}},{"annotype":"com.mobiano.flipbook.pageeditor.TAnnoLink","annoId":"202024926448928","alpha":"1","overColor":"8388736","downColor":"8388736","outColor":"11184810","overAlpha":"0.2","downAlpha":"0.2","outAlpha":"0","pageViewedBool":"true","ellipseH":"0","ellipseW":"0","location":{"tannoName":"link36","x":"0.25243418680129825","y":"0.8478802992518704","width":"0.31671866915442387","height":"0.12286357277537863","rotation":"0","reflection":"false","reflectionType":"0","reflectionAlpha":"0","pageWidth":"637.79","pageHeight":"822.05"},"hint":{"hintShapeColor":"0","hintShapeColor2":"8388736","hintShapeAlpha":"1","hintW":"0","hintH":"0","hintAuto":"true","hintShapeType":"2","text":""},"shadow":{"hasDropShadow":"false","shadowDistance":"4","shadowAngle":"270","shadowColor":"0","shadowAlpha":"0.6","shadowBlurX":"4","shadowBlurY":"4"},"highlightsBool":"false","linkStatus":"1","mouseOver":"false","borderColor":"16737792","action":{"triggerEventType":"mouseDown","actionType":"com.mobiano.flipbook.pageeditor.TAnnoActionOpenURL","url":"https://boutique.ed-diamond.com/","linkTarget":"_blank"}}],[],[],[]]}; bookConfig.isFlipPdf=false; var pages_information =[{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"},{pageColor:"16777215",pageIsStrech:"no"}];
+    private List<OrderBookInfo> scanBooksPage() {
+        String respContent = httpHelper.downloadBooksHtmlPage();
+        
+        SiteHtmlAnalyzer siteHtmlAnalyzer = new SiteHtmlAnalyzer(httpHelper);
+        List<OrderBookInfo> orderBooks = siteHtmlAnalyzer.scanBooksPage(respContent);
+        return orderBooks; 
+    }
 
-        String url = baseUrl + PATH_FLIPBBOOKS + bookTitle + PATH_MOBILE_JAVASCRIPT_CONFIGJS;
-        System.out.println("http query " + url);
-        Request request = new Request.Builder()
-                .url(url)
-                .header("Accept", "*/*")
-                
-                .header("Sec-Fetch-Mode", "no-cors")
-                .header("Sec-Fetch-Site", "same-origin")
-                .header("Referer", "https://boutique.ed-diamond.com/module/dmdpdfstamper/read?id_order_detail=" + orderDetail)
-                .build();
-        String respContent = null;
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.isSuccessful()) {
-                ResponseBody respBody = response.body();
-                respContent = respBody.string();
-            } else {
-                throw new RuntimeException("Failed to get book config: " + url);
-            }
-        }
-        if (respContent != null) {
-            FileUtils.writeStringToFile(new File(outputDir, "config.js"), respContent, Charset.forName("UTF-8"), false);
-        }
 
+    
+    private BookConfig downloadBookConfigAndParse(
+            File bookOutputDir,
+            String bookTitle,
+            String orderDetail
+            ) throws Exception {
+        String respContent;
+        File bookConfigFile = new File(bookOutputDir, "config.js");
+        if (!bookConfigFile.exists()) {
+            respContent = httpHelper.downloadBookConfig(bookTitle, orderDetail);
+            FileUtils.writeStringToFile(bookConfigFile, respContent, "UTF-8");
+        } else {
+            respContent = FileUtils.readFileToString(bookConfigFile, "UTF-8");
+        }
+        
         int indexStart = respContent.indexOf(";bookConfig.BookTemplateName=");
-        String initContent = respContent.substring(indexStart + 3, respContent.length());
+        String initContent = respContent.substring(indexStart, respContent.length());
 
-        // parse js ... (or eval)
         Pattern pattern = Pattern.compile(
                 "bookConfig.totalPageCount=(\\d+);"
                 + "bookConfig.largePageWidth=(\\d+);"
@@ -204,12 +142,10 @@ public class Flipbook2PdfMain {
                 + "bookConfig.CreatedTime =\"(\\d+)\";"
                 +".*"
                 );
-        
         Matcher matcher = pattern.matcher(initContent);
         if (!matcher.find()) {
             throw new RuntimeException("Failed to parse book config.js");
         }
-        
         BookConfig res = BookConfig.builder()
                 .totalPageCount(Integer.parseInt(matcher.group(1)))
                 .largePageWidth(Integer.parseInt(matcher.group(2)))
@@ -219,128 +155,17 @@ public class Flipbook2PdfMain {
         return res;
     }
 
-    private void httpDownloadPageImage(int page) throws Exception {
+    private void downloadPage(DownloadBookCtx ctx, int page) throws Exception {
         String imageName = page + ".jpg";
-        String url = baseUrl + PATH_FLIPBBOOKS + bookTitle + PATH_FILES_MOBILE + imageName +"?" + bookConfig.createdTime;
-        System.out.println("http query " + url);
-        Request request = new Request.Builder()
-                .url(url)
-                .header("Accept", "image/*")
-                
-                .header("Sec-Fetch-Dest", "image")
-                .header("Sec-Fetch-Mode", "no-cors")
-                .header("Sec-Fetch-Site", "same-origin")
-                .header("Referer", "https://boutique.ed-diamond.com/module/dmdpdfstamper/read?id_order_detail=" + orderDetail)
-                .build();
-        byte[] pageImgContent = null;
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (response.isSuccessful()) {
-                ResponseBody respBody = response.body();
-                pageImgContent = respBody.bytes();
-        
-                System.out.println("resp code:" + response.code());
-                System.out.println("resp: " + response.headers());
-                System.out.println();
-                
-                if (pageImgContent.length == 0) {
-                    throw new IllegalStateException();
-                }
-            } else {
-                System.err.println("Failed");
-            }
-            
-        }
-        if (pageImgContent != null) {
-            File imageFile = new File(outputDir, imageName);
+        File imageFile = new File(ctx.bookOutputDir, imageName);
+        if (! imageFile.exists()) {
+            log.info("download page " + page + "/" + ctx.bookConfig.getTotalPageCount());
+            byte[] pageImgContent = httpHelper.httpDownloadPageImage(ctx, imageName);
+    
             FileUtils.writeByteArrayToFile(imageFile, pageImgContent);
-        }
-    }
-
-    private void initHttpClient() throws Exception {
-        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
-        
-        // httpClientBuilder.followRedirects(false); // for first call
-    
-        // cookie manager
-        CookieHandler cookieHandler = new CookieManager();
-        httpClientBuilder.cookieJar(new JavaNetCookieJar(cookieHandler));
-        
-        if (debugHttpCalls) {
-            // init okhttp 3 logger
-            HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
-            httpClientBuilder.addInterceptor(logging);
-        }
-        
-                
-        if (httpProxyHost != null) {
-            Proxy proxy = new Proxy(Type.HTTP, new InetSocketAddress(httpProxyHost, httpProxyPort));
-            httpClientBuilder.proxy(proxy);
-        }
-                
-        boolean trustAllCerts = true;
-        if (trustAllCerts) {
-            TrustAllX509TrustManager trustAllX509TrustManager = new TrustAllX509TrustManager();
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            TrustManager[] trustManagers = new TrustManager[]{trustAllX509TrustManager};
-            sslContext.init(null, trustManagers, new java.security.SecureRandom());
-            httpClientBuilder.sslSocketFactory(sslContext.getSocketFactory(), trustAllX509TrustManager);
-
-            httpClientBuilder.hostnameVerifier(new HostnameVerifier() {
-                @Override
-                public boolean verify(String hostname, SSLSession session) {
-                  return true;
-                }
-              });
-
-        }
-        
-        this.httpClient = httpClientBuilder.build();
-    }
-    
-    protected void writePdf() throws Exception {
-        File outputFile = new File(outputDir, outputFilename);
-        Document document = new Document();
-        try {
-            PdfWriter.getInstance(document, new BufferedOutputStream(new FileOutputStream(outputFile)));
-            document.open();
-            document.setPageCount(bookConfig.totalPageCount);
-            final int width = bookConfig.largePageWidth;
-            final int height = bookConfig.largePageHeight;
-            Rectangle pageSize = new Rectangle(width, height);
-            document.setPageSize(pageSize);
-            
-            for(int page = 1; page <= bookConfig.totalPageCount; page++) {
-                String imageName = page + ".jpg";
-                File imageFile = new File(outputDir, imageName);
-                byte[] imgBytes = FileUtils.readFileToByteArray(imageFile);
-                
-                Image img = Image.getInstance(imgBytes); // PngImage.getImage(imgBytes)
-                // img.set
-                document.add(img);
-                
-                document.newPage();
-            }
-            
-        } finally {
-            document.close();
+        } else {
+            log.info("skip already downloaded page " + page + "/" + ctx.bookConfig.getTotalPageCount());
         }
     }
     
-//    private void writePdf() throws Exception {
-//        PDDocument document = new PDDocument();
-//        PDPage page = new PDPage();
-//        document.addPage(page);
-//         
-//        Path path = Paths.get(ClassLoader.getSystemResource("Java_logo.png").toURI());
-//        PDPageContentStream contentStream = new PDPageContentStream(document, page);
-//        PDImageXObject image 
-//          = PDImageXObject.createFromFile(path.toAbsolutePath().toString(), document);
-//        contentStream.drawImage(image, 0, 0);
-//        contentStream.close();
-//         
-//        document.save("pdfBoxImage.pdf");
-//        document.close();
-//        
-//    }
 }
