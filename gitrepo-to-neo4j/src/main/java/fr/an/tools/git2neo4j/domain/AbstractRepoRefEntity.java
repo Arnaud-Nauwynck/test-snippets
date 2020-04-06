@@ -1,10 +1,10 @@
 package fr.an.tools.git2neo4j.domain;
 
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 
 public abstract class AbstractRepoRefEntity {
 
-	@GraphId 
+	@Id 
 	protected Long id;
 
 	protected String name;

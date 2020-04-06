@@ -1,0 +1,181 @@
+
+LogSegmentOp [opCode=OP_START_LOG_SEGMENT, txid=1]
+
+MkdirOp [length=0, inodeId=16386, path=/tmp, timestamp=1549630912810, permissions=hive:hdfs:rwx-wx-wx, aclEntries=null, opCode=OP_MKDIR, txid=2, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16387, path=/tmp/hive, timestamp=1549630912826, permissions=hive:hdfs:rwx-wx-wx, aclEntries=null, opCode=OP_MKDIR, txid=3, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16388, path=/tmp/hive/hive, timestamp=1549630912879, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=4, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16389, path=/tmp/hive/hive/4792419b-8d54-40ec-ab24-7e6733938757, timestamp=1549630913043, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=5, xAttrs=[]]
+
+AddOp [length=0, inodeId=16390, path=/tmp/hive/hive/4792419b-8d54-40ec-ab24-7e6733938757/inuse.info, replication=3, mtime=1549630913196, atime=1549630913196, blockSize=134217728, blocks=[], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_1117165035_1, clientMachine=10.5.1.16, overwrite=true, RpcClientId=110669b7-5a22-47ee-80c4-698fcce82765, RpcCallId=8, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=6]
+
+AllocateBlockIdOp [blockId=1073741825, opCode=OP_ALLOCATE_BLOCK_ID, txid=7]
+
+SetGenstampV2Op [GenStampV2=1001, opCode=OP_SET_GENSTAMP_V2, txid=8]
+
+AddBlockOp [path=/tmp/hive/hive/4792419b-8d54-40ec-ab24-7e6733938757/inuse.info, penultimateBlock=NULL, lastBlock=blk_1073741825_1001, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/hive/4792419b-8d54-40ec-ab24-7e6733938757/inuse.info, replication=3, mtime=1549630914422, atime=1549630913196, blockSize=134217728, blocks=[blk_1073741825_1001], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=10]
+
+AddOp [length=0, inodeId=16391, path=/tmp/hive/hive/4792419b-8d54-40ec-ab24-7e6733938757/inuse.lck, replication=3, mtime=1549630914459, atime=1549630914459, blockSize=134217728, blocks=[], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_1117165035_1, clientMachine=10.5.1.16, overwrite=true, RpcClientId=110669b7-5a22-47ee-80c4-698fcce82765, RpcCallId=13, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=11]
+
+MkdirOp [length=0, inodeId=16392, path=/tmp/hive/hive/4792419b-8d54-40ec-ab24-7e6733938757/_tmp_space.db, timestamp=1549630914495, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=12, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16393, path=/tmp/hive/ambari-qa, timestamp=1549630917489, permissions=ambari-qa:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=13, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16394, path=/tmp/hive/ambari-qa/6f87add4-6c55-48c8-9894-14f5525251f5, timestamp=1549630920506, permissions=ambari-qa:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=14, xAttrs=[]]
+
+AddOp [length=0, inodeId=16395, path=/tmp/hive/ambari-qa/6f87add4-6c55-48c8-9894-14f5525251f5/inuse.info, replication=3, mtime=1549630920587, atime=1549630920587, blockSize=134217728, blocks=[], permissions=ambari-qa:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_823542428_1, clientMachine=10.5.1.16, overwrite=true, RpcClientId=6efea5b2-fe87-4dd9-8463-dace6fb3aa99, RpcCallId=7, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=15]
+
+AllocateBlockIdOp [blockId=1073741826, opCode=OP_ALLOCATE_BLOCK_ID, txid=16]
+
+SetGenstampV2Op [GenStampV2=1002, opCode=OP_SET_GENSTAMP_V2, txid=17]
+
+AddBlockOp [path=/tmp/hive/ambari-qa/6f87add4-6c55-48c8-9894-14f5525251f5/inuse.info, penultimateBlock=NULL, lastBlock=blk_1073741826_1002, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/ambari-qa/6f87add4-6c55-48c8-9894-14f5525251f5/inuse.info, replication=3, mtime=1549630920966, atime=1549630920587, blockSize=134217728, blocks=[blk_1073741826_1002], permissions=ambari-qa:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=19]
+
+AddOp [length=0, inodeId=16396, path=/tmp/hive/ambari-qa/6f87add4-6c55-48c8-9894-14f5525251f5/inuse.lck, replication=3, mtime=1549630921005, atime=1549630921005, blockSize=134217728, blocks=[], permissions=ambari-qa:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_823542428_1, clientMachine=10.5.1.16, overwrite=true, RpcClientId=6efea5b2-fe87-4dd9-8463-dace6fb3aa99, RpcCallId=11, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=20]
+
+MkdirOp [length=0, inodeId=16397, path=/tmp/hive/ambari-qa/6f87add4-6c55-48c8-9894-14f5525251f5/_tmp_space.db, timestamp=1549630921038, permissions=ambari-qa:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=21, xAttrs=[]]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/ambari-qa/6f87add4-6c55-48c8-9894-14f5525251f5/inuse.lck, replication=3, mtime=1549630925544, atime=1549630921005, blockSize=134217728, blocks=[], permissions=ambari-qa:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=22]
+
+DeleteOp [length=0, path=/tmp/hive/ambari-qa/6f87add4-6c55-48c8-9894-14f5525251f5, timestamp=1549630925590, RpcClientId=6efea5b2-fe87-4dd9-8463-dace6fb3aa99, RpcCallId=15, opCode=OP_DELETE, txid=23]
+
+MkdirOp [length=0, inodeId=16398, path=/tmp/hive/hive/24cdd988-9be8-4d33-8a25-b24222185f96, timestamp=1549630929388, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=24, xAttrs=[]]
+
+AddOp [length=0, inodeId=16399, path=/tmp/hive/hive/24cdd988-9be8-4d33-8a25-b24222185f96/inuse.info, replication=3, mtime=1549630929502, atime=1549630929502, blockSize=134217728, blocks=[], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-1574144896_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=cd96dc28-275d-4932-ae5c-6a8cd0008120, RpcCallId=6, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=25]
+
+AllocateBlockIdOp [blockId=1073741827, opCode=OP_ALLOCATE_BLOCK_ID, txid=26]
+
+SetGenstampV2Op [GenStampV2=1003, opCode=OP_SET_GENSTAMP_V2, txid=27]
+
+AddBlockOp [path=/tmp/hive/hive/24cdd988-9be8-4d33-8a25-b24222185f96/inuse.info, penultimateBlock=NULL, lastBlock=blk_1073741827_1003, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/hive/24cdd988-9be8-4d33-8a25-b24222185f96/inuse.info, replication=3, mtime=1549630929857, atime=1549630929502, blockSize=134217728, blocks=[blk_1073741827_1003], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=29]
+
+AddOp [length=0, inodeId=16400, path=/tmp/hive/hive/24cdd988-9be8-4d33-8a25-b24222185f96/inuse.lck, replication=3, mtime=1549630929883, atime=1549630929883, blockSize=134217728, blocks=[], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-1574144896_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=cd96dc28-275d-4932-ae5c-6a8cd0008120, RpcCallId=10, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=30]
+
+MkdirOp [length=0, inodeId=16401, path=/tmp/hive/hive/24cdd988-9be8-4d33-8a25-b24222185f96/_tmp_space.db, timestamp=1549630929911, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=31, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16402, path=/tmp/hive/hive/736d7c46-06ad-40d9-89f8-ae5ed90c2848, timestamp=1549630945727, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=32, xAttrs=[]]
+
+AddOp [length=0, inodeId=16403, path=/tmp/hive/hive/736d7c46-06ad-40d9-89f8-ae5ed90c2848/inuse.info, replication=3, mtime=1549630945778, atime=1549630945778, blockSize=134217728, blocks=[], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-1574144896_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=cd96dc28-275d-4932-ae5c-6a8cd0008120, RpcCallId=19, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=33]
+
+AllocateBlockIdOp [blockId=1073741828, opCode=OP_ALLOCATE_BLOCK_ID, txid=34]
+
+SetGenstampV2Op [GenStampV2=1004, opCode=OP_SET_GENSTAMP_V2, txid=35]
+
+AddBlockOp [path=/tmp/hive/hive/736d7c46-06ad-40d9-89f8-ae5ed90c2848/inuse.info, penultimateBlock=NULL, lastBlock=blk_1073741828_1004, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/hive/736d7c46-06ad-40d9-89f8-ae5ed90c2848/inuse.info, replication=3, mtime=1549630945862, atime=1549630945778, blockSize=134217728, blocks=[blk_1073741828_1004], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=37]
+
+AddOp [length=0, inodeId=16404, path=/tmp/hive/hive/736d7c46-06ad-40d9-89f8-ae5ed90c2848/inuse.lck, replication=3, mtime=1549630945897, atime=1549630945897, blockSize=134217728, blocks=[], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-1574144896_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=cd96dc28-275d-4932-ae5c-6a8cd0008120, RpcCallId=22, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=38]
+
+MkdirOp [length=0, inodeId=16405, path=/tmp/hive/hive/736d7c46-06ad-40d9-89f8-ae5ed90c2848/_tmp_space.db, timestamp=1549630945933, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=39, xAttrs=[]]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/hive/736d7c46-06ad-40d9-89f8-ae5ed90c2848/inuse.lck, replication=3, mtime=1549630946637, atime=1549630945897, blockSize=134217728, blocks=[], permissions=hive:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=40]
+
+DeleteOp [length=0, path=/tmp/hive/hive/736d7c46-06ad-40d9-89f8-ae5ed90c2848, timestamp=1549630946680, RpcClientId=cd96dc28-275d-4932-ae5c-6a8cd0008120, RpcCallId=26, opCode=OP_DELETE, txid=41]
+
+MkdirOp [length=0, inodeId=16406, path=/tmp/hive/ambari-qa/86333e52-8328-4216-ae6e-47a120994949, timestamp=1549630948880, permissions=ambari-qa:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=42, xAttrs=[]]
+
+AddOp [length=0, inodeId=16407, path=/tmp/hive/ambari-qa/86333e52-8328-4216-ae6e-47a120994949/inuse.info, replication=3, mtime=1549630949017, atime=1549630949017, blockSize=134217728, blocks=[], permissions=ambari-qa:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-547064311_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=2d3bb478-e29e-481e-951b-29f0e022ef3a, RpcCallId=6, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=43]
+
+AllocateBlockIdOp [blockId=1073741829, opCode=OP_ALLOCATE_BLOCK_ID, txid=44]
+
+SetGenstampV2Op [GenStampV2=1005, opCode=OP_SET_GENSTAMP_V2, txid=45]
+
+AddBlockOp [path=/tmp/hive/ambari-qa/86333e52-8328-4216-ae6e-47a120994949/inuse.info, penultimateBlock=NULL, lastBlock=blk_1073741829_1005, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/ambari-qa/86333e52-8328-4216-ae6e-47a120994949/inuse.info, replication=3, mtime=1549630950141, atime=1549630949017, blockSize=134217728, blocks=[blk_1073741829_1005], permissions=ambari-qa:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=47]
+
+AddOp [length=0, inodeId=16408, path=/tmp/hive/ambari-qa/86333e52-8328-4216-ae6e-47a120994949/inuse.lck, replication=3, mtime=1549630950633, atime=1549630950633, blockSize=134217728, blocks=[], permissions=ambari-qa:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-547064311_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=2d3bb478-e29e-481e-951b-29f0e022ef3a, RpcCallId=10, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=48]
+
+MkdirOp [length=0, inodeId=16409, path=/tmp/hive/ambari-qa/86333e52-8328-4216-ae6e-47a120994949/_tmp_space.db, timestamp=1549630950824, permissions=ambari-qa:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=49, xAttrs=[]]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/ambari-qa/86333e52-8328-4216-ae6e-47a120994949/inuse.lck, replication=3, mtime=1549630955560, atime=1549630950633, blockSize=134217728, blocks=[], permissions=ambari-qa:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=50]
+
+DeleteOp [length=0, path=/tmp/hive/ambari-qa/86333e52-8328-4216-ae6e-47a120994949, timestamp=1549630955588, RpcClientId=2d3bb478-e29e-481e-951b-29f0e022ef3a, RpcCallId=14, opCode=OP_DELETE, txid=51]
+
+MkdirOp [length=0, inodeId=16410, path=/tmp/hive/hive/939da087-eaba-48a7-a5dc-0d604636eee7, timestamp=1549630981090, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=52, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16411, path=/tmp/hive/hive/939da087-eaba-48a7-a5dc-0d604636eee7/_tmp_space.db, timestamp=1549630981123, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=53, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16412, path=/tmp/hive/hive/4a3fa6b7-efdc-449f-93e1-da1b9834fe1d, timestamp=1549630982942, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=54, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16413, path=/tmp/hive/hive/4a3fa6b7-efdc-449f-93e1-da1b9834fe1d/_tmp_space.db, timestamp=1549630982978, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=55, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16414, path=/tmp/hive/hive/ea5a427a-589c-4d0a-81d3-e9c7aef09d4f, timestamp=1549630989640, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=56, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16415, path=/tmp/hive/hive/ea5a427a-589c-4d0a-81d3-e9c7aef09d4f/_tmp_space.db, timestamp=1549630989680, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=57, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16416, path=/tmp/hive/hive/c0326c6a-bf86-4fe8-bd8e-2c06bac40750, timestamp=1549630994180, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=58, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16417, path=/tmp/hive/hive/c0326c6a-bf86-4fe8-bd8e-2c06bac40750/_tmp_space.db, timestamp=1549630994253, permissions=hive:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=59, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16418, path=/tmp/hive/root, timestamp=1549631017493, permissions=root:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=60, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16419, path=/tmp/hive/root/58ff491b-6546-46c2-be3c-1a88d419ffbb, timestamp=1549631017572, permissions=root:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=61, xAttrs=[]]
+
+AddOp [length=0, inodeId=16420, path=/tmp/hive/root/58ff491b-6546-46c2-be3c-1a88d419ffbb/inuse.info, replication=3, mtime=1549631017643, atime=1549631017643, blockSize=134217728, blocks=[], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-2072832128_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=ffde2f9b-01d0-46b6-a365-d11201c31860, RpcCallId=7, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=62]
+
+AllocateBlockIdOp [blockId=1073741830, opCode=OP_ALLOCATE_BLOCK_ID, txid=63]
+
+SetGenstampV2Op [GenStampV2=1006, opCode=OP_SET_GENSTAMP_V2, txid=64]
+
+AddBlockOp [path=/tmp/hive/root/58ff491b-6546-46c2-be3c-1a88d419ffbb/inuse.info, penultimateBlock=NULL, lastBlock=blk_1073741830_1006, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/root/58ff491b-6546-46c2-be3c-1a88d419ffbb/inuse.info, replication=3, mtime=1549631018090, atime=1549631017643, blockSize=134217728, blocks=[blk_1073741830_1006], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=66]
+
+AddOp [length=0, inodeId=16421, path=/tmp/hive/root/58ff491b-6546-46c2-be3c-1a88d419ffbb/inuse.lck, replication=3, mtime=1549631018135, atime=1549631018135, blockSize=134217728, blocks=[], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-2072832128_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=ffde2f9b-01d0-46b6-a365-d11201c31860, RpcCallId=11, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=67]
+
+MkdirOp [length=0, inodeId=16422, path=/tmp/hive/root/58ff491b-6546-46c2-be3c-1a88d419ffbb/_tmp_space.db, timestamp=1549631018180, permissions=root:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=68, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16423, path=/tmp/hive/root/_tez_session_dir, timestamp=1549631018254, permissions=root:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=69, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16424, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb, timestamp=1549631018254, permissions=root:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=70, xAttrs=[]]
+
+AddOp [length=0, inodeId=16425, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/hive-hcatalog-core.jar, replication=3, mtime=1549631018300, atime=1549631018300, blockSize=134217728, blocks=[], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-2072832128_1, clientMachine=10.5.1.15, overwrite=false, RpcClientId=ffde2f9b-01d0-46b6-a365-d11201c31860, RpcCallId=18, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=71]
+
+AllocateBlockIdOp [blockId=1073741831, opCode=OP_ALLOCATE_BLOCK_ID, txid=72]
+
+SetGenstampV2Op [GenStampV2=1007, opCode=OP_SET_GENSTAMP_V2, txid=73]
+
+AddBlockOp [path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/hive-hcatalog-core.jar, penultimateBlock=NULL, lastBlock=blk_1073741831_1007, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/hive-hcatalog-core.jar, replication=3, mtime=1549631018377, atime=1549631018300, blockSize=134217728, blocks=[blk_1073741831_1007], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=75]
+
+MkdirOp [length=0, inodeId=16426, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez, timestamp=1549631022033, permissions=root:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=76, xAttrs=[]]
+
+MkdirOp [length=0, inodeId=16427, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003, timestamp=1549631022033, permissions=root:hdfs:rwx------, aclEntries=null, opCode=OP_MKDIR, txid=77, xAttrs=[]]
+
+AddOp [length=0, inodeId=16428, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003/tez-conf.pb, replication=3, mtime=1549631022088, atime=1549631022088, blockSize=134217728, blocks=[], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-2072832128_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=ffde2f9b-01d0-46b6-a365-d11201c31860, RpcCallId=32, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=78]
+
+SetPermissionsOp [src=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003/tez-conf.pb, permissions=rw-r--r--, opCode=OP_SET_PERMISSIONS, txid=79]
+
+AllocateBlockIdOp [blockId=1073741832, opCode=OP_ALLOCATE_BLOCK_ID, txid=80]
+
+SetGenstampV2Op [GenStampV2=1008, opCode=OP_SET_GENSTAMP_V2, txid=81]
+
+AddBlockOp [path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003/tez-conf.pb, penultimateBlock=NULL, lastBlock=blk_1073741832_1008, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003/tez-conf.pb, replication=3, mtime=1549631022205, atime=1549631022088, blockSize=134217728, blocks=[blk_1073741832_1008], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=83]
+
+AddOp [length=0, inodeId=16429, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003/tez.session.local-resources.pb, replication=3, mtime=1549631022240, atime=1549631022240, blockSize=134217728, blocks=[], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=DFSClient_NONMAPREDUCE_-2072832128_1, clientMachine=10.5.1.15, overwrite=true, RpcClientId=ffde2f9b-01d0-46b6-a365-d11201c31860, RpcCallId=38, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_ADD, txid=84]
+
+SetPermissionsOp [src=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003/tez.session.local-resources.pb, permissions=rw-r--r--, opCode=OP_SET_PERMISSIONS, txid=85]
+
+AllocateBlockIdOp [blockId=1073741833, opCode=OP_ALLOCATE_BLOCK_ID, txid=86]
+
+SetGenstampV2Op [GenStampV2=1009, opCode=OP_SET_GENSTAMP_V2, txid=87]
+
+AddBlockOp [path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003/tez.session.local-resources.pb, penultimateBlock=NULL, lastBlock=blk_1073741833_1009, RpcClientId=, RpcCallId=-2]
+
+CloseOp [length=0, inodeId=0, path=/tmp/hive/root/_tez_session_dir/58ff491b-6546-46c2-be3c-1a88d419ffbb/.tez/application_1549630863665_0003/tez.session.local-resources.pb, replication=3, mtime=1549631022374, atime=1549631022240, blockSize=134217728, blocks=[blk_1073741833_1009], permissions=root:hdfs:rw-r--r--, aclEntries=null, clientName=, clientMachine=, overwrite=false, storagePolicyId=0, erasureCodingPolicyId=0, opCode=OP_CLOSE, txid=89]
+
+LogSegmentOp [opCode=OP_END_LOG_SEGMENT, txid=90]
+

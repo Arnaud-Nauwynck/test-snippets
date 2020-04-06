@@ -1,0 +1,16 @@
+<div *ngIf="model != null && model.status != 'notStarted'">
+  
+  <span>{{model.status}}
+    <span *ngIf="model.status == 'finished'">, took {{model.millis}} ms</span>
+    <span *ngIf="model.status == 'failed'">, after {{model.millis}} ms, error: {{model.errAsText}}</span>
+  </span>
+  &nbsp;
+  <label><input type="checkbox" [(ngModel)]="showDetailed"> Show detail</label>
+
+    <div *ngIf="model.status != 'finished' || showDetailed">
+        <br/>
+        <app-serverlog [traceId]="model.traceId">
+        </app-serverlog>
+    </div>
+
+</div>

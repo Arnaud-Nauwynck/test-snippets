@@ -1,0 +1,6 @@
+itarget/
+.project
+.classpath
+.settings/
+log*.txt
+

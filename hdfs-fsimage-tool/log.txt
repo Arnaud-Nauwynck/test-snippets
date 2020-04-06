@@ -1,0 +1,21 @@
+23:51:35.479 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Loading string table
+23:51:35.501 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.FSImageHandler - Loading 2 strings
+23:51:35.595 [main] INFO org.apache.hadoop.hdfs.server.namenode.FSDirectory - GLOBAL serial map: bits=29 maxEntries=536870911
+23:51:35.595 [main] INFO org.apache.hadoop.hdfs.server.namenode.FSDirectory - USER serial map: bits=24 maxEntries=16777215
+23:51:35.595 [main] INFO org.apache.hadoop.hdfs.server.namenode.FSDirectory - GROUP serial map: bits=24 maxEntries=16777215
+23:51:35.595 [main] INFO org.apache.hadoop.hdfs.server.namenode.FSDirectory - XATTR serial map: bits=24 maxEntries=16777215
+23:51:35.595 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Loading inode references
+23:51:35.595 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.FSImageHandler - Loading inode references
+23:51:35.611 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.FSImageHandler - Loaded 0 inode references
+23:51:35.611 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Loading directories
+23:51:35.611 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Loading directories in INode section.
+23:51:35.642 [main] DEBUG org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Scanned 0 inodes.
+23:51:35.658 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Found 1 directories in INode section.
+23:51:35.658 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Finished loading directories in 41ms
+23:51:35.658 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Loading INode directory section.
+23:51:35.658 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Scanned 0 INode directories to build namespace.
+23:51:35.658 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Finished loading INode directory section in 4ms
+23:51:35.658 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Found 1 INodes in the INode section
+23:51:35.658 [main] DEBUG org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Outputted 0 INodes.
+23:51:35.658 [main] INFO org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Outputted 1 INodes.
+23:51:35.658 [main] DEBUG org.apache.hadoop.hdfs.tools.offlineImageViewer.PBImageTextWriter - Time to output inodes: 0ms

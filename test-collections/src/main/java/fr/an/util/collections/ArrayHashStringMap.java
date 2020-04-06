@@ -5,9 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import fr.an.fxtree.impl.util.FxUtils;
-import fr.an.fxtree.impl.util.LigthweightMapEntry;
-
 /**
  * a simpler partial replacement for <code>LinkedHashMap<String,T></code>
  * with restriction that keys and values can not be null. 
@@ -409,6 +406,39 @@ public final class ArrayHashStringMap<T> {
         };
     }
     
+    private static class LigthweightMapEntry<K,V> implements java.util.Map.Entry<K,V> {
+    	K key;
+    	V value;
+    	
+		public LigthweightMapEntry(K key, V value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		@Override
+		public K getKey() {
+			return key;
+		}
+
+		@Override
+		public V getValue() {
+			return value;
+		}
+
+		@Override
+		public V setValue(V value) {
+			V old = this.value;
+			this.value = value;
+			return old;
+		}
+
+		public void _setCurr(K key, V value) {
+			this.key = key;
+			this.value = value;
+		}
+    	
+    }
+    
     public Iterator<java.util.Map.Entry<String, T>> entrySetIterator() {
         return new Iterator<java.util.Map.Entry<String, T>>() {
             int currIndex = -1;
@@ -729,7 +759,7 @@ public final class ArrayHashStringMap<T> {
                 }
             }
         } else {
-            throw FxUtils.notImplYet();
+            throw new UnsupportedOperationException("NOT IMPL");
 //            for(int i = prevIndex + 1; i < size; i++) {
 //                String keyAt = 
 //            }

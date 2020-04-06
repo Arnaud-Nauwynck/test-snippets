@@ -1,0 +1,46 @@
+# cf https://docs.docker.com/v17.09/registry/configuration/#version
+version: 0.1
+
+log:
+  level: debug
+  formatter: text
+  fields:
+    service: registry
+    environment: staging
+
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+
+auth:
+  silly:
+    realm: silly-realm
+    service: silly-service
+#  htpasswd:
+#    realm: basic-realm
+#    path: /path/to/htpasswd
+
+http:
+  addr: localhost:5000
+  # prefix: /registry/
+  # host: https://localhost:5000
+  secret: asecretforlocaldevelopment
+  relativeurls: false
+  tls:
+    certificate: /mnt/certs/local.cert.pem
+    key: /mnt/certs/local.key.pem
+#    clientcas:
+#      - /path/to/ca.pem
+#      - /path/to/another/ca.pem
+
+#  debug:
+#    addr: localhost:5001
+
+
+proxy:
+  remoteurl: https://registry-1.docker.io
+#  username: 
+#  password: 
+#compatibility:
+#  schema1:
+#    signingkeyfile: /etc/registry/key.json

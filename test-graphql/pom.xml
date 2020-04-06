@@ -14,7 +14,8 @@
 		<java.version>1.8</java.version>
 
 		<graphql-java.version>5.2.4</graphql-java.version>
-		<graphql-springboot.version>5.0.3</graphql-springboot.version>	
+		<graphql-springboot.version>5.0.3</graphql-springboot.version>
+		<graphql-nadel>2018-11-13T03-33-03-354f9ec</graphql-nadel>	
 		<io-springfox-swagger.version>2.9.2</io-springfox-swagger.version>
 	</properties>
 
@@ -46,7 +47,7 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
- 				<version>2.0.5.RELEASE</version>
+ 				<version>2.2.0.M3</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -55,41 +56,47 @@
 			<dependency>
 				<groupId>com.graphql-java</groupId>
 				<artifactId>graphql-spring-boot-starter</artifactId>	
-				<version>${graphql-springboot.version}</version>	
+				<version>5.0.2</version>	
 			</dependency>
 			<dependency>
 				<groupId>com.graphql-java</groupId>
 				<artifactId>graphiql-spring-boot-starter</artifactId>	
-				<version>${graphql-springboot.version}</version>	
+				<version>5.0.2</version>	
 			</dependency>
 			
 			<dependency>
 				<groupId>com.graphql-java</groupId>
 				<artifactId>graphql-java-tools</artifactId>	
-				<version>${graphql-java.version}</version>	
+				<version>5.2.4</version>	
 			</dependency>
 			
 			<dependency>
+			  <groupId>com.graphql-java</groupId>
+			  <artifactId>nadel</artifactId>
+			  <version>2019-05-20T03-11-41-2a6e566</version>
+			</dependency>
+
+			<dependency>
 	     		<groupId>com.atlassian.braid</groupId>
 	    		<artifactId>graphql-braid</artifactId>
-	    		<version>0.14.1-SNAPSHOT</version>
+	    		<version>0.23.0</version>
 	 		</dependency>
 	 		
 	 		<dependency>
 			    <groupId>org.apache.httpcomponents</groupId>
 			    <artifactId>httpclient</artifactId>
-			    <version>4.5.6</version>
+			    <version>4.5.8</version>
 			</dependency>
 
 			<dependency>
 			    <groupId>io.springfox</groupId>
 			    <artifactId>springfox-swagger2</artifactId>
-			    <version>${io-springfox-swagger.version}</version>
+			    <version>2.9.2</version>
 			</dependency>
 			<dependency>
 			    <groupId>io.springfox</groupId>
 			    <artifactId>springfox-swagger-ui</artifactId>
-			    <version>${io-springfox-swagger.version}</version>
+			    <version>2.9.2</version>
 			</dependency>
 						
 		</dependencies>
@@ -100,7 +107,11 @@
 		<module>test-graphql-springboot-server</module>
 		<module>test-graphql-springboot-server2</module>
 		<module>test-rest-server</module>
+		<module>test-graphql-stitch-nadel</module>
+
+<!-- 
 		<module>test-graphql-braid-stitch-server</module>
+ -->
 		<module>test-json-server</module>
 		<module>swagger-to-graphql</module>
 	</modules>

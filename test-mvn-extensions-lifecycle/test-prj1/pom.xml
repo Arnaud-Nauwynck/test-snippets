@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>fr.an.tests</groupId>
+  <artifactId>test-prj1</artifactId>
+  <version>0.0.1</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+   
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>fr.an.tests</groupId>
+        <artifactId>test-mojo</artifactId>
+        <version>0.0.1</version>
+        <configuration>
+            <param1>test1</param1>
+        </configuration>
+        <executions>
+            <execution>
+                <id>exec1</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>test1</goal>
+                </goals>
+                <configuration>
+                    <param1>test1-exec1</param1>
+                    <paramUnkown>test1-exec1</paramUnkown>
+                </configuration>
+            </execution>
+            <execution>
+                <id>exec2</id>
+                <phase>package</phase>
+                <goals>
+                    <goal>test1</goal>
+                </goals>
+                <configuration>
+                    <param1>test1-exec2</param1>
+                </configuration>
+            </execution>
+        </executions>         
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

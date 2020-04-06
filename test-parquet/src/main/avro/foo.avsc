@@ -1,0 +1,7 @@
+{"namespace": "fr.an.test.parquet.avro",
+ "type": "record",
+ "name": "AvroFoo",
+ "fields": [
+     {"name": "intField", "type": "int"}
+ ]
+}

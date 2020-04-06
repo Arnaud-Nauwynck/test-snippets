@@ -1,0 +1,22 @@
+
+server:
+   port: 8082
+
+spring:
+   application:
+      name: test-app2
+   boot:
+      admin:
+         url: http://localhost:8080
+         client:
+            url: http://localhost:8080
+            enabled: true
+
+management:
+   endpoints:
+      web:
+         exposure:
+            include: '*'
+
+   security:
+      enabled: false   

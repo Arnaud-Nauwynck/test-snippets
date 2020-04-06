@@ -1,0 +1,25 @@
+org.springframework.boot.env.PropertySourceLoader=\
+fr.an.tests.springbootproploader.AppPropertySourceLoader
+
+org.springframework.boot.SpringApplicationRunListener=\
+fr.an.tests.springbootproploader.AppSpringApplicationRunListener
+
+org.springframework.context.ApplicationContextInitializer=\
+fr.an.tests.springbootproploader.AppApplicationContextInitializer
+
+org.springframework.context.ApplicationListener=\
+fr.an.tests.springbootproploader.AppApplicationListener
+ 
+# Environment Post Processors
+org.springframework.boot.env.EnvironmentPostProcessor=\
+fr.an.tests.springbootproploader.AppEnvironmentPostProcessor
+# ??? when enabling => 
+# org.springframework.boot.context.properties.bind.BindException: Failed to bind properties under 'spring.output.ansi.enabled' to org.springframework.boot.ansi.AnsiOutput$Enabled
+# Caused by: java.lang.IllegalArgumentException: No enum constant org.springframework.boot.ansi.AnsiOutput.Enabled.customDynResource1Resolver.getProperty(spring.output.ansi.enabled)
+
+
+#org.springframework.cloud.bootstrap.BootstrapConfiguration=\
+#fr.an.tests.springbootproploader.AppBootstrapConfiguration
+
+#org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+#fr.an.tests.springbootproploader.AppEnableAutoConfiguration

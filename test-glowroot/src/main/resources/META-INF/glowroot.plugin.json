@@ -1,0 +1,40 @@
+{
+  "name": "File Plugin",
+  "id": "file",
+  "properties": [
+    {
+      "name": "writeRootPath",
+      "type": "String",
+      "default": "",
+      "label": "File write root path",
+      "description": "File write root path"
+    },
+    {
+      "name": "writeFilePattern",
+      "type": "String",
+      "default": ".*",
+      "label": "writeFilePattern",
+      "description": "pattern for write file"
+    },
+    {
+      "name": "showStackTrace",
+      "type": "boolean",
+      "default": true,
+      "label": "showStackTrace",
+      "description": "show stack trace for calls"
+    },
+    {
+      "name": "formatStackTraceSingleLine",
+      "type": "boolean",
+      "default": true,
+      "label": "formatStackTraceSingleLine",
+      "description": "format stack trace horizontally for calls"
+    }
+    
+    
+  ],
+  "aspects": [
+    "fr.an.test.glowroot.FileAspect",
+    "fr.an.test.glowroot.SystemAspect"
+  ]
+}

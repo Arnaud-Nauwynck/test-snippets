@@ -1,0 +1,3 @@
+
+targetGraphQLUrl: https://api.github.com/graphql
+graphQLTokenFile: ${user.home}/.ssh/githubToken

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<style> html, body { margin: 0; padding: 0; height: 100%; } </style>
+	<script src="angular.js"></script>
+    <script src="ag-grid.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+
+<div ng-app="app">
+
+<div ng-controller="todoCtrl as ctrl">
+    
+      <label>Task:</label>
+      <input type="text" ng-model="ctrl.task" 
+      	placeholder="Enter a Task">
+      </input>
+	<BR/>
+    
+      <label>Comment:</label>
+      <input type="text" ng-model="ctrl.comment" 
+      	placeholder="Enter a Comment">
+      </input>
+	<BR/>
+
+	<button ng-click="ctrl.addTodo()">Add</button>    
+	<BR/>
+    
+    <div ag-grid="ctrl.gridOptions" class="ag-theme-balham" 
+    	style="height: 300pt;"></div>
+
+
+	<button ng-click="ctrl.loadAsync()">Load..</button>    
+</div>
+
+</div>
+</body>
+</html>

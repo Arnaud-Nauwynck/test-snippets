@@ -2,7 +2,6 @@ package fr.an.tools.git2neo4j.config;
 
 import java.io.File;
 
-import org.neo4j.ogm.config.DriverConfiguration;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
 import org.slf4j.Logger;
@@ -29,10 +28,11 @@ public class Neo4jConfig {
 
 		@Override
 	    public SessionFactory getSessionFactory() {
-			org.neo4j.ogm.config.Configuration neo4jConfig = new org.neo4j.ogm.config.Configuration();
-	    	DriverConfiguration driverConf = neo4jConfig.driverConfiguration();
-	    	driverConf.setDriverClassName(org.neo4j.ogm.drivers.bolt.driver.BoltDriver.class.getName());
-	    	driverConf.setURI(neo4jURL);
+			org.neo4j.ogm.config.Configuration neo4jConfig = 
+					new org.neo4j.ogm.config.Configuration.Builder()
+					.uri(neo4jURL)
+					// .setDriverClassName(org.neo4j.ogm.drivers.bolt.driver.BoltDriver.class.getName());
+					.build();
 	    	LOG.info("using neo4j mode bolt, url: " + neo4jURL);
 			return new SessionFactory(neo4jConfig, "fr.an.tools.git2neo4j.domain");
 		}
@@ -53,15 +53,16 @@ public class Neo4jConfig {
 		
 	    @Override
 	    public SessionFactory getSessionFactory() {
-	    	org.neo4j.ogm.config.Configuration neo4jConfig = new org.neo4j.ogm.config.Configuration();
-	    	DriverConfiguration driverConf = neo4jConfig.driverConfiguration();
-			driverConf.setDriverClassName(org.neo4j.ogm.drivers.embedded.driver.EmbeddedDriver.class.getName());
-			File neo4jDbDirFile = new File(neo4jDbDir); 
-			if (! neo4jDbDirFile.exists()) {
-				neo4jDbDirFile.mkdirs();
-			}
-			String uri = "file://" + neo4jDbDirFile.getAbsolutePath();
-			driverConf.setURI(uri);
+	    	File neo4jDbDirFile = new File(neo4jDbDir); 
+	    	if (! neo4jDbDirFile.exists()) {
+	    		neo4jDbDirFile.mkdirs();
+	    	}
+	    	String uri = "file://" + neo4jDbDirFile.getAbsolutePath();
+	    	org.neo4j.ogm.config.Configuration neo4jConfig = 
+	    			new org.neo4j.ogm.config.Configuration.Builder()
+	    			.uri(uri)
+			// driverConf.setDriverClassName(org.neo4j.ogm.drivers.embedded.driver.EmbeddedDriver.class.getName());
+	    			.build();
 	    	LOG.info("using neo4j mode embedded, uri: " + uri);
 	    	return new SessionFactory(neo4jConfig, "fr.an.tools.git2neo4j.domain");
 	    }

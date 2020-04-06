@@ -1,0 +1,19 @@
+
+togglz:
+  feature-enums: fr.an.testspringtogglz.AppFeatures,fr.an.testspringtogglz.WebVisibleFeatures
+    # , fr.an.testspringtogglz.OtherFeatures
+  features:
+    Feature1:
+      enabled: true
+#    Feature2: # not discovered at runtime?
+#      enabled: false
+
+  console:
+    enabled: true
+    secured: false
+    # cf TogglzConsoleBaseConfiguration + maven togglz-console, otherwise NoClassDefFoundError: org/togglz/console/TogglzConsoleServlet
+    use-management-port: false
+    path: /togglz-console  # default
+
+  web:
+    register-feature-interceptor: true

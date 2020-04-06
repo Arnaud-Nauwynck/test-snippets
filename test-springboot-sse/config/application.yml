@@ -1,0 +1,3 @@
+
+security:
+   enable-csrf: false

@@ -1,7 +1,7 @@
 package fr.an.tools.git2neo4j.domain;
 
 import org.eclipse.jgit.lib.ObjectId;
-import org.neo4j.ogm.annotation.GraphId;
+import org.neo4j.ogm.annotation.Id;
 import org.neo4j.ogm.annotation.Labels;
 
 /**
@@ -9,10 +9,10 @@ import org.neo4j.ogm.annotation.Labels;
  * types: DirTree | Blob | SymLink | GitLink
  */
 // @NodeEntity(label="RevTree")
-@Labels(defaultValue="Tree")
+// @Labels(defaultValue="Tree")
 public abstract class RevTreeEntity {
 
-	@GraphId 
+	@Id 
 	private Long id; // internal generated id, not the SHA1 !!
 	
 	/** SHA-1 .. cf ObjectId */

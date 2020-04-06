@@ -1,0 +1,17 @@
+
+<input [(ngModel)]="login">
+<br/>
+<input type="password" [(ngModel)]="password">
+<br/>
+<button (click)="onClickLogin()">Run As Login</button>
+<br/>
+
+<div class="row">
+    <div class="col-md-6">
+        <app-foo ></app-foo>
+    </div>
+    
+    <div class="col-md-6">
+        <app-bar class="col-md-6"></app-bar>
+    </div>
+</div>

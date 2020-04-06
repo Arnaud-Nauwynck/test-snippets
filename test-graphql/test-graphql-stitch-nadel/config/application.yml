@@ -1,0 +1,10 @@
+
+server:
+  port: 8095
+
+spring:
+  application:
+    name: test-graphql-stitch-nadel
+
+
+    

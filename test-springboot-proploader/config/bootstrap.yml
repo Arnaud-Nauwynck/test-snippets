@@ -1,0 +1,9 @@
+
+spring:
+  profiles:
+    active: bootprofile1, bootprofile2
+    # includes: bootprofile1
+    
+      
+app:
+  bootstrap-prop1: config/bootstrap.yml-bootstrap-prop1

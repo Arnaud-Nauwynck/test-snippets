@@ -1,0 +1,35 @@
+
+spring:
+  profiles:
+#    active: profileNotLoaded   # NOT loaded!!??? .. cf bootstrap.yml
+#    includes: activeprofile2  # NOT loaded ??
+
+app:
+  # used to import "classpath:foo-${app.env}.properties"
+  env: test
+
+  commonProp: application.yml-commonProp
+  
+  key1: application.yml-key1
+  key2: application.yml-key2
+
+  jasyptEncrypted-prop1: ENC(267Yz9WoK2rr4qWGLYjXrMC5H1PWdhw76oAoy8YtnjE=)  # This is a secret
+    
+  # default.. 
+  app.bootstrap-prop1: DEFAULT application.yml-app.bootstrap-prop1
+  bootprofile1-prop1: DEFAULT application.yml-app.bootprofile1-prop1  
+  bootprofile2-prop1: DEFAULT application.yml-app.bootprofile2-prop1
+  bootprofile3-prop1: DEFAULT application.yml-app.bootprofile3-prop1  
+  bootprofile4-prop1: DEFAULT application.yml-app.bootprofile4-prop1
+
+
+jasypt:
+  encryptor:
+    # cf JasyptEncryptorConfigurationProperties
+    
+    # MASTER password...
+    password: 'master-password!123'
+
+    # proxyPropertySources: true
+    # currently disabled.. cf bug https://github.com/ulisesbocchio/jasypt-spring-boot/issues/111 
+    

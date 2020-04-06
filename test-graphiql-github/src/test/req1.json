@@ -1,0 +1,15 @@
+{
+  "query": "query($login: String!) {
+    repositoryOwner(login: $login) {
+      login,
+      repositories(last: 100) {
+        nodes {
+          url
+        }
+      }
+    }
+  }",
+  "variables": {
+  	"login": "Arnaud-Nauwynck"
+  }
+}

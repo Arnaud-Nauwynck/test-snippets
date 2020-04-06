@@ -1,0 +1,9 @@
+
+server:
+   port: 8090
+
+repo:
+   basedir: src/test/repo
+   resp_404:
+      - fr/an/tests/dummy-project/0.0.1-SNAPSHOT/maven-metadata.xml
+      - fr/an/tests/dummy-project/maven-metadata.xml

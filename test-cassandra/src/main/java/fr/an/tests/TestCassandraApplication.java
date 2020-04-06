@@ -30,7 +30,7 @@ public class TestCassandraApplication implements CommandLineRunner {
 		Iterable<T1> all= repository.findAll();
 		System.out.println("findAll -> [0]:" + all.iterator().next() + " ...");
 		
-		T1 res00 = repository.findOne(new T1Key(0, 0));
+		T1 res00 = repository.findById(new T1Key(0, 0)).orElse(null);
 		System.out.println("find pk:(0,0) -> " + res00);
 		
 		List<T1> resLs = repository.findByF1(0);

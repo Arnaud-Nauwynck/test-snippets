@@ -1,0 +1,31 @@
+<div class="app-bottom-panel"
+    [@openClose]="showFooter ? 'open' : 'closed'"
+    (@openClose.start)="onAnimationStart($event)"
+    (@openClose.done)="onAnimationDone($event)" 
+    >
+
+    <span>test line1...</span>
+    <br/>
+    <span>test line2...</span>
+    <br/>
+    <span>test line3...</span>
+    <br/>
+    <span>test line4...</span>
+    <br/>
+    <span>test line5...</span>
+
+    <div *ngIf="progressMsg">
+        <br>/
+        <span>.. Processing</span>
+        <br>/
+        <span>{{progressMsg}}</span>
+    </div>
+    
+    <div *ngIf="errorMsg">
+        <br>/
+        <span>An Error as occured!</span>
+        <br>/
+        <span style="{ foreground-color: red; }">{{errorMsg}}</span>
+    </div>
+    
+</div>

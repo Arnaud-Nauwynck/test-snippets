@@ -1,0 +1,100 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>fr.an.tests.jlib</groupId>
+		<artifactId>test-docker-jib</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>jib-hello-spring</artifactId>
+
+	<properties>
+		<java.version>1.8</java.version>
+	</properties>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+ 				<version>2.1.5.RELEASE</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.7.0</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>0.9.11</version>
+				<configuration>
+					<container>
+						<mainClass>fr.an.testsdockerjib.hellospring.App</mainClass>
+						<jvmFlags>
+							<jvmFlag>-Xmx64m</jvmFlag>
+						</jvmFlags>
+						<args>
+							<arg>Arg1</arg>
+						</args>
+						<environment>
+							<env-var1>value1</env-var1>
+						</environment>
+					</container>
+				    <from>
+						<!-- 
+						<image>openjdk:alpine</image>
+						default: 
+							<image>gcr.io/distroless/java</image>
+						-->
+							<image>gcr.io/distroless/java</image>
+					</from>
+					<to>
+						<image>localhost:5000/test-docker-jib-hello-springboot</image>
+						<auth>
+							<username>silly-username</username>
+							<password>silly-password</password>
+						</auth>
+						<tags>
+							<tag>version-${project.version}</tag>
+						</tags>
+					</to>
+					<allowInsecureRegistries>true</allowInsecureRegistries>
+				</configuration>
+				<executions>
+					<execution>
+						<id>docker-jib</id>
+						<phase>package</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

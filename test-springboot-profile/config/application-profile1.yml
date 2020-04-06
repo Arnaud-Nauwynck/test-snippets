@@ -1,0 +1,14 @@
+
+server:
+  port: 8081
+
+spring:
+  application:
+    name: test-springboot-profile1
+
+  profiles:
+    active: profile1a,shared
+
+app:
+  key1: profile1-value1
+  key2: profile1-value2
