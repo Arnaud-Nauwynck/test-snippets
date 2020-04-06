@@ -1,0 +1,549 @@
+
+alias dive='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock  wagoodman/dive:latest'
+dive 15f2dcf2bee3
+
+
+using base image default...
+	<from>gcr.io/distroless/java:8</from>
+
+docker run --rm localhost:5000/a-test-k8s-spark:2
+
+20/04/04 08:06:45 WARN JavaUtils: Attempt to delete using native Unix OS command failed for path = /tmp/blockmgr-d1a68bca-2cbc-43df-9a92-b353a85a5e41. Falling back to Java IO way
+java.io.IOException: Failed to delete: /tmp/blockmgr-d1a68bca-2cbc-43df-9a92-b353a85a5e41
+	at org.apache.spark.network.util.JavaUtils.deleteRecursivelyUsingUnixNative(JavaUtils.java:163)
+	at org.apache.spark.network.util.JavaUtils.deleteRecursively(JavaUtils.java:110)
+	at org.apache.spark.network.util.JavaUtils.deleteRecursively(JavaUtils.java:91)
+	at org.apache.spark.util.Utils$.deleteRecursively(Utils.scala:1062)
+	at org.apache.spark.storage.DiskBlockManager$$anonfun$org$apache$spark$storage$DiskBlockManager$$doStop$1.apply(DiskBlockManager.scala:178)
+	at org.apache.spark.storage.DiskBlockManager$$anonfun$org$apache$spark$storage$DiskBlockManager$$doStop$1.apply(DiskBlockManager.scala:174)
+	at scala.collection.IndexedSeqOptimized$class.foreach(IndexedSeqOptimized.scala:33)
+	at scala.collection.mutable.ArrayOps$ofRef.foreach(ArrayOps.scala:186)
+	at org.apache.spark.storage.DiskBlockManager.org$apache$spark$storage$DiskBlockManager$$doStop(DiskBlockManager.scala:174)
+	at org.apache.spark.storage.DiskBlockManager.stop(DiskBlockManager.scala:169)
+	at org.apache.spark.storage.BlockManager.stop(BlockManager.scala:1621)
+	at org.apache.spark.SparkEnv.stop(SparkEnv.scala:90)
+	at org.apache.spark.SparkContext$$anonfun$stop$11.apply$mcV$sp(SparkContext.scala:1974)
+	at org.apache.spark.util.Utils$.tryLogNonFatalError(Utils.scala:1340)
+	at org.apache.spark.SparkContext.stop(SparkContext.scala:1973)
+	at org.apache.spark.sql.SparkSession.stop(SparkSession.scala:712)
+	at org.apache.spark.sql.SparkSession.close(SparkSession.scala:720)
+	at fr.an.tests.testk8sspark.SparkApp.run(SparkApp.java:46)
+	at fr.an.tests.testk8sspark.SparkApp.main(SparkApp.java:19)
+Caused by: java.io.IOException: Cannot run program "rm": error=2, No such file or directory
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1048)
+	at org.apache.spark.network.util.JavaUtils.deleteRecursivelyUsingUnixNative(JavaUtils.java:159)
+	... 18 more
+Caused by: java.io.IOException: error=2, No such file or directory
+	at java.lang.UNIXProcess.forkAndExec(Native Method)
+	at java.lang.UNIXProcess.<init>(UNIXProcess.java:247)
+	at java.lang.ProcessImpl.start(ProcessImpl.java:134)
+	at java.lang.ProcessBuilder.start(ProcessBuilder.java:1029)
+	... 19 more
+
+
+using
+	<from>
+          <image>localhost:5000/spark:a_3.1.0</image>
+    </from>
+
+$ docker tag 15f2dcf2bee3 localhost:5000/spark:a_3.1.0
+$ docker push localhost:5000/spark:a_3.1.0
+
+https://github.com/GoogleCloudPlatform/spark-on-k8s-operator
+
+https://www.lightbend.com/blog/how-to-manage-monitor-spark-on-kubernetes-introduction-spark-submit-kubernetes-operator
+
+kubectl create serviceaccount spark
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+
+kubectl apply -f k8s/spark-operator-namespace.yaml
+
+$ helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+$ helm install sparkoperator incubator/sparkoperator --namespace spark-operator
+NAME: sparkoperator
+LAST DEPLOYED: Sat Apr  4 11:22:02 2020
+NAMESPACE: spark-operator
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+
+
+
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark
+
+
+spark-submit \
+	--master k8s://https://localhost:8001 \
+	--deploy-mode cluster \
+	--name spark-pi \
+	--class org.apache.spark.examples.SparkPi \
+	--conf spark.executor.instances=2 \
+	--conf spark.kubernetes.container.image=localhost:5000/spark:a_3.1.0 \
+	--conf spark.kubernetes.container.image.pullPolicy=Never \
+	--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+	local:///opt/spark/examples/jars/spark-examples_2.12-3.1.0-SNAPSHOT.jar 1000000
+
+
+
+$ ./a_spark-submit-pi.sh
+20/04/04 11:15:24 WARN Utils: Your hostname, pc-bureau resolves to a loopback address: 127.0.1.1; using 192.168.0.41 instead (on interface enp2s0)
+20/04/04 11:15:24 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+20/04/04 11:15:24 WARN Utils: Kubernetes master URL uses HTTP instead of HTTPS.
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+20/04/04 11:15:25 INFO SparkKubernetesClientFactory: Auto-configuring K8S client using current context from users K8S config file
+20/04/04 11:15:26 INFO KerberosConfDriverFeatureStep: You have not specified a krb5.conf file locally or via a ConfigMap. Make sure that you have the krb5.conf locally on the driver image.
+20/04/04 11:15:28 INFO LoggingPodStatusWatcherImpl: State changed, new state:
+	 pod name: spark-pi-29a0bc7144793231-driver
+	 namespace: default
+	 labels: spark-app-selector -> spark-c3b9fc11b4d242019e983a81d6c1fc86, spark-role -> driver
+	 pod uid: 11b8ac18-7aa2-40b3-a632-b24a7f972b92
+	 creation time: 2020-04-04T09:15:27Z
+	 service account name: spark
+	 volumes: spark-local-dir-1, spark-conf-volume, spark-token-2z6s6
+	 node name: N/A
+	 start time: N/A
+	 phase: Pending
+	 container status: N/A
+20/04/04 11:15:28 INFO LoggingPodStatusWatcherImpl: State changed, new state:
+	 pod name: spark-pi-29a0bc7144793231-driver
+	 namespace: default
+	 labels: spark-app-selector -> spark-c3b9fc11b4d242019e983a81d6c1fc86, spark-role -> driver
+	 pod uid: 11b8ac18-7aa2-40b3-a632-b24a7f972b92
+	 creation time: 2020-04-04T09:15:27Z
+	 service account name: spark
+	 volumes: spark-local-dir-1, spark-conf-volume, spark-token-2z6s6
+	 node name: pc-bureau
+	 start time: N/A
+	 phase: Pending
+	 container status: N/A
+20/04/04 11:15:28 INFO LoggingPodStatusWatcherImpl: State changed, new state:
+	 pod name: spark-pi-29a0bc7144793231-driver
+	 namespace: default
+	 labels: spark-app-selector -> spark-c3b9fc11b4d242019e983a81d6c1fc86, spark-role -> driver
+	 pod uid: 11b8ac18-7aa2-40b3-a632-b24a7f972b92
+	 creation time: 2020-04-04T09:15:27Z
+	 service account name: spark
+	 volumes: spark-local-dir-1, spark-conf-volume, spark-token-2z6s6
+	 node name: pc-bureau
+	 start time: 2020-04-04T09:15:27Z
+	 phase: Pending
+	 container status:
+		 container name: spark-kubernetes-driver
+		 container image: localhost:5000/spark:a_3.1.0
+		 container state: waiting
+		 pending reason: ContainerCreating
+20/04/04 11:15:28 INFO LoggingPodStatusWatcherImpl: Waiting for application spark-pi with submission ID default:spark-pi-29a0bc7144793231-driver to finish...
+20/04/04 11:15:29 INFO LoggingPodStatusWatcherImpl: Application status for spark-c3b9fc11b4d242019e983a81d6c1fc86 (phase: Pending)
+20/04/04 11:15:30 INFO LoggingPodStatusWatcherImpl: Application status for spark-c3b9fc11b4d242019e983a81d6c1fc86 (phase: Pending)
+20/04/04 11:15:30 INFO LoggingPodStatusWatcherImpl: State changed, new state:
+	 pod name: spark-pi-29a0bc7144793231-driver
+	 namespace: default
+	 labels: spark-app-selector -> spark-c3b9fc11b4d242019e983a81d6c1fc86, spark-role -> driver
+	 pod uid: 11b8ac18-7aa2-40b3-a632-b24a7f972b92
+	 creation time: 2020-04-04T09:15:27Z
+	 service account name: spark
+	 volumes: spark-local-dir-1, spark-conf-volume, spark-token-2z6s6
+	 node name: pc-bureau
+	 start time: 2020-04-04T09:15:27Z
+	 phase: Pending
+	 container status:
+		 container name: spark-kubernetes-driver
+		 container image: localhost:5000/spark:a_3.1.0
+		 container state: waiting
+		 pending reason: ContainerCreating
+20/04/04 11:15:31 INFO LoggingPodStatusWatcherImpl: State changed, new state:
+	 pod name: spark-pi-29a0bc7144793231-driver
+	 namespace: default
+	 labels: spark-app-selector -> spark-c3b9fc11b4d242019e983a81d6c1fc86, spark-role -> driver
+	 pod uid: 11b8ac18-7aa2-40b3-a632-b24a7f972b92
+	 creation time: 2020-04-04T09:15:27Z
+	 service account name: spark
+	 volumes: spark-local-dir-1, spark-conf-volume, spark-token-2z6s6
+	 node name: pc-bureau
+	 start time: 2020-04-04T09:15:27Z
+	 phase: Running
+	 container status:
+		 container name: spark-kubernetes-driver
+		 container image: spark:a_3.1.0
+		 container state: running
+		 container started at: 2020-04-04T09:15:31Z
+20/04/04 11:15:31 INFO LoggingPodStatusWatcherImpl: Application status for spark-c3b9fc11b4d242019e983a81d6c1fc86 (phase: Running)
+20/04/04 11:15:32 INFO LoggingPodStatusWatcherImpl: Application status for spark-c3b9fc11b4d242019e983a81d6c1fc86 (phase: Running)
+20/04/04 11:15:33 INFO LoggingPodStatusWatcherImpl: Application status for spark-c3b9fc11b4d242019e983a81d6c1fc86 (phase: Running)
+20/04/04 11:15:34 INFO LoggingPodStatusWatcherImpl: State changed, new state:
+	 pod name: spark-pi-29a0bc7144793231-driver
+	 namespace: default
+	 labels: spark-app-selector -> spark-c3b9fc11b4d242019e983a81d6c1fc86, spark-role -> driver
+	 pod uid: 11b8ac18-7aa2-40b3-a632-b24a7f972b92
+	 creation time: 2020-04-04T09:15:27Z
+	 service account name: spark
+	 volumes: spark-local-dir-1, spark-conf-volume, spark-token-2z6s6
+	 node name: pc-bureau
+	 start time: 2020-04-04T09:15:27Z
+	 phase: Failed
+	 container status:
+		 container name: spark-kubernetes-driver
+		 container image: spark:a_3.1.0
+		 container state: terminated
+		 container started at: 2020-04-04T09:15:31Z
+		 container finished at: 2020-04-04T09:15:33Z
+		 exit code: 1
+		 termination reason: Error
+20/04/04 11:15:34 INFO LoggingPodStatusWatcherImpl: Application status for spark-c3b9fc11b4d242019e983a81d6c1fc86 (phase: Failed)
+20/04/04 11:15:34 INFO LoggingPodStatusWatcherImpl: Container final statuses:
+
+
+	 container name: spark-kubernetes-driver
+	 container image: spark:a_3.1.0
+	 container state: terminated
+	 container started at: 2020-04-04T09:15:31Z
+	 container finished at: 2020-04-04T09:15:33Z
+	 exit code: 1
+	 termination reason: Error
+20/04/04 11:15:34 INFO LoggingPodStatusWatcherImpl: Application spark-pi with submission ID default:spark-pi-29a0bc7144793231-driver finished
+20/04/04 11:15:34 INFO ShutdownHookManager: Shutdown hook called
+20/04/04 11:15:34 INFO ShutdownHookManager: Deleting directory /tmp/spark-52790822-0f38-406f-8296-49b6f25f2c00
+
+
+
+k get pods
+
+
+k logs spark-pi-8d89897144805418-driver
+
+Exception in thread "main" org.apache.spark.SparkException: Could not load KUBERNETES classes. This copy of Spark may not have been compiled with KUBERNETES support.
+	at org.apache.spark.deploy.SparkSubmit.error(SparkSubmit.scala:942)
+	at org.apache.spark.deploy.SparkSubmit.prepareSubmitEnvironment(SparkSubmit.scala:265)
+	at org.apache.spark.deploy.SparkSubmit.org$apache$spark$deploy$SparkSubmit$$runMain(SparkSubmit.scala:877)
+	at org.apache.spark.deploy.SparkSubmit.doRunMain$1(SparkSubmit.scala:180)
+	at org.apache.spark.deploy.SparkSubmit.submit(SparkSubmit.scala:203)
+	at org.apache.spark.deploy.SparkSubmit.doSubmit(SparkSubmit.scala:90)
+	at org.apache.spark.deploy.SparkSubmit$$anon$2.doSubmit(SparkSubmit.scala:1013)
+	at org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:1022)
+	at org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+
+
+
+... MISSING build with -Pkubernetes => missing dependency in dist/assembly/pom.xml => missing jar in docker image
+
+
+$ k get pods
+NAME                                              READY   STATUS    RESTARTS   AGE
+spark-pi-834f927144ebf786-driver                  1/1     Running   0          3m58s
+spark-pi-834f927144ebf786-exec-1                  0/1     Pending   0          2m5s
+spark-pi-834f927144ebf786-exec-2                  0/1     Pending   0          2m5s
+
+
+ k describe pods spark-pi-834f927144ebf786-exec-1
+
+Events:
+  Type     Reason            Age        From               Message
+  ----     ------            ----       ----               -------
+  Warning  FailedScheduling  <unknown>  default-scheduler  0/1 nodes are available: 1 Insufficient cpu.
+  Warning  FailedScheduling  <unknown>  default-scheduler  0/1 nodes are available: 1 Insufficient cpu.
+
+..
+detailed:
+Name:           spark-pi-834f927144ebf786-exec-1
+Namespace:      default
+Priority:       0
+Node:           <none>
+Labels:         spark-app-selector=spark-551d87e1b3e04495b07fab6877ec1fd6
+                spark-exec-id=1
+                spark-role=executor
+Annotations:    <none>
+Status:         Pending
+IP:
+IPs:            <none>
+Controlled By:  Pod/spark-pi-834f927144ebf786-driver
+Containers:
+  spark-kubernetes-executor:
+    Image:      localhost:5000/spark:a_3.1.0_2
+    Port:       7079/TCP
+    Host Port:  0/TCP
+    Args:
+      executor
+    Limits:
+      memory:  1408Mi
+    Requests:
+      cpu:     1
+      memory:  1408Mi
+    Environment:
+      SPARK_USER:             arnaud
+      SPARK_DRIVER_URL:       spark://CoarseGrainedScheduler@spark-pi-834f927144ebf786-driver-svc.default.svc:7078
+      SPARK_EXECUTOR_CORES:   1
+      SPARK_EXECUTOR_MEMORY:  1g
+      SPARK_APPLICATION_ID:   spark-551d87e1b3e04495b07fab6877ec1fd6
+      SPARK_CONF_DIR:         /opt/spark/conf
+      SPARK_EXECUTOR_ID:      1
+      SPARK_EXECUTOR_POD_IP:   (v1:status.podIP)
+      SPARK_JAVA_OPT_0:       -Dspark.driver.blockManager.port=7079
+      SPARK_JAVA_OPT_1:       -Dspark.driver.port=7078
+      SPARK_LOCAL_DIRS:       /var/data/spark-61b3e898-f0d2-492f-8c74-808b458922d1
+    Mounts:
+      /var/data/spark-61b3e898-f0d2-492f-8c74-808b458922d1 from spark-local-dir-1 (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from spark-token-2z6s6 (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False
+Volumes:
+  spark-local-dir-1:
+    Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+    Medium:
+    SizeLimit:  <unset>
+  spark-token-2z6s6:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  spark-token-2z6s6
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+
+
+kubectl port-forward spark-pi-834f927144ebf786-driver 4040:4040
+http://localhost:4040
+
+spark.kubernetes.executor.request.cores
+
+
+
+$ k logs spark-pi-166f9c714500f0d1-driver | head -100
+++ id -u
++ myuid=185
+++ id -g
++ mygid=0
++ set +e
+++ getent passwd 185
++ uidentry=
++ set -e
++ '[' -z '' ']'
++ '[' -w /etc/passwd ']'
++ echo '185:x:185:0:anonymous uid:/opt/spark:/bin/false'
++ SPARK_CLASSPATH=':/opt/spark/jars/*'
++ env
++ sed 's/[^=]*=\(.*\)/\1/g'
++ sort -t_ -k4 -n
++ grep SPARK_JAVA_OPT_
++ readarray -t SPARK_EXECUTOR_JAVA_OPTS
++ '[' -n '' ']'
++ '[' '' == 2 ']'
++ '[' '' == 3 ']'
++ '[' -n '' ']'
++ '[' -z ']'
++ case "$1" in
++ shift 1
++ CMD=("$SPARK_HOME/bin/spark-submit" --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS" --deploy-mode client "$@")
++ exec /usr/bin/tini -s -- /opt/spark/bin/spark-submit --conf spark.driver.bindAddress=192.168.110.14 --deploy-mode client --properties-file /opt/spark/conf/spark.properties --class org.apache.spark.examples.SparkPi local:///opt/spark/examples/jars/spark-examples_2.12-3.1.0-SNAPSHOT.jar 1000000
+20/04/04 11:43:48 WARN Utils: Kubernetes master URL uses HTTP instead of HTTPS.
+20/04/04 11:43:49 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+20/04/04 11:43:50 INFO SparkContext: Running Spark version 3.1.0-SNAPSHOT
+20/04/04 11:43:50 INFO ResourceUtils: ==============================================================
+20/04/04 11:43:50 INFO ResourceUtils: No custom resources configured for spark.driver.
+20/04/04 11:43:50 INFO ResourceUtils: ==============================================================
+20/04/04 11:43:50 INFO SparkContext: Submitted application: Spark Pi
+20/04/04 11:43:50 INFO ResourceProfile: Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
+20/04/04 11:43:50 INFO ResourceProfile: Limiting resource is cpus at 1 tasks per executor
+20/04/04 11:43:50 INFO ResourceProfileManager: Added ResourceProfile id: 0
+20/04/04 11:43:50 INFO SecurityManager: Changing view acls to: 185,arnaud
+20/04/04 11:43:50 INFO SecurityManager: Changing modify acls to: 185,arnaud
+20/04/04 11:43:50 INFO SecurityManager: Changing view acls groups to:
+20/04/04 11:43:50 INFO SecurityManager: Changing modify acls groups to:
+20/04/04 11:43:50 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(185, arnaud); groups with view permissions: Set(); users  with modify permissions: Set(185, arnaud); groups with modify permissions: Set()
+20/04/04 11:43:50 INFO Utils: Successfully started service 'sparkDriver' on port 7078.
+20/04/04 11:43:50 INFO SparkEnv: Registering MapOutputTracker
+20/04/04 11:43:50 INFO SparkEnv: Registering BlockManagerMaster
+20/04/04 11:43:51 INFO BlockManagerMasterEndpoint: Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+20/04/04 11:43:51 INFO BlockManagerMasterEndpoint: BlockManagerMasterEndpoint up
+20/04/04 11:43:51 INFO SparkEnv: Registering BlockManagerMasterHeartbeat
+20/04/04 11:43:51 INFO DiskBlockManager: Created local directory at /var/data/spark-f8f69707-c1f3-4ec9-9b3f-08924340d85a/blockmgr-5e9556f5-7c34-4a58-b350-16adc6df0b09
+20/04/04 11:43:51 INFO MemoryStore: MemoryStore started with capacity 413.9 MiB
+20/04/04 11:43:51 INFO SparkEnv: Registering OutputCommitCoordinator
+20/04/04 11:43:51 INFO Utils: Successfully started service 'SparkUI' on port 4040.
+20/04/04 11:43:51 INFO SparkUI: Bound SparkUI to 0.0.0.0, and started at http://spark-pi-166f9c714500f0d1-driver-svc.default.svc:4040
+20/04/04 11:43:51 INFO SparkContext: Added JAR local:///opt/spark/examples/jars/spark-examples_2.12-3.1.0-SNAPSHOT.jar at file:/opt/spark/examples/jars/spark-examples_2.12-3.1.0-SNAPSHOT.jar with timestamp 1586000631788
+20/04/04 11:43:51 WARN SparkContext: The jar local:///opt/spark/examples/jars/spark-examples_2.12-3.1.0-SNAPSHOT.jar has been added already. Overwriting of added jars is not supported in the current version.
+20/04/04 11:43:51 INFO SparkKubernetesClientFactory: Auto-configuring K8S client using current context from users K8S config file
+20/04/04 11:43:53 INFO ExecutorPodsAllocator: Going to request 1 executors from Kubernetes.
+20/04/04 11:43:53 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 7079.
+20/04/04 11:43:53 INFO NettyBlockTransferService: Server created on spark-pi-166f9c714500f0d1-driver-svc.default.svc:7079
+20/04/04 11:43:53 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+20/04/04 11:43:53 INFO BasicExecutorFeatureStep: Decommissioning not enabled, skipping shutdown script
+20/04/04 11:43:53 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, spark-pi-166f9c714500f0d1-driver-svc.default.svc, 7079, None)
+20/04/04 11:43:53 INFO BlockManagerMasterEndpoint: Registering block manager spark-pi-166f9c714500f0d1-driver-svc.default.svc:7079 with 413.9 MiB RAM, BlockManagerId(driver, spark-pi-166f9c714500f0d1-driver-svc.default.svc, 7079, None)
+20/04/04 11:43:54 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, spark-pi-166f9c714500f0d1-driver-svc.default.svc, 7079, None)
+20/04/04 11:43:54 INFO BlockManager: Initialized BlockManager: BlockManagerId(driver, spark-pi-166f9c714500f0d1-driver-svc.default.svc, 7079, None)
+20/04/04 11:44:00 INFO KubernetesClusterSchedulerBackend$KubernetesDriverEndpoint: Registered executor NettyRpcEndpointRef(spark-client://Executor) (192.168.110.2:38410) with ID 1,  ResourceProfileId 0
+20/04/04 11:44:00 INFO KubernetesClusterSchedulerBackend: SchedulerBackend is ready for scheduling beginning after reached minRegisteredResourcesRatio: 0.8
+20/04/04 11:44:00 INFO BlockManagerMasterEndpoint: Registering block manager 192.168.110.2:43557 with 413.9 MiB RAM, BlockManagerId(1, 192.168.110.2, 43557, None)
+20/04/04 11:44:03 INFO SparkContext: Starting job: reduce at SparkPi.scala:38
+20/04/04 11:44:05 INFO DAGScheduler: Got job 0 (reduce at SparkPi.scala:38) with 1000000 output partitions
+20/04/04 11:44:05 INFO DAGScheduler: Final stage: ResultStage 0 (reduce at SparkPi.scala:38)
+20/04/04 11:44:05 INFO DAGScheduler: Parents of final stage: List()
+20/04/04 11:44:05 INFO DAGScheduler: Missing parents: List()
+20/04/04 11:44:05 INFO DAGScheduler: Submitting ResultStage 0 (MapPartitionsRDD[1] at map at SparkPi.scala:34), which has no missing parents
+20/04/04 11:44:09 INFO MemoryStore: Block broadcast_0 stored as values in memory (estimated size 3.1 KiB, free 413.9 MiB)
+20/04/04 11:44:09 INFO MemoryStore: Block broadcast_0_piece0 stored as bytes in memory (estimated size 1847.0 B, free 413.9 MiB)
+20/04/04 11:44:09 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on spark-pi-166f9c714500f0d1-driver-svc.default.svc:7079 (size: 1847.0 B, free: 413.9 MiB)
+20/04/04 11:44:09 INFO SparkContext: Created broadcast 0 from broadcast at DAGScheduler.scala:1230
+20/04/04 11:44:10 INFO DAGScheduler: Submitting 1000000 missing tasks from ResultStage 0 (MapPartitionsRDD[1] at map at SparkPi.scala:34) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14))
+20/04/04 11:44:11 INFO TaskSchedulerImpl: Adding task set 0.0 with 1000000 tasks resource profile 0
+20/04/04 11:44:15 INFO TaskSetManager: Starting task 0.0 in stage 0.0 (TID 0, 192.168.110.2, executor 1, partition 0, PROCESS_LOCAL, 7412 bytes) taskResourceAssignments Map()
+20/04/04 11:44:16 INFO BlockManagerInfo: Added broadcast_0_piece0 in memory on 192.168.110.2:43557 (size: 1847.0 B, free: 413.9 MiB)
+20/04/04 11:44:17 INFO TaskSetManager: Starting task 1.0 in stage 0.0 (TID 1, 192.168.110.2, executor 1, partition 1, PROCESS_LOCAL, 7412 bytes) taskResourceAssignments Map()
+20/04/04 11:44:17 INFO TaskSetManager: Finished task 0.0 in stage 0.0 (TID 0) in 2060 ms on 192.168.110.2 (executor 1) (1/1000000)
+20/04/04 11:44:17 INFO TaskSetManager: Starting task 2.0 in stage 0.0 (TID 2, 192.168.110.2, executor 1, partition 2, PROCESS_LOCAL, 7412 bytes) taskResourceAssignments Map()
+20/04/04 11:44:17 INFO TaskSetManager: Finished task 1.0 in stage 0.0 (TID 1) in 108 ms on 192.168.110.2 (executor 1) (2/1000000)
+
+
+
+$ k logs spark-pi-166f9c714500f0d1-exec-1 | head -100
+++ id -u
++ myuid=185
+++ id -g
++ mygid=0
++ set +e
+++ getent passwd 185
++ uidentry=
++ set -e
++ '[' -z '' ']'
++ '[' -w /etc/passwd ']'
++ echo '185:x:185:0:anonymous uid:/opt/spark:/bin/false'
++ SPARK_CLASSPATH=':/opt/spark/jars/*'
++ env
++ grep SPARK_JAVA_OPT_
++ sort -t_ -k4 -n
++ sed 's/[^=]*=\(.*\)/\1/g'
++ readarray -t SPARK_EXECUTOR_JAVA_OPTS
++ '[' -n '' ']'
++ '[' '' == 2 ']'
++ '[' '' == 3 ']'
++ '[' -n '' ']'
++ '[' -z ']'
++ case "$1" in
++ shift 1
++ CMD=(${JAVA_HOME}/bin/java "${SPARK_EXECUTOR_JAVA_OPTS[@]}" -Xms$SPARK_EXECUTOR_MEMORY -Xmx$SPARK_EXECUTOR_MEMORY -cp "$SPARK_CLASSPATH:$SPARK_DIST_CLASSPATH" org.apache.spark.executor.CoarseGrainedExecutorBackend --driver-url $SPARK_DRIVER_URL --executor-id $SPARK_EXECUTOR_ID --cores $SPARK_EXECUTOR_CORES --app-id $SPARK_APPLICATION_ID --hostname $SPARK_EXECUTOR_POD_IP)
++ exec /usr/bin/tini -s -- /usr/local/openjdk-8/bin/java -Dspark.driver.blockManager.port=7079 -Dspark.driver.port=7078 -Xms1g -Xmx1g -cp ':/opt/spark/jars/*:' org.apache.spark.executor.CoarseGrainedExecutorBackend --driver-url spark://CoarseGrainedScheduler@spark-pi-166f9c714500f0d1-driver-svc.default.svc:7078 --executor-id 1 --cores 1 --app-id spark-e587693b4c27426aa57d40ff35096927 --hostname 192.168.110.2
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+20/04/04 11:43:57 INFO CoarseGrainedExecutorBackend: Started daemon with process name: 13@spark-pi-166f9c714500f0d1-exec-1
+20/04/04 11:43:57 INFO SignalUtils: Registering signal handler for TERM
+20/04/04 11:43:57 INFO SignalUtils: Registering signal handler for HUP
+20/04/04 11:43:57 INFO SignalUtils: Registering signal handler for INT
+20/04/04 11:43:58 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+20/04/04 11:43:58 INFO SecurityManager: Changing view acls to: 185,arnaud
+20/04/04 11:43:58 INFO SecurityManager: Changing modify acls to: 185,arnaud
+20/04/04 11:43:58 INFO SecurityManager: Changing view acls groups to:
+20/04/04 11:43:58 INFO SecurityManager: Changing modify acls groups to:
+20/04/04 11:43:58 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(185, arnaud); groups with view permissions: Set(); users  with modify permissions: Set(185, arnaud); groups with modify permissions: Set()
+20/04/04 11:43:59 INFO TransportClientFactory: Successfully created connection to spark-pi-166f9c714500f0d1-driver-svc.default.svc/192.168.110.14:7078 after 153 ms (0 ms spent in bootstraps)
+20/04/04 11:43:59 INFO SecurityManager: Changing view acls to: 185,arnaud
+20/04/04 11:43:59 INFO SecurityManager: Changing modify acls to: 185,arnaud
+20/04/04 11:43:59 INFO SecurityManager: Changing view acls groups to:
+20/04/04 11:43:59 INFO SecurityManager: Changing modify acls groups to:
+20/04/04 11:43:59 INFO SecurityManager: SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(185, arnaud); groups with view permissions: Set(); users  with modify permissions: Set(185, arnaud); groups with modify permissions: Set()
+20/04/04 11:43:59 INFO TransportClientFactory: Successfully created connection to spark-pi-166f9c714500f0d1-driver-svc.default.svc/192.168.110.14:7078 after 6 ms (0 ms spent in bootstraps)
+20/04/04 11:44:00 INFO DiskBlockManager: Created local directory at /var/data/spark-f8f69707-c1f3-4ec9-9b3f-08924340d85a/blockmgr-9c49d7f1-25fe-4b96-9efc-559981477da5
+20/04/04 11:44:00 INFO MemoryStore: MemoryStore started with capacity 413.9 MiB
+20/04/04 11:44:00 INFO CoarseGrainedExecutorBackend: Registering PWR handler.
+20/04/04 11:44:00 INFO SignalUtils: Registering signal handler for PWR
+20/04/04 11:44:00 INFO CoarseGrainedExecutorBackend: Connecting to driver: spark://CoarseGrainedScheduler@spark-pi-166f9c714500f0d1-driver-svc.default.svc:7078
+20/04/04 11:44:00 INFO ResourceUtils: ==============================================================
+20/04/04 11:44:00 INFO ResourceUtils: No custom resources configured for spark.executor.
+20/04/04 11:44:00 INFO ResourceUtils: ==============================================================
+20/04/04 11:44:00 INFO CoarseGrainedExecutorBackend: Successfully registered with driver
+20/04/04 11:44:00 INFO Executor: Starting executor ID 1 on host 192.168.110.2
+20/04/04 11:44:00 INFO Utils: Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 43557.
+20/04/04 11:44:00 INFO NettyBlockTransferService: Server created on 192.168.110.2:43557
+20/04/04 11:44:00 INFO BlockManager: Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+20/04/04 11:44:00 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(1, 192.168.110.2, 43557, None)
+20/04/04 11:44:00 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(1, 192.168.110.2, 43557, None)
+20/04/04 11:44:00 INFO BlockManager: Initialized BlockManager: BlockManagerId(1, 192.168.110.2, 43557, None)
+20/04/04 11:44:15 INFO CoarseGrainedExecutorBackend: Got assigned task 0
+20/04/04 11:44:15 INFO Executor: Running task 0.0 in stage 0.0 (TID 0)
+20/04/04 11:44:15 INFO Executor: Fetching file:/opt/spark/examples/jars/spark-examples_2.12-3.1.0-SNAPSHOT.jar with timestamp 1586000631788
+20/04/04 11:44:15 INFO Utils: Copying /opt/spark/examples/jars/spark-examples_2.12-3.1.0-SNAPSHOT.jar to /var/data/spark-f8f69707-c1f3-4ec9-9b3f-08924340d85a/spark-4cca308c-d7d4-49ec-961f-d673041cf4f0/-18375678081586000631788_cache
+20/04/04 11:44:15 INFO Utils: Copying /var/data/spark-f8f69707-c1f3-4ec9-9b3f-08924340d85a/spark-4cca308c-d7d4-49ec-961f-d673041cf4f0/-18375678081586000631788_cache to /opt/spark/work-dir/./spark-examples_2.12-3.1.0-SNAPSHOT.jar
+20/04/04 11:44:15 INFO Executor: Adding file:/opt/spark/work-dir/./spark-examples_2.12-3.1.0-SNAPSHOT.jar to class loader
+20/04/04 11:44:16 INFO TorrentBroadcast: Started reading broadcast variable 0 with 1 pieces (estimated total size 4.0 MiB)
+20/04/04 11:44:16 INFO TransportClientFactory: Successfully created connection to spark-pi-166f9c714500f0d1-driver-svc.default.svc/192.168.110.14:7079 after 22 ms (0 ms spent in bootstraps)
+20/04/04 11:44:16 INFO MemoryStore: Block broadcast_0_piece0 stored as bytes in memory (estimated size 1847.0 B, free 413.9 MiB)
+20/04/04 11:44:16 INFO TorrentBroadcast: Reading broadcast variable 0 took 473 ms
+20/04/04 11:44:16 INFO MemoryStore: Block broadcast_0 stored as values in memory (estimated size 3.1 KiB, free 413.9 MiB)
+20/04/04 11:44:17 INFO Executor: Finished task 0.0 in stage 0.0 (TID 0). 1000 bytes result sent to driver
+20/04/04 11:44:17 INFO CoarseGrainedExecutorBackend: Got assigned task 1
+20/04/04 11:44:17 INFO Executor: Running task 1.0 in stage 0.0 (TID 1)
+20/04/04 11:44:17 INFO Executor: Finished task 1.0 in stage 0.0 (TID 1). 957 bytes result sent to driver
+20/04/04 11:44:17 INFO CoarseGrainedExecutorBackend: Got assigned task 2
+20/04/04 11:44:17 INFO Executor: Running task 2.0 in stage 0.0 (TID 2)
+20/04/04 11:44:17 INFO Executor: Finished task 2.0 in stage 0.0 (TID 2). 957 bytes result sent to driver
+20/04/04 11:44:17 INFO CoarseGrainedExecutorBackend: Got assigned task 3
+20/04/04 11:44:17 INFO Executor: Running task 3.0 in stage 0.0 (TID 3)
+
+
+
+
+
+20/04/04 13:52:05 INFO LoggingPodStatusWatcherImpl: Application status for spark-99253a1feb8a4b6f8d82fe002ac01f23 (phase: Succeeded)
+20/04/04 13:52:05 INFO LoggingPodStatusWatcherImpl: Container final statuses:
+
+
+	 container name: spark-kubernetes-driver
+	 container image: spark:a_3.1.0_2
+	 container state: terminated
+	 container started at: 2020-04-04T11:51:41Z
+	 container finished at: 2020-04-04T11:52:04Z
+	 exit code: 0
+	 termination reason: Completed
+20/04/04 13:52:05 INFO LoggingPodStatusWatcherImpl: Application spark-pi with submission ID default:spark-pi-8991dd7145082fca-driver finished
+20/04/04 13:52:05 INFO ShutdownHookManager: Shutdown hook called
+20/04/04 13:52:05 INFO ShutdownHookManager: Deleting directory /tmp/spark-2ea27aeb-ccfe-491c-ba30-0f11ce2192b4
+
+
+
+using jib with jar instead of classes..
+	<containerizingMode>packaged</containerizingMode>
+
+=> dive ..
+app
+    └── classpath
+      └── test-k8s-spark-1.0-SNAPSHOT.jar
+
+
+
+Trying to deploy with
+	--deploy-mode=client
+
+Error.. need jar
+	target/test-k8s-spark-1.0-SNAPSHOT.jar
+instead of
+	local:///app/classpath/test-k8s-spark-1.0-SNAPSHOT.jar
+
+$ ./a_spark-submit-client-test.sh
+20/04/04 16:51:20 WARN Utils: Your hostname, pc-bureau resolves to a loopback address: 127.0.1.1; using 192.168.0.41 instead (on interface enp2s0)
+20/04/04 16:51:20 WARN Utils: Set SPARK_LOCAL_IP if you need to bind to another address
+20/04/04 16:51:20 WARN Utils: Kubernetes master URL uses HTTP instead of HTTPS.
+Using Spark's default log4j profile: org/apache/spark/log4j-defaults.properties
+20/04/04 16:51:21 WARN DependencyUtils: Local jar /app/classpath/test-k8s-spark-1.0-SNAPSHOT.jar does not exist, skipping.
+Error: Failed to load class fr.an.tests.testk8sspark.SparkApp.
+20/04/04 16:51:21 INFO ShutdownHookManager: Shutdown hook called
+20/04/04 16:51:21 INFO ShutdownHookManager: Deleting directory /tmp/spark-f9f1c5c2-21e1-4ae1-8d20-f328998dbe9a
+
+... ERROR
+
+20/04/04 16:55:56 INFO ExecutorPodsAllocator: Going to request 1 executors from Kubernetes.
+20/04/04 16:56:02 ERROR TransportRequestHandler: Error while invoking RpcHandler#receive() on RPC id 8521640966654677345
+java.lang.ClassNotFoundException: org.apache.spark.scheduler.cluster.CoarseGrainedClusterMessages$RetrieveSparkAppConfig
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+
+executor pods restarted N times... with errors
+
+
+$ k get pods
+NAME                                              READY   STATUS    RESTARTS   AGE
+testspark-c821067145aec5da-exec-19                1/1     Running   0          6s
+
+$ k get pods
+NAME                                              READY   STATUS              RESTARTS   AGE
+testspark-c821067145aec5da-exec-20                0/1     ContainerCreating   0          0s
+
