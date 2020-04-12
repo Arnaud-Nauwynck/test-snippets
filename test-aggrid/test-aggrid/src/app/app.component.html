@@ -1,0 +1,28 @@
+<div class="container">
+
+<div class="content" role="main">
+
+	<input type="text"
+		[(ngModel)]="makeCrit" (input)="reevalFilterChange()">
+	
+	<label>filter rows not containing makeCrit: {{makeCrit}}</label>
+
+    <ag-grid-angular
+        style="width: 1000px; height: 200px;"
+        class="ag-theme-balham"
+		(gridReady)="onGridReady($event)"
+        [rowData]="rowData"
+        [columnDefs]="columnDefs"
+        [gridOptions]="gridOptions"
+		[frameworkComponents]="frameworkComponents"
+        >
+    </ag-grid-angular>
+
+	
+</div>
+
+<div class="row">Messages: </div>
+
+<div class="row" *ngFor="let msg of msgs">{{msg}}</div>
+
+</div>
