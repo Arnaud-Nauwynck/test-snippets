@@ -32,7 +32,6 @@ public class GrpcServerMain {
 		}
 		HealthStatusManager health = new HealthStatusManager();
 		final Server server = ServerBuilder.forPort(port) //
-				// .
 				.addService(new GrpcImplService(hostname)) //
 				.addService(ProtoReflectionService.newInstance()) //
 				.addService(health.getHealthService()) // 

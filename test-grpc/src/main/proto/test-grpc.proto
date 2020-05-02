@@ -11,7 +11,16 @@ package helloworld;
 service Greeter {
 
   // send 1 request => receive 1 response
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
+  rpc SayHello (HelloRequest) returns (HelloReply);
+
+  // send 1 request => receive * responses stream
+  rpc SayHello_OutStream (HelloRequest) returns (stream HelloReply);
+
+  // send * request stream => 1 response  (wait 5 request, then respond)
+  rpc SayHello_InStream (stream HelloRequest) returns (HelloReply);
+
+  // send * request stream => receive * responses stream
+  rpc SayHello_InStream_OutStream (stream HelloRequest) returns (stream HelloReply);
 
 }
 
