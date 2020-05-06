@@ -1,18 +1,11 @@
 package fr.an.tests.opentelemetry;
 
-<<<<<<< HEAD
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.trace.ReadableSpan;
-import io.opentelemetry.sdk.trace.SpanProcessor;
-=======
 import java.time.Duration;
 
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.trace.TraceState;
->>>>>>> test open-telemetry
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
