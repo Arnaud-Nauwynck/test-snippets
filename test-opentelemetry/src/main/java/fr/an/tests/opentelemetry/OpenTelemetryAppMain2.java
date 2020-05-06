@@ -1,8 +1,18 @@
 package fr.an.tests.opentelemetry;
 
+<<<<<<< HEAD
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SpanProcessor;
+=======
+import java.time.Duration;
+
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.trace.ReadableSpan;
+import io.opentelemetry.sdk.trace.SpanProcessor;
+import io.opentelemetry.sdk.trace.data.SpanData;
+import io.opentelemetry.trace.TraceState;
+>>>>>>> test open-telemetry
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -41,8 +51,11 @@ public class OpenTelemetryAppMain2 {
 
 		@Override
 		public void onEnd(ReadableSpan span) {
-			log.info("## onEnd " + span.getName());
+			SpanData spanData = span.toSpanData();
+			// TraceState traceState = span.getSpanContext().getTraceState();
+			long elapsedNanos = spanData.getEndEpochNanos() - spanData.getStartEpochNanos();
 			
+			log.info("## onEnd " + span.getName() + " took " + Duration.ofNanos(elapsedNanos).toMillis() + " ms");
 		}
 
 		@Override
