@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/test-hivemetastore-thrift-client/src/main/java/fr/an/tests/hivemetastoreclient/HiveMetaStoreClientApp.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<mapAttribute key="org.eclipse.debug.core.environmentVariables">
+<mapEntry key="HADOOP_CONF_DIR" value="D:/arn/hadoop/conf-nohdfs"/>
+<mapEntry key="HADOOP_HOME" value="D:/arn/hadoop/hadoop-3.2.1"/>
+<mapEntry key="HIVE_CONF_DIR" value="D:/arn/downloadTools/hadoop/hive-standalone-ms/dist/conf"/>
+<mapEntry key="HIVE_HOME" value="D:/arn/downloadTools/hadoop/hive-standalone-ms/dist"/>
+</mapAttribute>
+<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="fr.an.tests.hivemetastoreclient.HiveMetaStoreClientApp"/>
+<stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="test-hivemetastore-thrift-client"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="test-hivemetastore-thrift-client"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
+</launchConfiguration>
