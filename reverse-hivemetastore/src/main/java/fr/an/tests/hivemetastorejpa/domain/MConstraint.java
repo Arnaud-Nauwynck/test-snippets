@@ -1,13 +1,17 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import fr.an.tests.hivemetastorejpa.domain.MConstraint.MConstraintPK;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "KEY_CONSTRAINTS")
 //   CONSTRAINT CONSTRAINTS_PK PRIMARY KEY ("PARENT_TBL_ID", "CONSTRAINT_NAME", "POSITION")
+@IdClass(MConstraintPK.class)
 @Data
 public class MConstraint {
 
@@ -30,9 +35,22 @@ public class MConstraint {
 	public final static int DEFAULT_CONSTRAINT = 4;
 	public final static int CHECK_CONSTRAINT = 5;
 
+    @Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class MConstraintPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int parentTable;
+		private String constraintName;
+		private int position;
+
+		public String toString() {
+			return String.format("%s:%s:%d", parentTable, constraintName, position);
+		}
+    }
+    
 	@Id
-	@ManyToOne
-	@Column(name = "PARENT_TBL_ID", nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "PARENT_TBL_ID", nullable = false)
 	private MTable parentTable; // Primary key of KEY_CONSTARINTS
 
 	@Id
@@ -42,20 +60,6 @@ public class MConstraint {
 	@Id
 	@Column(name = "POSITION", nullable = false)
 	private int position; // Primary key of KEY_CONSTARINTS
-
-	@Data
-	@AllArgsConstructor @NoArgsConstructor
-	public static class PK implements Serializable {
-
-		public MTable.PK parentTable;
-		public String constraintName;
-		public int position;
-
-		public String toString() {
-			return String.format("%s:%s:%d", parentTable.id, constraintName, position);
-		}
-
-	}
 
 	
 	
@@ -68,16 +72,16 @@ public class MConstraint {
 	@Column(name = "UPDATE_RULE")
 	private Integer updateRule;
 
-	@ManyToOne
-	@Column(name = "CHILD_TBL_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "CHILD_TBL_ID")
 	private MTable childTable;
 
-	@ManyToOne
-	@Column(name = "PARENT_CD_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "PARENT_CD_ID")
 	private MColumnDescriptor parentColumn;
 
-	@ManyToOne
-	@Column(name = "CHILD_CD_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "CHILD_CD_ID")
 	private MColumnDescriptor childColumn;
 
 	@Column(name = "CHILD_INTEGER_IDX")

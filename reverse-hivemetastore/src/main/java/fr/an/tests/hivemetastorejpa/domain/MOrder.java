@@ -1,4 +1,4 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import lombok.Data;
 

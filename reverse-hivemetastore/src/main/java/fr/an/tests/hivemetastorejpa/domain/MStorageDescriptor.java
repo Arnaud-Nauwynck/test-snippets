@@ -1,17 +1,23 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
+import java.io.Serializable;
 import java.sql.Clob;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "SDS")
@@ -22,8 +28,8 @@ public class MStorageDescriptor {
 	@Column(name = "SD_ID")
 	private int sdId;
 	
-	@ManyToOne
-	@Column(name = "CD_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "CD_ID")
 	private MColumnDescriptor cd;
 	
 	@Column(name = "LOCATION", length = 4000)
@@ -41,18 +47,28 @@ public class MStorageDescriptor {
 	@Column(name = "NUM_BUCKETS", nullable = false)
 	private int numBuckets = 1;
 	
-    @ManyToOne
-    @Column(name = "SERDE_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "SERDE_ID")
 	private MSerDeInfo serDeInfo;
 	
-	
+	@OneToMany(mappedBy = "sdId")
 	// private List<String> bucketCols;
 	private List<BucketingColumn> bucketCols;
 	
+	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class BucketingColumnPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int sdId;
+		private int integerIdx;
+	}
+	
 	@Entity
 	@Table(name = "BUCKETING_COLS",
-			uniqueConstraints = @UniqueConstraint(name = "BUCKETING_COLS_pkey", columnNames = "SD_ID, INTEGER_IDX")
+			uniqueConstraints = @UniqueConstraint(name = "BUCKETING_COLS_pkey", 
+				columnNames = { "SD_ID", "INTEGER_IDX" })
 			)
+	@IdClass(BucketingColumnPK.class)
 	@Data
 	public static class BucketingColumn {
 	    @Id 
@@ -71,8 +87,17 @@ public class MStorageDescriptor {
 	@OneToMany(mappedBy = "sdId")
 	private List<MOrder> sortCols;
 	
+	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class MOrderPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int sdId;
+		private int integerIdx;
+	}
+	
 	@Entity
 	@Table(name = "SORT_COLS")
+	@IdClass(MOrderPK.class)
 	@Data
 	public static class MOrder {
 		@Id
@@ -91,11 +116,20 @@ public class MStorageDescriptor {
 	}
 
 	
+	@OneToMany(mappedBy = "sdId")
 	// private Map<String, String> parameters;
 	private List<StorageDescriptorParameter> parameters;
+
+	@Data @NoArgsConstructor @AllArgsConstructor
+	public static class StorageDescriptorParameterPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int sdId;
+		private String paramKey;
+	}
 	
 	@Entity
 	@Table(name = "SD_PARAMS")
+	@IdClass(StorageDescriptorParameterPK.class)
 	@Data
 	public static class StorageDescriptorParameter {
 		@Id
@@ -114,9 +148,18 @@ public class MStorageDescriptor {
 	// private List<String> skewedColNames;
 	@OneToMany(mappedBy = "sdId")
 	private List<SkewedColName> skewedColNames;
-	
+
+	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class SkewedColNamePK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int sdId;
+		private int integerIdx;
+	}
+
 	@Entity
 	@Table(name = "SKEWED_COL_NAMES")
+	@IdClass(SkewedColNamePK.class)
 	@Data
 	public static class SkewedColName {
 
@@ -138,9 +181,18 @@ public class MStorageDescriptor {
 	// private List<MStringList> skewedColValues;
 	@OneToMany(mappedBy = "sdId")
 	private List<SkewedColValue> skewedColValues;
+
+	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class SkewedColValuePK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int sdId;
+		private int integerIdx;
+	}
 	
 	@Entity
 	@Table(name = "SKEWED_VALUES")
+	@IdClass(SkewedColValuePK.class)
 	@Data
 	public static class SkewedColValue {
 	
@@ -152,14 +204,14 @@ public class MStorageDescriptor {
 		@Column(name = "INTEGER_IDX", nullable = false)
 		private int integerIdx;
 	
-		@ManyToOne
-		@Column(name = "STRING_LIST_ID_EID", length = 256)
+		@ManyToOne(fetch = FetchType.LAZY)
+		@JoinColumn(name = "STRING_LIST_ID_EID")
 		private MStringList stringList;
 	
 	}
 	
 	// private Map<MStringList, String> skewedColValueLocationMaps;
-	//	@ManyToMany
+	@OneToMany(mappedBy = "sdId")
 //	@JoinTable(
 //		name="SKEWED_COL_VALUE_LOC_MAP",
 //		joinColumns={@JoinColumn(name="sdId", referencedColumnName="sdId")},
@@ -167,8 +219,18 @@ public class MStorageDescriptor {
 //	@MapKey(name = "stringList")
 	private List<SkewedColValueLocMap> skewedColValueLocationMaps;
 
+	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class SkewedColValueLocMapPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int sdId;
+		private int stringList;
+	}
+
+	
 	@Entity
 	@Table(name = "SKEWED_COL_VALUE_LOC_MAP")
+	@IdClass(SkewedColValueLocMapPK.class)
 	@Data
 	public static class SkewedColValueLocMap {
 		@Id
@@ -176,8 +238,8 @@ public class MStorageDescriptor {
 		private int sdId;
 		
 		@Id
-		@ManyToOne
-		@Column(name = "STRING_LIST_ID_KID", nullable = false)
+		@ManyToOne(fetch = FetchType.LAZY)
+		@JoinColumn(name = "STRING_LIST_ID_KID", nullable = false)
 		private MStringList stringList;
 		
 		@Column(name = "LOCATION", length = 4000)

@@ -1,9 +1,10 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -22,8 +23,8 @@ public class MWMPool {
 	@Column(name = "POOL_ID", nullable = false)
 	private int poolId;
 
-	@ManyToOne
-	@Column(name = "RP_ID", nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "RP_ID", nullable = false)
 	private MWMResourcePlan resourcePlan;
 
 	@Column(name = "PATH", length = 1024, nullable = false)
@@ -38,11 +39,12 @@ public class MWMPool {
 	@Column(name = "SCHEDULING_POLICY", length = 1024)
 	private String schedulingPolicy;
 
-	@ManyToMany
-	@JoinTable(name = "WM_POOL_TO_TRIGGER", //
-			joinColumns = { @JoinColumn(name = "TRIGGER_ID", referencedColumnName = "TRIGGER_ID") }, //
-			inverseJoinColumns = { @JoinColumn(name = "POOL_ID", referencedColumnName = "POOL_ID") } //
-			)
-	private Set<MWMTrigger> triggers;
+	//TODO
+//	@ManyToMany
+//	@JoinTable(name = "WM_POOL_TO_TRIGGER", //
+//			joinColumns = { @JoinColumn(name = "TRIGGER_ID", referencedColumnName = "TRIGGER_ID") }, //
+//			inverseJoinColumns = { @JoinColumn(name = "POOL_ID", referencedColumnName = "POOL_ID") } //
+//			)
+//	private Set<MWMTrigger> triggers;
 
 }

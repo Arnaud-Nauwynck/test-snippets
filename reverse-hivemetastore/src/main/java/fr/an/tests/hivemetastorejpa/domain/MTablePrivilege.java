@@ -1,8 +1,10 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -23,8 +25,8 @@ public class MTablePrivilege {
 	@Column(name = "PRINCIPAL_TYPE", length = 128)
 	private String principalType;
 
-	@ManyToOne
-	@Column(name = "TBL_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "TBL_ID")
 	private MTable table;
 
     @Column(name = "TBL_PRIV", length = 128)

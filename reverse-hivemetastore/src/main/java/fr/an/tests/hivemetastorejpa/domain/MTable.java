@@ -1,4 +1,4 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import java.io.Serializable;
 import java.sql.Clob;
@@ -6,15 +6,21 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
+@Entity
 @Table(name = "TBLS")
+@Data
 public class MTable {
 
 	@Id
@@ -24,12 +30,12 @@ public class MTable {
     @Column(name = "TBL_NAME", length = 256)
 	private String tableName;
 
-    @Column(name = "DB_ID")
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "DB_ID")
 	private MDatabase database;
 
-    @ManyToOne
-    @Column(name = "SD_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "SD_ID")
 	private MStorageDescriptor sd;
 	
     @Column(name = "OWNER", length = 767)
@@ -47,11 +53,21 @@ public class MTable {
     @Column(name = "RETENTION", nullable = false)
     private int retention;
 
-	private List<MFieldSchema> partitionKeys;
+    @OneToMany(mappedBy = "tblId")
+	private List<MPartitionKey> partitionKeys;
 
-	@Data
-	@Table(name = "PARTITION_KEYS")
+    @Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class MPartitionKeyPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int tblId;
+		private int integerIdx;
+    }
+    
 	@Entity
+	@Table(name = "PARTITION_KEYS")
+	@IdClass(MPartitionKeyPK.class)
+	@Data
 	public static class MPartitionKey { // TODO MFieldSchema
 		@Id
 		@Column(name = "TBL_ID", nullable = false)
@@ -75,17 +91,26 @@ public class MTable {
 	
 	// private Map<String, String> parameters;
 	@OneToMany(mappedBy = "tblId")
-	@Column()
 	private List<TableParameter> parameters;
+
+    @Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class TableParameterPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int tblId;
+		private String paramName;
+    }
 
 	@Entity
 	@Table(name = "TABLE_PARAMS")
+	@IdClass(TableParameterPK.class)
 	@Data
 	public static class TableParameter {
 		@Id
 		@Column(name = "TBL_ID", nullable = false)
 		private int tblId;
 
+		@Id
 		@Column(name = "PARAM_NAME", length = 256, nullable = false)
 		private String paramName;
 

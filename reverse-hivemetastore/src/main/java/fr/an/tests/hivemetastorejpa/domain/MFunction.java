@@ -1,10 +1,12 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -23,8 +25,8 @@ public class MFunction {
 	@Column(name = "FUNC_NAME", length = 128)
 	private String functionName;
 
-	@ManyToOne
-	@Column(name = "DB_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "DB_ID")
 	private MDatabase database;
 
 	@Column(name = "CLASS_NAME", length = 4000)

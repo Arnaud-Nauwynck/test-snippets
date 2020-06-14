@@ -1,10 +1,12 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -48,7 +50,7 @@ public class MWMResourcePlan {
 	@OneToMany(mappedBy = "resourcePlan")
 	private Set<MWMMapping> mappings;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "DEFAULT_POOL_ID")
 	private MWMPool defaultPool;
 

@@ -1,16 +1,22 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
+import java.io.Serializable;
 import java.sql.Clob;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Represents the creation metadata of a materialization. It includes the
@@ -40,16 +46,26 @@ public class MCreationMetadata {
 	@OneToMany(mappedBy = "mvCreationMetadataId")
 	private List<MCreationTablesUsed> tables;
 
+	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class MCreationTablesUsedPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int mvCreationMetadataId;
+		private int table;
+	}
+
 	@Entity
 	@Table(name = "MV_TABLES_USED")
+	@IdClass(MCreationTablesUsedPK.class)
+	@Data
 	public static class MCreationTablesUsed {
 		@Id
 		@Column(name = "MV_CREATION_METADATA_ID")
 		private int mvCreationMetadataId;
 
 		@Id
-		@Column(name = "TBL_ID")
-		@ManyToOne
+		@ManyToOne(fetch = FetchType.LAZY)
+		@JoinColumn(name = "TBL_ID")
 		private MTable table;
 	}
 

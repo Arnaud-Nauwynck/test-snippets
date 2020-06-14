@@ -1,23 +1,29 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Represents hive's index definition.
  */
 @Deprecated
-@Data
 @Entity
 @Table(name = "IDXS")
+@Data
 public class MIndex {
 
 	@Id
@@ -27,8 +33,8 @@ public class MIndex {
 	@Column(name = "INDEX_NAME", length = 128)
 	private String indexName;
 
-	@ManyToOne()
-	@Column(name = "ORIG_TBL_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "ORIG_TBL_ID")
 	private MTable origTable;
 	
 	@Column(name = "CREATE_TIME", nullable = false)
@@ -41,9 +47,18 @@ public class MIndex {
 //	private Map<String, String> parameters;
 	private List<IndexParameter> parameters;
 	
-	@Entity
 	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class MIndexParameterPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int indexId;
+		private String paramKey;
+	}
+	
+	@Entity
 	@Table(name = "INDEX_PARAMS")
+	@IdClass(MIndexParameterPK.class)
+	@Data
 	public static class IndexParameter {
 		@Id
 		@Column(name = "INDEX_ID", nullable = false) 
@@ -57,12 +72,12 @@ public class MIndex {
 	}
 
 	
-	@ManyToOne()
-	@Column(name = "INDEX_TBL_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "INDEX_TBL_ID")
 	private MTable indexTable;
 
-	@ManyToOne()
-	@Column(name = "SD_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "SD_ID")
 	private MStorageDescriptor sd;
 
 	@Column(name = "INDEX_HANDLER_CLASS", length = 4000)

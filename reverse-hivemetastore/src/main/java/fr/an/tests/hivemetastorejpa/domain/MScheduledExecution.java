@@ -1,8 +1,10 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import lombok.Data;
@@ -22,7 +24,8 @@ public class MScheduledExecution {
 	@Column(name = "SCHEDULED_EXECUTION_ID", nullable = false)
 	private int scheduledExecutionId;
 
-	@Column(name = "SCHEDULED_QUERY_ID")
+	@ManyToOne
+	@JoinColumn(name = "SCHEDULED_QUERY_ID")
 	private MScheduledQuery scheduledQuery;
 
 	@Column(name = "EXECUTOR_QUERY_ID", length = 256)

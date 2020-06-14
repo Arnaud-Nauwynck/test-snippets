@@ -1,8 +1,10 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -25,8 +27,8 @@ public class MPartitionColumnStatistics {
 	@Column(name = "CS_ID", nullable = false)
 	private int cdId;
 
-	@Column(name = "PART_ID", nullable = false)
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "PART_ID", nullable = false)
 	private MPartition partition;
 
 	@Column(name = "CAT_NAME", length = 256)

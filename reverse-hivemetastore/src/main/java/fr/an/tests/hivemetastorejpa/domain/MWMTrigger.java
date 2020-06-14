@@ -1,10 +1,13 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -19,8 +22,8 @@ public class MWMTrigger {
 	@Column(name = "TRIGGER_ID", nullable = false)
 	private int triggerId;
 
-	@ManyToOne
-	@Column(name = "RP_ID", nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "RP_ID", nullable = false)
 	private MWMResourcePlan resourcePlan;
 
 	@Column(name = "NAME", length = 128, nullable = false)
@@ -36,6 +39,8 @@ public class MWMTrigger {
 	@Column(name = "IS_IN_UNMANAGED")
 	private int isInUnmanaged;
 
-	private Set<MWMPool> pools;
+	//TODO
+//	@ManyToMany(mappedBy = )
+//	private Set<MWMPool> pools;
 
 }

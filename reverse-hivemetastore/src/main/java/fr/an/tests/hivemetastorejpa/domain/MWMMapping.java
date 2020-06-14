@@ -1,7 +1,8 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -18,7 +19,7 @@ public class MWMMapping {
 	@Column(name = "MAPPING_ID", nullable = false)
 	private int mappingId;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "RP_ID", nullable = false)
 	private MWMResourcePlan resourcePlan;
 
@@ -32,7 +33,7 @@ public class MWMMapping {
 	@Column(name = "ENTITY_NAME", length = 128, nullable = false)
 	private String entityName;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "POOL_ID")
 	private MWMPool pool;
 

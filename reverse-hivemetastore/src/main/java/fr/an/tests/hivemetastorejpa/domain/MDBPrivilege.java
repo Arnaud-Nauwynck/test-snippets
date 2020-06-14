@@ -1,7 +1,10 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -12,6 +15,7 @@ import lombok.Data;
 @Data
 public class MDBPrivilege {
 
+	@Id
 	@Column(name = "DB_GRANT_ID", nullable = false)
 	private int dbGrantId;
 	
@@ -21,8 +25,8 @@ public class MDBPrivilege {
 	@Column(name = "PRINCIPAL_TYPE", length = 128)
 	private String principalType;
 
-	@ManyToOne
-	@Column(name = "DB_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "DB_ID")
 	private MDatabase database;
 
 	@Column(name = "CREATE_TIME", nullable = false)

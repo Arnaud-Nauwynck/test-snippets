@@ -1,16 +1,22 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
+import java.io.Serializable;
 import java.sql.Clob;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
@@ -24,17 +30,26 @@ public class MPartition {
 	@Column(name = "PART_NAME", length = 767)
 	private String partitionName; // partitionname ==> (key=value/)*(key=value)
 
-	@ManyToOne()
-	@Column(name = "TBL_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "TBL_ID")
 	private MTable table;
 
 	// private List<String> values;
 	@OneToMany(mappedBy = "partId")
 	private List<PartitionKeyValue> values;
 
-	@Entity
 	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class PartitionKeyValuePK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int partId;
+		private int integerIdx;
+	}
+
+	@Entity
 	@Table(name = "PARTITION_KEY_VALS")
+	@IdClass(PartitionKeyValuePK.class)
+	@Data
 	public static class PartitionKeyValue {
 		@Id
 		@Column(name = "PART_ID", nullable = false)
@@ -55,15 +70,25 @@ public class MPartition {
 	@Column(name = "LAST_ACCESS_TIME", nullable = false)
 	private int lastAccessTime;
 
-	@ManyToOne()
-	@Column(name = "SD_ID")
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "SD_ID")
 	private MStorageDescriptor sd;
 
+	@OneToMany(mappedBy = "partId")
 //	private Map<String, String> parameters;
 	private List<PartitionParameter> parameters;
 
+	@Data
+	@NoArgsConstructor @AllArgsConstructor
+	public static class PartitionParameterPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private int partId;
+		private String paramKey;
+	}
+	
 	@Entity
 	@Table(name = "PARTITION_PARAMS")
+	@IdClass(PartitionParameterPK.class)
 	@Data
 	public static class PartitionParameter {
 		@Id

@@ -1,9 +1,10 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import java.sql.Clob;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -21,7 +22,7 @@ public class MSchemaVersion {
 	@Column(name = "SCHEMA_VERSION_ID")
 	private int schemaVersionId;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "SCHEMA_ID")
 	private MISchema iSchema;
 
@@ -31,7 +32,7 @@ public class MSchemaVersion {
 	@Column(name = "CREATED_AT", nullable = false)
 	private long createdAt;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "CD_ID")
 	private MColumnDescriptor cols;
 
@@ -50,7 +51,7 @@ public class MSchemaVersion {
 	@Column(name = "SCHEMA_VERSION_NAME", length = 256)
 	private String name;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "SERDE_ID")
 	private MSerDeInfo serDe;
 

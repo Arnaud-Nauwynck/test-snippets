@@ -1,9 +1,10 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -46,7 +47,7 @@ public class MScheduledQuery {
 	@Column(name = "NEXT_EXECUTION")
 	private Integer nextExecution;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ACTIVE_EXECUTION_ID")
 	private MScheduledExecution activeExecution;
 

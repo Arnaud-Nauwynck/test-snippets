@@ -1,24 +1,29 @@
-package fr.an.tests.hivemetastorejpa;
+package fr.an.tests.hivemetastorejpa.domain;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Storage Class representing the Hive MDatabase in a rdbms
  *
  */
-@Data
 @Entity
 @Table(name="DBS")
+@Data
 public class MDatabase {
 
 	@Id
@@ -41,16 +46,28 @@ public class MDatabase {
 	// private Map<String, String> parameters;
 	@OneToMany(mappedBy = "db")
 	private List<DbParameter> parameters;
-	
-	@Entity
+
 	@Data
+	@AllArgsConstructor @NoArgsConstructor
+	public static class MDatabaseParameterPK implements Serializable {
+		private static final long serialVersionUID = 1L;
+		
+		private int db;
+		private String paramKey;
+		
+	}
+
+	@Entity
 	@Table(name = "DATABASE_PARAMS")
+	@IdClass(MDatabaseParameterPK.class)
+	@Data
 	public static class DbParameter {
 		@Id
-		@ManyToOne
+		@ManyToOne(fetch = FetchType.LAZY)
 		@JoinColumn(name = "DB_ID", nullable = false)
 		private MDatabase db;
 		
+		@Id
 		@Column(name = "PARAM_KEY", length = 180, nullable = false)
 		private String paramKey;
 		
