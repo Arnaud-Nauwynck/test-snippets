@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/common-compress-diff/src/main/java/fr/an/tests/compressdiff/AppMain.java"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+<stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="fr.an.tests.compressdiff.AppMain"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="C:\Users\arnau\Downloads\apache-maven-3.6.3-SNAPSHOT-bin-linux-jdk8\apache-maven-3.6.3-SNAPSHOT\lib\maven-core-3.6.3-SNAPSHOT.jar&#13;&#10;&#13;&#10;D:\arn\mvn-src2\checkout\core\maven\maven-core\target\maven-core-3.6.3-SNAPSHOT.jar"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="common-compress-diff"/>
+<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
+</launchConfiguration>

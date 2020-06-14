@@ -1,0 +1,2 @@
+33290b5c2176ae41cb134bbfbe446fdf *target/test-felix-plugin-0.0.1-SNAPSHOT.jar
+5058cadc055311c61a030b3138935fd9 *target/test-felix-plugin-0.0.1-SNAPSHOT.jar

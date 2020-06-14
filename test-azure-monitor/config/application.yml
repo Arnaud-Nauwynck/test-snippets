@@ -1,0 +1,8 @@
+
+# cf com.microsoft.azure.spring.autoconfigure.metrics.AzureMonitorMetricsExportAutoConfiguration
+# com.microsoft.azure.spring.autoconfigure.metrics.AzureMonitorProperties
+management:
+  metrics:
+    export:
+      azuremonitor:
+        instrumentationKey: f2566ce6-5a28-4d18-9e00-041eace43c5a

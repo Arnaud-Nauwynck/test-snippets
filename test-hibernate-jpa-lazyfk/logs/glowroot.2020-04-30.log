@@ -1,0 +1,63 @@
+2020-04-30 16:12:18.560 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:12:18.572 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:12:18.574 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:63759 -ea -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:12:18.577 ERROR org.glowroot - missing lib/glowroot-embedded-collector.jar
+2020-04-30 16:12:18.580 ERROR org.glowroot - Glowroot failed to start: org.glowroot.agent.embedded.init.EmbeddedGlowrootAgentInitFactory
+java.lang.ClassNotFoundException: org.glowroot.agent.embedded.init.EmbeddedGlowrootAgentInitFactory
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:583)
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:178)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:521)
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:415)
+	at org.glowroot.agent.MainEntryPoint.createGlowrootAgentInit(MainEntryPoint.java:305)
+	at org.glowroot.agent.MainEntryPoint.start(MainEntryPoint.java:265)
+	at org.glowroot.agent.MainEntryPoint.premain(MainEntryPoint.java:173)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.glowroot.agent.AgentPremain.premain(AgentPremain.java:59)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at java.instrument/sun.instrument.InstrumentationImpl.loadClassAndStartAgent(InstrumentationImpl.java:513)
+	at java.instrument/sun.instrument.InstrumentationImpl.loadClassAndCallPremain(InstrumentationImpl.java:525)
+2020-04-30 16:13:05.871 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:13:05.881 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:13:05.883 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:63768 -ea -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:13:16.411 INFO  org.glowroot - creating glowroot schema...
+2020-04-30 16:13:17.340 INFO  org.glowroot - glowroot schema created
+2020-04-30 16:13:21.287 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)
+2020-04-30 16:22:11.648 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:22:11.658 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:22:11.659 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:63922 -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:22:28.365 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)
+2020-04-30 16:24:56.566 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:24:56.574 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:24:56.576 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:64072 -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:25:16.518 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)
+2020-04-30 16:29:45.282 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:29:45.290 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:29:45.291 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:64328 -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:30:05.334 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)
+2020-04-30 16:35:38.863 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:35:38.869 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:35:38.871 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:64472 -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:36:00.997 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)
+2020-04-30 16:41:16.047 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:41:16.055 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:41:16.060 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:64538 -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:41:34.532 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)
+2020-04-30 16:47:54.470 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:47:54.488 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:47:54.490 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:64612 -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:48:12.051 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)
+2020-04-30 16:48:49.299 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:48:49.310 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:48:49.312 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:64624 -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:49:09.041 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)
+2020-04-30 16:49:58.150 INFO  org.glowroot - Glowroot version: 0.13.6, built 2020-03-01 01:25:31 +0000
+2020-04-30 16:49:58.155 INFO  org.glowroot - Java version: 12.0.1 (Oracle Corporation / Windows 10)
+2020-04-30 16:49:58.156 INFO  org.glowroot - Java args: -agentlib:jdwp=transport=dt_socket,suspend=y,address=localhost:64650 -javaagent:glowroot.jar -javaagent:C:\apps\eclipse\java-2020-03\eclipse\configuration\org.eclipse.osgi\223\0\.cp\lib\javaagent-shaded.jar
+2020-04-30 16:50:12.095 INFO  org.glowroot - UI listening on 127.0.0.1:4000 (to access the UI from remote machines, change the bind address to 0.0.0.0, either in the Glowroot UI under Configuration > Web or directly in the admin.json file, and then restart JVM to take effect)

@@ -1,0 +1,12 @@
+# this file is created after the agent has pushed its local configuration to the central collector
+#
+# when this file is present (and the agent.id below matches the running agent's agent.id), the agent
+# will overwrite its local configuration with the agent configuration it retrieves from the central
+# collector on JVM startup
+#
+# when this file is not present (or the agent.id below does not match the running agent's agent.id),
+# the agent will push its local configuration to the central collector on JVM startup (overwriting
+# any existing remote configuration), after which the agent will (re-)create this file using the
+# running agent's agent.id
+
+agent.id=cluster1::app1
