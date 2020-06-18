@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder>
+		            <pattern>%date [%thread] %-5level %logger{36} - %msg%n</pattern>
+		        </encoder>
+        </appender>
+
+	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/log.txt</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>logs/log.%i.gz</fileNamePattern>
+            <minIndex>1</minIndex>
+        	<maxIndex>3</maxIndex>
+        </rollingPolicy>
+ 
+	    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+	        <maxFileSize>2KB</maxFileSize>
+	    </triggeringPolicy>
+	    
+        <encoder>
+            <pattern>%d %p %c{1.} [%t] %m%n</pattern>
+        </encoder>
+    </appender>
+    
+    
+		
+        <logger name="fr.an.tests.slf4j">
+                 <appender-ref ref="FILE" />
+		</logger>
+		
+		<logger name="fr.an.tests.other">
+		</logger>
+		
+		
+    	<logger name="fr.an.tests">
+		</logger>
+		
+    	<logger name="fr.an">
+		</logger>
+		
+		
+		
+        <root level="INFO">
+                <appender-ref ref="STDOUT" />
+        </root>
+<!-- 
+
+nohup java -jar myapp.jar 2>&1 > log.txt &   
+ ... No Space Left On Device
+ 
+echo > log.txt
+
+rm log.txt   !!!! ne marche pas !! 
+
+dir
+  
+ fd[1] ->  file   (count 1)
+
+df -h
+
+du -h
+ls -l /proc/pid/fd/1
+
+    
+
+ -->
+</configuration>

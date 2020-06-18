@@ -1,16 +1,24 @@
 package fr.an.tests.slf4j;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.an.tests.other.OtherFoo;
 
 public class Slf4jAppMain {
+	private static final Logger log = LoggerFactory.getLogger(Slf4jAppMain.class);
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("Hello");
 		
-		final Logger log = LoggerFactory.getLogger(Slf4jAppMain.class);
 		log.info("START +++++++++++");
 		
 		log.info("Hello info msg");
@@ -32,10 +40,11 @@ public class Slf4jAppMain {
 				
 			}
 		}.start();
-		
+				
 		Thread.sleep(1000);
 		log.info("END -------------");
 	}
+
 
 	private static void testLog4j() {
 		org.apache.log4j.Logger log4jLogger = org.apache.log4j.LogManager.getLogger(Slf4jAppMain.class);
