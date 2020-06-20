@@ -1,0 +1,4 @@
+fieldInt,fieldDouble,fieldStr,fieldQuotedStr,fieldDate
+1,1.2,hello,"hello with comma ,",2020/01/1974
+2,2.2,hello,"hello with double-quote \"a\" ",2020/01/1974
+
