@@ -1,5 +1,6 @@
 package fr.an.spark.externalcatalog;
 
+
 import org.apache.spark.sql.catalyst.catalog.CatalogDatabase;
 import org.apache.spark.sql.catalyst.catalog.CatalogFunction;
 import org.apache.spark.sql.catalyst.catalog.CatalogStatistics;
@@ -7,16 +8,28 @@ import org.apache.spark.sql.catalyst.catalog.CatalogTable;
 import org.apache.spark.sql.catalyst.catalog.CatalogTablePartition;
 import org.apache.spark.sql.catalyst.catalog.ExternalCatalog;
 import org.apache.spark.sql.catalyst.expressions.Expression;
+import org.apache.spark.sql.catalyst.util.StringUtils;
 import org.apache.spark.sql.types.StructType;
 
+import fr.an.spark.externalcatalog.impl.SparkCatalogHelper;
 import scala.Option;
 import scala.collection.Seq;
 import scala.collection.immutable.Map;
 
-public class FileExternalCatalog implements ExternalCatalog {
+public abstract class AbstractCachedExternalCatalog implements ExternalCatalog {
+
+	private java.util.Map<String,CatalogDatabase> catalogDatabases;
+	// private scala.collection.mutable.HashMap<String, DatabaseDesc> catalog = new scala.collection.mutable.HashMap<String, DatabaseDesc>();
 
 	private String currentDatabase;
 	
+	// --------------------------------------------------------------------------------------------
+
+	public AbstractCachedExternalCatalog() {
+	}
+
+	// --------------------------------------------------------------------------------------------
+
 	public void setCurrentDatabase(String db) {
 		this.currentDatabase = db;
 	}
@@ -24,24 +37,24 @@ public class FileExternalCatalog implements ExternalCatalog {
 	// Database
 	// --------------------------------------------------------------------------------------------
 
+	@Override
 	public Seq<String> listDatabases() {
-		// TODO Auto-generated method stub
-		return null;
+		return SparkCatalogHelper.toScalaSeq(catalogDatabases.keySet());
 	}
 
+	@Override
 	public Seq<String> listDatabases(String pattern) {
-		// TODO Auto-generated method stub
-		return null;
+		return StringUtils.filterPattern(listDatabases(), pattern);
 	}
 
+	@Override
 	public boolean databaseExists(String db) {
-		// TODO Auto-generated method stub
-		return false;
+		return catalogDatabases.containsKey(db);
 	}
 
+	@Override
 	public CatalogDatabase getDatabase(String db) {
-		// TODO Auto-generated method stub
-		return null;
+		return catalogDatabases.get(db);
 	}
 
 	
@@ -49,57 +62,65 @@ public class FileExternalCatalog implements ExternalCatalog {
 	// --------------------------------------------------------------------------------------------
 
 
+	@Override
 	public Seq<String> listTables(String db, String pattern) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public Seq<String> listTables(String db) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public boolean tableExists(String db, String table) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
+	@Override
 	public CatalogTable getTable(String db, String table) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public Seq<CatalogTable> getTablesByName(String db, Seq<String> tables) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-
 	
 	// Partitions
 	// --------------------------------------------------------------------------------------------
 
-
+	@Override
 	public CatalogTablePartition getPartition(String db, String table, Map<String, String> spec) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public Option<CatalogTablePartition> getPartitionOption(String db, String table, Map<String, String> spec) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public Seq<String> listPartitionNames(String db, String table, Option<Map<String, String>> partialSpec) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public Seq<CatalogTablePartition> listPartitions(String db, String table, Option<Map<String, String>> partialSpec) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public Seq<CatalogTablePartition> listPartitionsByFilter(String db, String table, Seq<Expression> predicates,
 			String defaultTimeZoneId) {
 		// TODO Auto-generated method stub
@@ -111,16 +132,19 @@ public class FileExternalCatalog implements ExternalCatalog {
 	// Functions
 	// --------------------------------------------------------------------------------------------
 
+	@Override
 	public Seq<String> listFunctions(String db, String pattern) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public boolean functionExists(String db, String funcName) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
+	@Override
 	public CatalogFunction getFunction(String db, String funcName) {
 		// TODO Auto-generated method stub
 		return null;
@@ -130,6 +154,7 @@ public class FileExternalCatalog implements ExternalCatalog {
 	// --------------------------------------------------------------------------------------------
 
 
+	@Override
 	public void loadTable(String db, String table, String loadPath, boolean isOverwrite, boolean isSrcLocal) {
 		// TODO Auto-generated method stub
 		

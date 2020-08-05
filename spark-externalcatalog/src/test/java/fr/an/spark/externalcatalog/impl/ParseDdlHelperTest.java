@@ -56,6 +56,7 @@ public class ParseDdlHelperTest {
 				"( eid int, name String, \n" + 
 				"salary String, destination String)\n" + 
 				"PARTITIONED BY (department String)\n" +
+				"LOCATION 'file://dir1'\n" +
 				"COMMENT 'Employee details'\n" + 
 				"ROW FORMAT DELIMITED\n" + 
 				"FIELDS TERMINATED BY '\\t'\n" + 
