@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.an.tests</groupId>
+	<artifactId>test-ea-async-await</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+	</properties>
+  
+	<dependencies>
+		<dependency>
+		    <groupId>com.ea.async</groupId>
+		    <artifactId>ea-async</artifactId>
+		    <version>1.2.3</version>
+		    <scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.8.0-beta4</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.3.0-alpha4</version>
+            <scope>runtime</scope>
+        </dependency>
+		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.ea.async</groupId>
+				<artifactId>ea-async-maven-plugin</artifactId>
+				<version>1.2.3</version>
+				<executions>
+					<execution>
+						<id>instrument-async-await</id>
+					<!-- 
+					 	<phase>package</phase>
+					 -->
+						<goals>
+							<goal>instrument</goal>
+							<goal>instrument-test</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+		        <groupId>org.springframework.boot</groupId>
+		        <artifactId>spring-boot-maven-plugin</artifactId>
+		        <version>2.2.7.RELEASE</version>
+		        <executions>
+		        	<execution>
+		        		<id>repackage</id>
+		        		<phase>package</phase>
+		        		<goals>
+		        			<goal>repackage</goal>
+		        		</goals>
+		        	</execution>
+		        </executions>
+		    </plugin>
+		</plugins>
+	</build>
+
+</project>

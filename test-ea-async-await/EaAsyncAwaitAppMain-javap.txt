@@ -1,0 +1,95 @@
+public class fr.an.tests.EaAsyncAwaitAppMain {
+  public fr.an.tests.EaAsyncAwaitAppMain();
+    Code:
+       0: aload_0
+       1: invokespecial #18                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void main(java.lang.String[]) throws java.lang.Exception;
+    Code:
+       0: new           #2                  // class fr/an/tests/EaAsyncAwaitAppMain
+       3: dup
+       4: invokespecial #25                 // Method "<init>":()V
+       7: invokespecial #28                 // Method run:()V
+      10: getstatic     #34                 // Field java/lang/System.out:Ljava/io/PrintStream;
+      13: ldc           #36                 // String shutdown
+      15: invokevirtual #42                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      18: getstatic     #44                 // Field scheduledExecutor:Ljava/util/concurrent/ScheduledExecutorService;
+      21: invokeinterface #48,  1           // InterfaceMethod java/util/concurrent/ScheduledExecutorService.shutdown:()V
+      26: getstatic     #34                 // Field java/lang/System.out:Ljava/io/PrintStream;
+      29: ldc           #50                 // String Exiting
+      31: invokevirtual #42                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+      34: return
+
+  static {};
+    Code:
+       0: iconst_4
+       1: invokestatic  #158                // Method java/util/concurrent/Executors.newScheduledThreadPool:(I)Ljava/util/concurrent/ScheduledExecutorService;
+       4: putstatic     #44                 // Field scheduledExecutor:Ljava/util/concurrent/ScheduledExecutorService;
+       7: new           #117                // class fr/an/tests/ScheduledCompletableHelper
+      10: dup
+      11: getstatic     #44                 // Field scheduledExecutor:Ljava/util/concurrent/ScheduledExecutorService;
+      14: invokespecial #161                // Method fr/an/tests/ScheduledCompletableHelper."<init>":(Ljava/util/concurrent/ScheduledExecutorService;)V
+      17: putstatic     #92                 // Field scheduledCompletableHelper:Lfr/an/tests/ScheduledCompletableHelper;
+      20: return
+
+  public java.util.concurrent.CompletableFuture<java.lang.String> asyncFoo();
+    Code:
+       0: ldc           #163                // String asyncFoo
+       2: invokestatic  #90                 // Method showCurrentStackTrace:(Ljava/lang/String;)V
+       5: aload_0
+       6: ldc           #165                // String init
+       8: ldc           #167                // String 1
+      10: invokespecial #169                // Method asyncBar:(Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletionStage;
+      13: dup
+      14: invokeinterface #174,  1          // InterfaceMethod java/util/concurrent/CompletionStage.toCompletableFuture:()Ljava/util/concurrent/CompletableFuture;
+      19: invokevirtual #178                // Method java/util/concurrent/CompletableFuture.isDone:()Z
+      22: ifne          57
+      25: astore_3
+      26: aload_3
+      27: invokestatic  #184                // InterfaceMethod java/util/function/Function.identity:()Ljava/util/function/Function;
+      30: invokeinterface #188,  2          // InterfaceMethod java/util/concurrent/CompletionStage.exceptionally:(Ljava/util/function/Function;)Ljava/util/concurrent/CompletionStage;
+      35: aload_0
+      36: aload_3
+      37: aconst_null
+      38: sipush        1
+      41: invokedynamic #201,  0            // InvokeDynamic #1:apply:(Lfr/an/tests/EaAsyncAwaitAppMain;Ljava/util/concurrent/CompletionStage;Ljava/lang/String;I)Ljava/util/function/Function;
+      46: invokeinterface #204,  2          // InterfaceMethod java/util/concurrent/CompletionStage.thenCompose:(Ljava/util/function/Function;)Ljava/util/concurrent/CompletionStage;
+      51: invokeinterface #174,  1          // InterfaceMethod java/util/concurrent/CompletionStage.toCompletableFuture:()Ljava/util/concurrent/CompletableFuture;
+      56: areturn
+      57: invokeinterface #174,  1          // InterfaceMethod java/util/concurrent/CompletionStage.toCompletableFuture:()Ljava/util/concurrent/CompletableFuture;
+      62: invokevirtual #207                // Method java/util/concurrent/CompletableFuture.join:()Ljava/lang/Object;
+      65: checkcast     #68                 // class java/lang/String
+      68: astore_1
+      69: ldc           #209                // String asyncFoo after step 1: asyncBar
+      71: invokestatic  #90                 // Method showCurrentStackTrace:(Ljava/lang/String;)V
+      74: aload_0
+      75: aload_1
+      76: ldc           #211                // String 2
+      78: invokespecial #169                // Method asyncBar:(Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletionStage;
+      81: dup
+      82: invokeinterface #174,  1          // InterfaceMethod java/util/concurrent/CompletionStage.toCompletableFuture:()Ljava/util/concurrent/CompletableFuture;
+      87: invokevirtual #178                // Method java/util/concurrent/CompletableFuture.isDone:()Z
+      90: ifne          125
+      93: astore_3
+      94: aload_3
+      95: invokestatic  #184                // InterfaceMethod java/util/function/Function.identity:()Ljava/util/function/Function;
+      98: invokeinterface #188,  2          // InterfaceMethod java/util/concurrent/CompletionStage.exceptionally:(Ljava/util/function/Function;)Ljava/util/concurrent/CompletionStage;
+     103: aload_0
+     104: aload_3
+     105: aload_1
+     106: sipush        2
+     109: invokedynamic #201,  0            // InvokeDynamic #1:apply:(Lfr/an/tests/EaAsyncAwaitAppMain;Ljava/util/concurrent/CompletionStage;Ljava/lang/String;I)Ljava/util/function/Function;
+     114: invokeinterface #204,  2          // InterfaceMethod java/util/concurrent/CompletionStage.thenCompose:(Ljava/util/function/Function;)Ljava/util/concurrent/CompletionStage;
+     119: invokeinterface #174,  1          // InterfaceMethod java/util/concurrent/CompletionStage.toCompletableFuture:()Ljava/util/concurrent/CompletableFuture;
+     124: areturn
+     125: invokeinterface #174,  1          // InterfaceMethod java/util/concurrent/CompletionStage.toCompletableFuture:()Ljava/util/concurrent/CompletableFuture;
+     130: invokevirtual #207                // Method java/util/concurrent/CompletableFuture.join:()Ljava/lang/Object;
+     133: checkcast     #68                 // class java/lang/String
+     136: astore_2
+     137: ldc           #213                // String asyncFoo after step 2: asyncBar
+     139: invokestatic  #90                 // Method showCurrentStackTrace:(Ljava/lang/String;)V
+     142: aload_2
+     143: invokestatic  #216                // Method java/util/concurrent/CompletableFuture.completedFuture:(Ljava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+     146: areturn
+}
