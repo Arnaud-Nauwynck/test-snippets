@@ -1,0 +1,9 @@
+
+TestOrcFile.test1.orc from https://github.com/apache/orc/blob/master/examples/TestOrcFile.test1.orc
+
+weather.avro  from  https://github.com/apache/avro/blob/master/share/test/data/weather.avro
+
+alltypes_plain.parquet from https://github.com/apache/parquet-testing/blob/40379b3c58298fd22589dec7e41748375b5a8e82/data/alltypes_plain.parquet
+   ... INT96 not implemented and is deprecated
+   
+users.parquet from https://github.com/apache/spark/blob/master/examples/src/main/resources/users.parquet
