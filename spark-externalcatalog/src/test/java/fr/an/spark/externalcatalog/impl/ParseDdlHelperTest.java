@@ -11,6 +11,7 @@ import org.apache.spark.sql.types.StructType;
 import org.junit.Assert;
 import org.junit.Test;
 
+import fr.an.dbcatalog.spark.impl.ParseDdlHelper;
 import scala.Option;
 import scala.collection.Seq;
 

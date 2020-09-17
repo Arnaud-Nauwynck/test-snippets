@@ -1,4 +1,4 @@
-package fr.an.spark.externalcatalog.impl;
+package fr.an.dbcatalog.spark.impl;
 
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan;
 import org.apache.spark.sql.execution.SparkSqlParser;
