@@ -22,12 +22,12 @@ import fr.an.dbcatalog.api.exceptions.CatalogRuntimeException;
 import fr.an.dbcatalog.api.exceptions.NoSuchTableCatalogRuntimeException;
 import fr.an.dbcatalog.api.exceptions.TableAlreadyExistsRuntimeException;
 import fr.an.dbcatalog.api.manager.DataLoaderManager;
-import fr.an.dbcatalog.api.manager.DatabaseFunctionsDDLManager;
-import fr.an.dbcatalog.api.manager.DatabaseFunctionsLookup;
-import fr.an.dbcatalog.api.manager.DatabaseTablePartitionsDDLManager;
-import fr.an.dbcatalog.api.manager.DatabaseTablePartitionsLookup;
-import fr.an.dbcatalog.api.manager.DatabaseTablesDDLManager;
-import fr.an.dbcatalog.api.manager.DatabaseTablesLookup;
+import fr.an.dbcatalog.api.manager.FunctionsDDLManager;
+import fr.an.dbcatalog.api.manager.FunctionsLookup;
+import fr.an.dbcatalog.api.manager.TablePartitionsDDLManager;
+import fr.an.dbcatalog.api.manager.TablePartitionsLookup;
+import fr.an.dbcatalog.api.manager.TablesDDLManager;
+import fr.an.dbcatalog.api.manager.TablesLookup;
 import fr.an.dbcatalog.api.manager.DatabasesDDLManager;
 import fr.an.dbcatalog.api.manager.DatabasesLookup;
 import fr.an.dbcatalog.impl.model.DatabaseModel;
@@ -45,18 +45,18 @@ import scala.Option;
  * for Databases / Tables / Partitions / Functions
  */
 @RequiredArgsConstructor
-public class PerManagerAdapterJavaDbCatalog<
+public class LookupsAndDdlsAdapterJavaDbCatalog<
 	TDb extends DatabaseModel, TTable extends TableModel, TPart extends TablePartitionModel, TFunc extends FunctionModel
 	> extends AbstractJavaDbCatalog {
 
-	private final DatabasesLookup<TDb> dbLookup;
-	private final DatabasesDDLManager<TDb> dbDdl;
-	private final DatabaseTablesLookup<TDb, TTable> dbTableLookup;
-	private final DatabaseTablesDDLManager<TDb, TTable> dbTableDdl;
-	private final DatabaseTablePartitionsLookup<TDb, TTable, TPart> tablePartitionsLookup;
-	private final DatabaseTablePartitionsDDLManager<TDb, TTable, TPart> tablePartitionsDdl;
-	private final DatabaseFunctionsLookup<TDb, TFunc> dbFuncsLookup;
-	private final DatabaseFunctionsDDLManager<TDb, TFunc> dbFuncsDdl;
+	private final DatabasesLookup<TDb> dbsLookup;
+	private final DatabasesDDLManager<TDb> dbsDdl;
+	private final TablesLookup<TDb, TTable> dbTablesLookup;
+	private final TablesDDLManager<TDb, TTable> dbTablesDdl;
+	private final TablePartitionsLookup<TDb, TTable, TPart> dbTablePartitionsLookup;
+	private final TablePartitionsDDLManager<TDb, TTable, TPart> dbTablePartitionsDdl;
+	private final FunctionsLookup<TDb, TFunc> dbFuncsLookup;
+	private final FunctionsDDLManager<TDb, TFunc> dbFuncsDdl;
 	private final DataLoaderManager<TDb,TTable> dataLoadManager;
 
 	String currentDatabase = "default";
@@ -73,32 +73,32 @@ public class PerManagerAdapterJavaDbCatalog<
 	@Override
 	public synchronized void createDatabase(CatalogDatabase dbDefinition, boolean ignoreIfExists) {
 		val dbName = dbDefinition.name();
-		val found = dbLookup.findDatabase(dbName);
+		val found = dbsLookup.findDatabase(dbName);
 		if (null != found) {
 	        if (!ignoreIfExists) {
 	        	throw new CatalogRuntimeException("Database already exists '" + dbName + "'");
 	        }
 		} else {
-			val db = dbDdl.createDatabase(dbDefinition, ignoreIfExists);
-			dbLookup.addDatabase(db);
+			val db = dbsDdl.createDatabase(dbDefinition, ignoreIfExists);
+			dbsLookup.addDatabase(db);
 		}
 	}
 
 	@Override
 	public void dropDatabase(String dbName, boolean ignoreIfNotExists, boolean cascade) {
-		val db = dbLookup.findDatabase(dbName);
+		val db = dbsLookup.findDatabase(dbName);
 		if (null != db) {
 			if (!cascade) {
 				// If cascade is false, make sure the database is empty.
-				if (dbTableLookup.hasTable(db)) {
+				if (dbTablesLookup.hasTable(db)) {
 					throw new CatalogRuntimeException("Database '" + dbName + "' is not empty. One or more tables exist.");
 				}
 				if (dbFuncsLookup.hasFunction(db)) {
 					throw new CatalogRuntimeException("Database '" + dbName + "' is not empty. One or more functions exist.");
 				}
 			}
-			dbDdl.dropDatabase(db, ignoreIfNotExists, cascade);
-			dbLookup.removeDatabase(db);
+			dbsDdl.dropDatabase(db, ignoreIfNotExists, cascade);
+			dbsLookup.removeDatabase(db);
 		} else {
 			if (!ignoreIfNotExists) {
 				throw new CatalogRuntimeException("No such database '" + dbName + "'");
@@ -107,14 +107,14 @@ public class PerManagerAdapterJavaDbCatalog<
 	}
 
 	protected TDb getDb(String dbName) {
-		return dbLookup.getDatabase(dbName);
+		return dbsLookup.getDatabase(dbName);
 	}
 
 	@Override
 	public void alterDatabase(CatalogDatabase dbDefinition) {
 		val dbName = dbDefinition.name();
 		val db = getDb(dbName);
-		dbDdl.alterDatabase(db, dbDefinition);
+		dbsDdl.alterDatabase(db, dbDefinition);
 	}
 
 	@Override
@@ -125,18 +125,18 @@ public class PerManagerAdapterJavaDbCatalog<
 
 	@Override
 	public boolean databaseExists(String db) {
-		return dbLookup.databaseExists(db);
+		return dbsLookup.databaseExists(db);
 	}
 
 	@Override
 	public List<String> listDatabases() {
-		val tmpres = dbLookup.listDatabases();
+		val tmpres = dbsLookup.listDatabases();
 		return toSortedList(tmpres);
 	}
 
 	@Override
 	public List<String> listDatabases(String pattern) {
-		val tmpres = dbLookup.listDatabases(pattern);
+		val tmpres = dbsLookup.listDatabases(pattern);
 		return toSortedList(tmpres);
 	}
 
@@ -150,24 +150,24 @@ public class PerManagerAdapterJavaDbCatalog<
 		String dbName = tableId.database().get();
 		val db = getDb(dbName);
 	    val tableName = tableId.table();
-	    val found = dbTableLookup.findTable(db, tableName);
+	    val found = dbTablesLookup.findTable(db, tableName);
 	    if (null != found) {
 	      if (!ignoreIfExists) {
 	        throw new TableAlreadyExistsRuntimeException(dbName, tableName);
 	      }
 	    } else {
-	    	val tbl = dbTableDdl.createTable(db, tableDefinition, ignoreIfExists);
-	    	dbTableLookup.addTable(tbl);
+	    	val tbl = dbTablesDdl.createTable(db, tableDefinition, ignoreIfExists);
+	    	dbTablesLookup.addTable(tbl);
 	    }
 	}
 
 	@Override
 	public void dropTable(String dbName, String tableName, boolean ignoreIfNotExists, boolean purge) {
 		val db = getDb(dbName);
-		val table = dbTableLookup.findTable(db, tableName);
+		val table = dbTablesLookup.findTable(db, tableName);
 		if (null != table) {
-			dbTableDdl.dropTable(db, table, ignoreIfNotExists, purge);
-			dbTableLookup.removeTable(table);
+			dbTablesDdl.dropTable(db, table, ignoreIfNotExists, purge);
+			dbTablesLookup.removeTable(table);
 		} else {
 			if (!ignoreIfNotExists) {
 				throw new NoSuchTableCatalogRuntimeException(dbName, tableName);
@@ -176,21 +176,21 @@ public class PerManagerAdapterJavaDbCatalog<
 	}
 
 	protected TTable getTable(TDb db, String tableName) {
-		return dbTableLookup.getTable(db, tableName);
+		return dbTablesLookup.getTable(db, tableName);
 	}
 
 	protected TTable doGetTable(String dbName, String tableName) {
 		val db = getDb(dbName);
-		return dbTableLookup.getTable(db, tableName);
+		return dbTablesLookup.getTable(db, tableName);
 	}
 
 	@Override
 	public void renameTable(String dbName, String oldTableName, String newTableName) {
 		val db = getDb(dbName);
-		val table = dbTableLookup.getTable(db, oldTableName);
-		dbTableLookup.requireTableNotExists(db, newTableName);
-		val newTable = dbTableDdl.renameTable(db, table, newTableName);
-		dbTableLookup.removePutTable(table, newTable);
+		val table = dbTablesLookup.getTable(db, oldTableName);
+		dbTablesLookup.requireTableNotExists(db, newTableName);
+		val newTable = dbTablesDdl.renameTable(db, table, newTableName);
+		dbTablesLookup.removePutTable(table, newTable);
 	}
 
 	@Override
@@ -201,7 +201,7 @@ public class PerManagerAdapterJavaDbCatalog<
 		val dbName = optDbName.get();
 		val db = getDb(dbName);
 		val table = getTable(db, tableId.table());
-		dbTableDdl.alterTable(db, table, tableDefinition);
+		dbTablesDdl.alterTable(db, table, tableDefinition);
 		
 	    scala.collection.immutable.Map<String,String> updatedProperties = tableDefinition.properties();
 	    		// TODO !!!!
@@ -217,7 +217,7 @@ public class PerManagerAdapterJavaDbCatalog<
 	public void alterTableDataSchema(String dbName, String tableName, StructType newDataSchema) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		dbTableDdl.alterTableDataSchema(db, table, newDataSchema);
+		dbTablesDdl.alterTableDataSchema(db, table, newDataSchema);
 		
 		val defBuilder = new CatalogTableBuilder(table.getSparkTableDefinition());
 		StructType prevPartionSchema = table.getSparkTableDefinition().partitionSchema();
@@ -234,7 +234,7 @@ public class PerManagerAdapterJavaDbCatalog<
 	public void alterTableStats(String dbName, String tableName, CatalogStatistics stats) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		dbTableDdl.alterTableStats(db, table, stats);
+		dbTablesDdl.alterTableStats(db, table, stats);
 		
 		val defBuilder = new CatalogTableBuilder(table.getSparkTableDefinition());
 		defBuilder.setStats(Option.apply(stats));
@@ -257,19 +257,19 @@ public class PerManagerAdapterJavaDbCatalog<
 	@Override
 	public boolean tableExists(String dbName, String tableName) {
 		val db = getDb(dbName);
-		return dbTableLookup.tableExists(db, tableName);
+		return dbTablesLookup.tableExists(db, tableName);
 	}
 
 	@Override
 	public List<String> listTables(String dbName) {
 		val db = getDb(dbName);
-		return dbTableLookup.listTables(db);
+		return dbTablesLookup.listTables(db);
 	}
 
 	@Override
 	public List<String> listTables(String dbName, String pattern) {
 		val db = getDb(dbName);
-		return dbTableLookup.listTables(db, pattern);
+		return dbTablesLookup.listTables(db, pattern);
 	}
 
 	@Override
@@ -287,8 +287,8 @@ public class PerManagerAdapterJavaDbCatalog<
 	public void createPartitions(String dbName, String tableName, List<CatalogTablePartition> parts, boolean ignoreIfExists) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		val partModels = tablePartitionsDdl.createPartitions(db, table, parts, ignoreIfExists);
-		tablePartitionsLookup.addPartitions(partModels);
+		val partModels = dbTablePartitionsDdl.createPartitions(db, table, parts, ignoreIfExists);
+		dbTablePartitionsLookup.addPartitions(partModels);
 	}
 
 	@Override
@@ -296,10 +296,10 @@ public class PerManagerAdapterJavaDbCatalog<
 			boolean purge, boolean retainData) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		val partModels = tablePartitionsLookup.getPartitions(db, table, partSpecs);
-		tablePartitionsDdl.dropPartitions(db, table, partModels,
+		val partModels = dbTablePartitionsLookup.getPartitions(db, table, partSpecs);
+		dbTablePartitionsDdl.dropPartitions(db, table, partModels,
 				ignoreIfNotExists, purge, retainData);
-		tablePartitionsLookup.removePartitions(partModels);
+		dbTablePartitionsLookup.removePartitions(partModels);
 	}
 
 	@Override
@@ -307,24 +307,23 @@ public class PerManagerAdapterJavaDbCatalog<
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
 		validate(oldPartSpecs.size() == newSpecs.size(), "number of old and new partition specs differ");
-		val oldPartModels = tablePartitionsLookup.getPartitions(db, table, oldPartSpecs);
-//	    requirePartitionsNotExist(db, table, newSpecs)
-		List<TPart> newPartModels = tablePartitionsDdl.renamePartitions(db, table, oldPartModels, newSpecs);
-		tablePartitionsLookup.removeAddPartitions(oldPartModels, newPartModels);
+		val oldPartModels = dbTablePartitionsLookup.getPartitions(db, table, oldPartSpecs);
+		dbTablePartitionsLookup.requirePartitionsNotExist(db, table, newSpecs);
+		List<TPart> newPartModels = dbTablePartitionsDdl.renamePartitions(db, table, oldPartModels, newSpecs);
+		dbTablePartitionsLookup.removeAddPartitions(oldPartModels, newPartModels);
 	}
 
 	@Override
 	public void alterPartitions(String dbName, String tableName, List<CatalogTablePartition> partDefs) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		val partModels = tablePartitionsLookup.getPartitionByDefs(db, table, partDefs);
-		tablePartitionsDdl.alterPartitions(db, table, partModels, partDefs);
+		val partModels = dbTablePartitionsLookup.getPartitionByDefs(db, table, partDefs);
+		dbTablePartitionsDdl.alterPartitions(db, table, partModels, partDefs);
 		
-		int i = 0;
-		for(val m : partModels) {
+		for(int i = 0, len = partDefs.size(); i < len; i++) {
 			val partDef = partDefs.get(i);
+			val m = partModels.get(i);
 			m.setSparkDefinition(partDef);
-			i++;
 		}
 	}
 
@@ -332,15 +331,15 @@ public class PerManagerAdapterJavaDbCatalog<
 	public CatalogTablePartition getPartition(String dbName, String tableName, PartitionSpec spec) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		val tmpres = tablePartitionsLookup.getPartition(db, table, spec);
+		val tmpres = dbTablePartitionsLookup.getPartition(db, table, spec);
 		return tmpres.getSparkDefinition();
 	}
 
 	@Override
-	public List<CatalogTablePartition> listPartitions(String dbName, String tableName, PartitionSpec spec) {
+	public List<CatalogTablePartition> listPartitions(String dbName, String tableName, PartitionSpec partialSpec) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		val tmpres = tablePartitionsLookup.listPartitions(db, table, spec);
+		val tmpres = dbTablePartitionsLookup.listPartitions(db, table, partialSpec);
 		return ListUtils.map(tmpres, x -> x.getSparkDefinition());
 	}
 
@@ -348,7 +347,7 @@ public class PerManagerAdapterJavaDbCatalog<
 	public List<String> listPartitionNames(String dbName, String tableName, PartitionSpec spec) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		return tablePartitionsLookup.listPartitionNames(db, table, spec);
+		return dbTablePartitionsLookup.listPartitionNames(db, table, spec);
 	}
 
 	@Override
@@ -356,7 +355,7 @@ public class PerManagerAdapterJavaDbCatalog<
 			String defaultTimeZoneId) {
 		val db = getDb(dbName);
 		val table = getTable(db, tableName);
-		val tmpres = tablePartitionsLookup.listPartitionsByFilter(db, table, predicates, defaultTimeZoneId);
+		val tmpres = dbTablePartitionsLookup.listPartitionsByFilter(db, table, predicates, defaultTimeZoneId);
 		return ListUtils.map(tmpres, x -> x.getSparkDefinition());
 	}
 

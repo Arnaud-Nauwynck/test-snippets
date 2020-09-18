@@ -5,10 +5,12 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import fr.an.dbcatalog.spark.util.ScalaCollUtils;
+import lombok.Getter;
 import lombok.val;
 
 // PartitionSpec
 public class PartitionSpec {
+	@Getter
 	Map<String,String> data;
 
 	public PartitionSpec(Map<String, String> data) {
@@ -20,6 +22,9 @@ public class PartitionSpec {
 		return new PartitionSpec(javaSpec);
 	}
 	
+	public boolean isEmpty() {
+		return data.isEmpty();
+	}
 
 	@Override
 	public int hashCode() {

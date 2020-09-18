@@ -17,7 +17,7 @@ import lombok.val;
 /**
  * part of AbstractJavaDbCatalog, for table partitions
  */
-public abstract class DatabaseTablePartitionsLookup<TDb extends DatabaseModel,TTable extends TableModel,TPart extends TablePartitionModel> {
+public abstract class TablePartitionsLookup<TDb extends DatabaseModel,TTable extends TableModel,TPart extends TablePartitionModel> {
 
 	public abstract TPart findPartition(TDb db, TTable table,
 			PartitionSpec spec);
@@ -52,8 +52,8 @@ public abstract class DatabaseTablePartitionsLookup<TDb extends DatabaseModel,TT
 	}
 
 	public List<String> listPartitionNames(TDb db, TTable table,
-			PartitionSpec spec) {
-		val tmpres = listPartitions(db, table, spec);
+			PartitionSpec partialSpec) {
+		val tmpres = listPartitions(db, table, partialSpec);
 		return ListUtils.map(tmpres, x -> x.getPartitionName());
 	}
 

@@ -187,16 +187,16 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 	}
 
 	@Override
-	public Seq<String> listPartitionNames(String db, String table, scala.Option<scala.collection.immutable.Map<String, String>> spec) {
-		val jspec = spec.isDefined()? toJavaPartSpec(spec.get()) : null;
-		val tmpres = delegate.listPartitionNames(db, table, jspec);
+	public Seq<String> listPartitionNames(String db, String table, scala.Option<scala.collection.immutable.Map<String, String>> partialSpec) {
+		val jpartialSpec = partialSpec.isDefined()? toJavaPartSpec(partialSpec.get()) : null;
+		val tmpres = delegate.listPartitionNames(db, table, jpartialSpec);
 		return toScalaSeq(tmpres);
 	}
 
 	@Override
-	public Seq<CatalogTablePartition> listPartitions(String db, String table, scala.Option<scala.collection.immutable.Map<String, String>> spec) {
-		val jspec = spec.isDefined()? toJavaPartSpec(spec.get()) : null;
-		val tmpres = delegate.listPartitions(db, table, jspec);
+	public Seq<CatalogTablePartition> listPartitions(String db, String table, scala.Option<scala.collection.immutable.Map<String, String>> partialSpec) {
+		val jpartialSpec = partialSpec.isDefined()? toJavaPartSpec(partialSpec.get()) : null;
+		val tmpres = delegate.listPartitions(db, table, jpartialSpec);
 		return toScalaSeq(tmpres);
 	}
 

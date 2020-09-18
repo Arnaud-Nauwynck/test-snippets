@@ -17,37 +17,62 @@ import org.apache.spark.sql.types.StructType;
 
 import fr.an.dbcatalog.api.PartitionSpec;
 import fr.an.dbcatalog.api.exceptions.CatalogWrappedRuntimeException;
-import fr.an.dbcatalog.api.manager.DatabaseFunctionsDDLManager;
-import fr.an.dbcatalog.api.manager.DatabaseTablePartitionsDDLManager;
-import fr.an.dbcatalog.api.manager.DatabaseTablesDDLManager;
+import fr.an.dbcatalog.api.manager.FunctionsDDLManager;
+import fr.an.dbcatalog.api.manager.TablePartitionsDDLManager;
+import fr.an.dbcatalog.api.manager.TablesDDLManager;
 import fr.an.dbcatalog.api.manager.DatabasesDDLManager;
 import fr.an.dbcatalog.impl.model.DatabaseModel;
 import fr.an.dbcatalog.impl.model.FunctionModel;
 import fr.an.dbcatalog.impl.model.TableModel;
 import fr.an.dbcatalog.impl.model.TablePartitionModel;
+import lombok.Getter;
 import lombok.val;
 import scala.Option;
 
-public class InMemoryManagers {
+/**
+ * class containing default implementations of DDLs for Databases | Tables | Partitions | Functions
+ */
+public class InMemoryDbCatalogManager {
+
+	private Configuration hadoopConfig;
+
+	@Getter
+	InMemoryDatabasesDDLManager dbsDdl = new InMemoryDatabasesDDLManager();
+
+	@Getter
+	InMemoryDatabaseTableDDLManager dbTablesDdl = new InMemoryDatabaseTableDDLManager();
+
+	@Getter
+	InMemoryTablePartitionsDDLManager dbTablePartitionsDdl = new InMemoryTablePartitionsDDLManager();
+	
+	@Getter
+	InMemoryDatabaseFunctionsDDLManager dbFuncsDdl = new InMemoryDatabaseFunctionsDDLManager();
 
 	// --------------------------------------------------------------------------------------------
 
+	public InMemoryDbCatalogManager(Configuration hadoopConfig) {
+		this.hadoopConfig = hadoopConfig;
+	}
+
+	// --------------------------------------------------------------------------------------------
+
+	/**
+	 * implementation of DatabasesDDLManager, using in-memory DatabaseModel
+	 */
 	public class InMemoryDatabasesDDLManager extends DatabasesDDLManager<DatabaseModel> {
 		
-		private Configuration hadoopConfig;
-
 		@Override
 		public DatabaseModel createDatabase(CatalogDatabase dbDefinition, boolean ignoreIfExists) {
+			String dbName = dbDefinition.name();
 			try {
 				val location = new Path(dbDefinition.locationUri());
 				val fs = location.getFileSystem(hadoopConfig);
 				fs.mkdirs(location);
 			} catch (IOException e) {
-				throw new CatalogWrappedRuntimeException("Unable to create database " + dbDefinition.name() + " as failed " +
+				throw new CatalogWrappedRuntimeException("Unable to create database " + dbName + " as failed " +
 						"to create its directory " + dbDefinition.locationUri(), e);
 			}
-			val dbModel = new DatabaseModel();
-			dbModel.setSparkDbDefinition(dbDefinition);
+			val dbModel = new DatabaseModel(dbName, dbDefinition);
 			return dbModel;
 		}
 
@@ -72,8 +97,12 @@ public class InMemoryManagers {
 
 	}
 
+	// --------------------------------------------------------------------------------------------
 
-	public abstract class InMemoryDatabaseTableDDLManager extends DatabaseTablesDDLManager<DatabaseModel,TableModel> {
+	/**
+	 * implementation of DatabaseTablesDDLManager using in-memory TableModel
+	 */
+	public class InMemoryDatabaseTableDDLManager extends TablesDDLManager<DatabaseModel,TableModel> {
 
 		@Override
 		public TableModel createTable(DatabaseModel db, CatalogTable tableDefinition, boolean ignoreIfExists) {
@@ -192,42 +221,15 @@ public class InMemoryManagers {
 			// TODO Auto-generated method stub
 			
 		}
-		
-
-	}
-	
-	// --------------------------------------------------------------------------------------------
-
-	public class InMemoryDatabaseFunctionsDDLManager extends DatabaseFunctionsDDLManager<DatabaseModel, FunctionModel> {
-
-		public FunctionModel createFunction(DatabaseModel db, CatalogFunction funcDef) {
-			String funcName = funcDef.identifier().funcName();
-			return new FunctionModel(db, funcName, funcDef);
-		}
-
-		public void dropFunction(DatabaseModel db, FunctionModel func) {
-			// do nothing
-		}
-
-		public void alterFunction(DatabaseModel db, FunctionModel func, CatalogFunction funcDef) {
-			func.setSparkFunctionDefinition(funcDef);			
-		}
-
-		public FunctionModel renameFunction(DatabaseModel db, FunctionModel func, String newFuncName) {
-			String dbName = db.getName();
-			val f = func.getSparkFunctionDefinition();
-			FunctionIdentifier newId = new FunctionIdentifier(newFuncName, Option.apply(dbName));
-			val newSparkFunc = new CatalogFunction(newId, f.className(), 
-					f.resources() // copy?
-					);
-			return new FunctionModel(db, newFuncName, newSparkFunc);
-		}
 
 	}
 
 	// --------------------------------------------------------------------------------------------
 
-	public class InMemoryTablePartitionDDLManager extends DatabaseTablePartitionsDDLManager<DatabaseModel, TableModel, TablePartitionModel> {
+	/**
+	 * implementation of DatabaseTablePartitionsDDLManager using in-memory TablePartitionModel
+	 */
+	public class InMemoryTablePartitionsDDLManager extends TablePartitionsDDLManager<DatabaseModel, TableModel, TablePartitionModel> {
 
 		@Override
 		public List<TablePartitionModel> createPartitions(DatabaseModel db, TableModel table,
@@ -283,7 +285,39 @@ public class InMemoryManagers {
 			
 		}
 
-		
+	}
+
+	
+	// --------------------------------------------------------------------------------------------
+
+	/**
+	 * implementation of DatabaseFunctionsDDLManager using in-memory FunctionModel
+	 */
+	public class InMemoryDatabaseFunctionsDDLManager extends FunctionsDDLManager<DatabaseModel, FunctionModel> {
+
+		public FunctionModel createFunction(DatabaseModel db, CatalogFunction funcDef) {
+			String funcName = funcDef.identifier().funcName();
+			return new FunctionModel(db, funcName, funcDef);
+		}
+
+		public void dropFunction(DatabaseModel db, FunctionModel func) {
+			// do nothing
+		}
+
+		public void alterFunction(DatabaseModel db, FunctionModel func, CatalogFunction funcDef) {
+			func.setSparkFunctionDefinition(funcDef);			
+		}
+
+		public FunctionModel renameFunction(DatabaseModel db, FunctionModel func, String newFuncName) {
+			String dbName = db.getName();
+			val f = func.getSparkFunctionDefinition();
+			FunctionIdentifier newId = new FunctionIdentifier(newFuncName, Option.apply(dbName));
+			val newSparkFunc = new CatalogFunction(newId, f.className(), 
+					f.resources() // copy?
+					);
+			return new FunctionModel(db, newFuncName, newSparkFunc);
+		}
 
 	}
+
 }

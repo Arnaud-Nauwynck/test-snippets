@@ -7,7 +7,7 @@ import fr.an.dbcatalog.impl.model.DatabaseModel;
 /**
  * part of AbstractJavaDbCatalog, for functions DDL
  */
-public abstract class DatabaseFunctionsDDLManager<TDb extends DatabaseModel, TFunc> {
+public abstract class FunctionsDDLManager<TDb extends DatabaseModel, TFunc> {
 
 	public abstract TFunc createFunction(TDb db, CatalogFunction funcDef);
 

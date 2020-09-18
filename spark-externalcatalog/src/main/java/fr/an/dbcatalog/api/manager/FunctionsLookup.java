@@ -9,7 +9,7 @@ import fr.an.dbcatalog.spark.util.SparkPatternUtils;
 /**
  * part of AbstractJavaDbCatalog, for functions lookup by name
  */
-public abstract class DatabaseFunctionsLookup<TDb extends DatabaseModel,TFunc> {
+public abstract class FunctionsLookup<TDb extends DatabaseModel,TFunc> {
 
 	public abstract TFunc findFunction(TDb db, String funcName);
 

@@ -12,7 +12,7 @@ import fr.an.dbcatalog.impl.model.TablePartitionModel;
 /**
  * part of AbstractJavaDbCatalog, for table partitions DDL
  */
-public abstract class DatabaseTablePartitionsDDLManager<TDb extends DatabaseModel,TTable extends TableModel, TPart extends TablePartitionModel> {
+public abstract class TablePartitionsDDLManager<TDb extends DatabaseModel,TTable extends TableModel, TPart extends TablePartitionModel> {
 	
 	public abstract List<TPart> createPartitions(TDb db, TTable table, 
 			List<CatalogTablePartition> parts,

@@ -11,7 +11,7 @@ import fr.an.dbcatalog.impl.model.TableModel;
  * part of AbstractJavaDbCatalog, for table DDL
  *
  */
-public abstract class DatabaseTablesDDLManager<TDb extends DatabaseModel,TTable extends TableModel> {
+public abstract class TablesDDLManager<TDb extends DatabaseModel,TTable extends TableModel> {
 	
 	public abstract TTable createTable(TDb db, CatalogTable tableDefinition, boolean ignoreIfExists);
 

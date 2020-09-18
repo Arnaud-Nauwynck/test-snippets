@@ -12,7 +12,7 @@ import lombok.val;
  * part of AbstractJavaDbCatalog, for table lookup by name (on database)
  *
  */
-public abstract class DatabaseTablesLookup<TDb extends DatabaseModel,TTable> {
+public abstract class TablesLookup<TDb extends DatabaseModel,TTable> {
 
 	public abstract TTable findTable(TDb db, String tableName);
 
