@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/test-spark-deltalake/src/main/java/fr/an/tests/testsparkxml/AppMain.java"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="1"/>
+    </listAttribute>
+    <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+        <mapEntry key="HADOOP_CONF_DIR" value="D:\arn\hadoop\conf-nohdfs"/>
+        <mapEntry key="HADOOP_HOME" value="D:\arn\hadoop\hadoop-3.2.1"/>
+        <mapEntry key="HADOOP_OPTS" value="-Djava.library.path=D:\arn\hadoop\hadoop-3.2.1\lib\native"/>
+    </mapAttribute>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_EXCLUDE_TEST_CODE" value="true"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="fr.an.tests.testsparkxml.AppMain"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="test-spark-xml"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="test-spark-xml"/>
+</launchConfiguration>

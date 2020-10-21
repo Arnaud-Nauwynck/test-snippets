@@ -1,0 +1,9 @@
+{"namespace": "fr.an.tests.testsparkxml.avro",
+ "type": "record",
+ "name": "User",
+ "fields": [
+     {"name": "firstName", "type": "string"},
+     {"name": "lastName", "type": "string"},
+     {"name": "birthYear",  "type": ["int", "null"]}
+ ]
+}
