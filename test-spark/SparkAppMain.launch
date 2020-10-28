@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
-<stringAttribute key="bad_container_name" value="SparkAppMain"/>
-<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/tests-spark/src/main/java/fr/an/tests/testspark/SparkAppMain.java"/>
-</listAttribute>
-<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
-<listEntry value="1"/>
-</listAttribute>
-<mapAttribute key="org.eclipse.debug.core.environmentVariables">
-<mapEntry key="HADOOP_CONF_DIR" value="D:\arn\hadoop\conf-localfs"/>
-<mapEntry key="HADOOP_HOME" value="D:\arn\hadoop\hadoop-3.2.1"/>
-<mapEntry key="HIVE_HOME" value="D:\arn\hadoop\apache-hive-3.1.2"/>
-<mapEntry key="SPARK_HOME" value="D:\arn\hadoop\spark-3.0.0-preview-bin-hadoop3.2"/>
-</mapAttribute>
-<booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
-<stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="fr.an.tests.testspark.SparkAppMain"/>
-<stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="tests-spark"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="tests-spark"/>
-<stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx900M -Xms200m"/>
+    <stringAttribute key="bad_container_name" value="SparkAppMain"/>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+        <listEntry value="/tests-spark/src/main/java/fr/an/tests/testspark/SparkAppMain.java"/>
+    </listAttribute>
+    <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+        <listEntry value="1"/>
+    </listAttribute>
+    <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+        <mapEntry key="HADOOP_CONF_DIR" value="D:\arn\hadoop\conf-localfs"/>
+        <mapEntry key="HADOOP_HOME" value="D:\arn\hadoop\hadoop-3.2.1"/>
+        <mapEntry key="HIVE_HOME" value="D:\arn\hadoop\apache-hive-3.1.2"/>
+        <mapEntry key="SPARK_HOME" value="D:\arn\hadoop\spark-3.0.0-preview-bin-hadoop3.2"/>
+    </mapAttribute>
+    <booleanAttribute key="org.eclipse.jdt.launching.ATTR_USE_START_ON_FIRST_THREAD" value="true"/>
+    <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="fr.an.tests.testspark.SparkAppMain"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="tests-spark"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="tests-spark"/>
+    <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xmx900M -Xms200m"/>
 </launchConfiguration>

@@ -77,14 +77,16 @@ public class SparkAppMain {
 				hadoopFs.setWriteChecksum(false);
 			}
 			
-			doRunSparkContext(spark);
+			checkDirThenRecursiveConcatFilesForDir(spark);
 		
 		} finally {
 			spark.stop();
 		}
 	}
 
-	private void doRunSparkContext(SparkSession spark) throws Exception {
+	// --------------------------------------------------------------------------------------------
+
+	private void checkDirThenRecursiveConcatFilesForDir(SparkSession spark) throws Exception {
 		Path inputPath = new Path(baseDir + "/" + baseInputDir);
 		Path outputPath = new Path(baseDir + "/" + baseOutputDir);
 		
