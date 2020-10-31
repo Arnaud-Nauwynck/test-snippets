@@ -1,0 +1,63 @@
+
+	public static PartitionSpecDTO fromScalaPartSpec(scala.collection.immutable.Map<String, String> spec) {
+		Map<String,String> javaSpec = ScalaCollUtils.mapAsJavaMap(spec);
+		return new PartitionSpecDTO(javaSpec);
+	}
+
+
+
+	public void alterTable(CatalogTableDTO tableDefinition) {
+...		
+	    scala.collection.immutable.Map<String,String> updatedProperties = tableDefinition.properties();
+	    		// TODO !!!!
+//	    		(tableDefinition.properties()).filter(
+//	    		ScalaCollUtils.toScalaFunc(kv -> kv._1 != "comment"));
+	    val defBuilder = new CatalogTableBuilder(table.getSparkTableDefinition());
+	    defBuilder.setProperties(updatedProperties);
+	    val newTableDefinition = defBuilder.build();
+		table.setTableDefinition(newTableDefinition);
+	}
+
+	@Override
+	public void alterTableDataSchema(String dbName, String tableName, StructType newDataSchema) {
+...		
+		val defBuilder = new CatalogTableBuilder(table.getSparkTableDefinition());
+		StructType prevPartionSchema = table.getSparkTableDefinition().partitionSchema();
+		List<StructField> newFields = new ArrayList<>();
+		newFields.addAll(Arrays.asList(newDataSchema.fields()));
+		newFields.addAll(Arrays.asList(prevPartionSchema.fields()));
+		val newSchema = new StructType(newFields.toArray(new StructField[newFields.size()]));
+		defBuilder.setSchema(newSchema);
+		val newSparkTableDef = defBuilder.build();
+		table.setSparkTableDefinition(newSparkTableDef);
+	}
+
+	@Override
+	public void alterTableStats(String dbName, String tableName, CatalogStatisticsDTO stats) {
+..		
+		val defBuilder = new CatalogTableBuilder(table.getSparkTableDefinition());
+		defBuilder.setStats(Option.apply(stats));
+		val newSparkTableDef = defBuilder.build();
+		table.setSparkTableDefinition(newSparkTableDef);
+	}
+
+	public void alterPartitions(String dbName, String tableName, 
+			List<CatalogTablePartitionDTO> partDefs) {
+..
+		for(int i = 0, len = partDefs.size(); i < len; i++) {
+			val partDef = partDefs.get(i);
+			val m = partModels.get(i);
+			m.setSparkDefinition(partDef);
+		}
+	}
+	
+	
+				val newSparkTableDefinition = new CatalogTable(newIdentifier, 
+					t.tableType(), newStorage, t.schema(), t.provider(), t.partitionColumnNames(), 
+					t.bucketSpec(), t.owner(), 
+					t.createTime(), t.lastAccessTime(), t.createVersion(), 
+					t.properties(), t.stats(), t.viewText(), t.comment(), 
+					t.unsupportedFeatures(), t.tracksPartitionsInCatalog(), t.schemaPreservesCase(), 
+					t.ignoredProperties(), t.viewOriginalText());
+
+
