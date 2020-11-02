@@ -21,7 +21,7 @@ import lombok.val;
  * delegating to corresponding model class DatabaseModel, TableModel
  * => to in-memory Map get() / keySet() / put() / remove() methods
  */
-public class ModelDelegateDbCatalogLookup {
+public class ModelDelegateCatalogLookup {
 
 	private final CatalogModel dbCatalogModel;
 	
@@ -39,7 +39,7 @@ public class ModelDelegateDbCatalogLookup {
 
 	// --------------------------------------------------------------------------------------------
 
-	public ModelDelegateDbCatalogLookup(CatalogModel dbCatalogModel) {
+	public ModelDelegateCatalogLookup(CatalogModel dbCatalogModel) {
 		this.dbCatalogModel = dbCatalogModel;
 	}
 

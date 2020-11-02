@@ -2,16 +2,14 @@ package fr.an.metastore.api.manager;
 
 
 import fr.an.metastore.api.dto.CatalogTableDTO;
-import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
-import fr.an.metastore.impl.model.DatabaseModel;
-import fr.an.metastore.impl.model.TableModel;
+import fr.an.metastore.api.dto.StructTypeDTO;
 
 /**
  * part of AbstractJavaDbCatalog, for table DDL
  *
  */
-public abstract class TablesDDLManager<TDb extends DatabaseModel,TTable extends TableModel> {
+public abstract class TablesDDLManager<TDb,TTable> {
 	
 	public abstract TTable createTable(TDb db, CatalogTableDTO tableDefinition, boolean ignoreIfExists);
 

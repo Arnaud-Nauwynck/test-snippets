@@ -31,7 +31,7 @@ import lombok.val;
 /**
  * class containing default implementations of DDLs for Databases | Tables | Partitions | Functions
  */
-public class InMemoryDbCatalogDDLManager {
+public class InMemoryCatalogDDLManager {
 
 	private Configuration hadoopConfig;
 
@@ -52,7 +52,7 @@ public class InMemoryDbCatalogDDLManager {
 
 	// --------------------------------------------------------------------------------------------
 
-	public InMemoryDbCatalogDDLManager(CatalogModel catalog, Configuration hadoopConfig) {
+	public InMemoryCatalogDDLManager(CatalogModel catalog, Configuration hadoopConfig) {
 		this.catalog = catalog;
 		this.hadoopConfig = hadoopConfig;
 	}

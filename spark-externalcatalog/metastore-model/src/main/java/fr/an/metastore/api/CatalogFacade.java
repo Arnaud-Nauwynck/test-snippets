@@ -8,7 +8,6 @@ import fr.an.metastore.api.dto.CatalogFunctionDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
 import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
-import fr.an.metastore.api.dto.PartitionSpecDTO;
 import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
@@ -20,7 +19,7 @@ import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
  * and DTO or Immutable Value objects both for params and return types
  *
  */
-public abstract class AbstractJavaDbCatalog {
+public abstract class CatalogFacade {
 	
 	// --------------------------------------------------------------------------
 	// Databases

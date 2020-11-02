@@ -4,14 +4,11 @@ import java.util.List;
 
 import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
-import fr.an.metastore.impl.model.DatabaseModel;
-import fr.an.metastore.impl.model.TableModel;
-import fr.an.metastore.impl.model.TablePartitionModel;
 
 /**
  * part of AbstractJavaDbCatalog, for table partitions DDL
  */
-public abstract class TablePartitionsDDLManager<TDb extends DatabaseModel,TTable extends TableModel, TPart extends TablePartitionModel> {
+public abstract class TablePartitionsDDLManager<TDb,TTable,TPart> {
 	
 	public abstract List<TPart> createPartitions(TDb db, TTable table, 
 			List<CatalogTablePartitionDTO> parts,

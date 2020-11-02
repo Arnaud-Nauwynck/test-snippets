@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
-import fr.an.metastore.api.AbstractJavaDbCatalog;
+import fr.an.metastore.api.CatalogFacade;
 import fr.an.metastore.api.dto.CatalogDatabaseDTO;
 import fr.an.metastore.api.dto.CatalogFunctionDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO;
@@ -37,27 +37,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 /**
- * implementation of AbstractJavaDbCatalog, redispatching to Lookup/DDL managers 
+ * implementation of CatalogFacade, redispatching to Lookup/DDL managers 
  * for Databases / Tables / Partitions / Functions
  */
 @RequiredArgsConstructor
-public class LookupsAndDdlsAdapterJavaDbCatalog<
-	TDb extends DatabaseModel, 
-	TTable extends TableModel, 
-	TPart extends TablePartitionModel, 
-	TFunc extends FunctionModel
-	> extends AbstractJavaDbCatalog {
+public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
 
-	private final CatalogModel2DtoConverter<TDb, TTable, TPart, TFunc> dtoConverter;
-	private final DatabasesLookup<TDb> dbsLookup;
-	private final DatabasesDDLManager<TDb> dbsDdl;
-	private final TablesLookup<TDb, TTable> dbTablesLookup;
-	private final TablesDDLManager<TDb, TTable> dbTablesDdl;
-	private final TablePartitionsLookup<TDb, TTable, TPart> dbTablePartitionsLookup;
-	private final TablePartitionsDDLManager<TDb, TTable, TPart> dbTablePartitionsDdl;
-	private final FunctionsLookup<TDb, TFunc> dbFuncsLookup;
-	private final FunctionsDDLManager<TDb, TFunc> dbFuncsDdl;
-	private final DataLoaderManager<TDb,TTable,TPart> dataLoaderManager;
+	private final CatalogModel2DtoConverter dtoConverter;
+	private final DatabasesLookup<DatabaseModel> dbsLookup;
+	private final DatabasesDDLManager<DatabaseModel> dbsDdl;
+	private final TablesLookup<DatabaseModel, TableModel> dbTablesLookup;
+	private final TablesDDLManager<DatabaseModel, TableModel> dbTablesDdl;
+	private final TablePartitionsLookup<DatabaseModel, TableModel, TablePartitionModel> dbTablePartitionsLookup;
+	private final TablePartitionsDDLManager<DatabaseModel, TableModel, TablePartitionModel> dbTablePartitionsDdl;
+	private final FunctionsLookup<DatabaseModel, FunctionModel> dbFuncsLookup;
+	private final FunctionsDDLManager<DatabaseModel, FunctionModel> dbFuncsDdl;
+	private final DataLoaderManager<DatabaseModel,TableModel,TablePartitionModel> dataLoaderManager;
 
 	String currentDatabase = "default";
 
@@ -105,19 +100,19 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 		}
 	}
 
-	protected TDb getDb(String dbName) {
+	protected DatabaseModel geDatabaseModel(String dbName) {
 		return dbsLookup.getDatabase(dbName);
 	}
 
 	@Override
 	public void alterDatabase(String dbName, ImmutableCatalogDatabaseDef dbDef) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		dbsDdl.alterDatabase(db, dbDef);
 	}
 
 	@Override
 	public CatalogDatabaseDTO getDatabase(String dbName) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		return dtoConverter.toDbDTO(db);
 	}
 
@@ -146,7 +141,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	public void createTable(CatalogTableDTO tableDefinition, boolean ignoreIfExists) {
 		val tableId = tableDefinition.getIdentifier();
 		String dbName = tableId.database;
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 	    val tableName = tableId.table;
 	    val found = dbTablesLookup.findTable(db, tableName);
 	    if (null != found) {
@@ -161,7 +156,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 
 	@Override
 	public void dropTable(String dbName, String tableName, boolean ignoreIfNotExists, boolean purge) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = dbTablesLookup.findTable(db, tableName);
 		if (null != table) {
 			dbTablesDdl.dropTable(db, table, ignoreIfNotExists, purge);
@@ -173,18 +168,18 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 		}
 	}
 
-	protected TTable getTable(TDb db, String tableName) {
+	protected TableModel getTable(DatabaseModel db, String tableName) {
 		return dbTablesLookup.getTable(db, tableName);
 	}
 
-	protected TTable doGetTable(String dbName, String tableName) {
-		val db = getDb(dbName);
+	protected TableModel dogetTable(String dbName, String tableName) {
+		val db = geDatabaseModel(dbName);
 		return dbTablesLookup.getTable(db, tableName);
 	}
 
 	@Override
 	public void renameTable(String dbName, String oldTableName, String newTableName) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = dbTablesLookup.getTable(db, oldTableName);
 		dbTablesLookup.requireTableNotExists(db, newTableName);
 		val newTable = dbTablesDdl.renameTable(db, table, newTableName);
@@ -196,7 +191,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 		val tableId = tableDefinition.getIdentifier();
 		String dbName = tableId.database;
 		validate(dbName != null, "table database name not set");
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableId.table);
 		dbTablesDdl.alterTable(db, table, tableDefinition);
 	}
@@ -204,51 +199,51 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	@Override
 	public void alterTableDataSchema(String dbName, String tableName, 
 			StructTypeDTO newDataSchema) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		dbTablesDdl.alterTableDataSchema(db, table, newDataSchema);
 	}
 
 	@Override
 	public void alterTableStats(String dbName, String tableName, CatalogStatisticsDTO stats) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		dbTablesDdl.alterTableStats(db, table, stats);
 	}
 
 	@Override
 	public CatalogTableDTO getTable(String db, String table) {
-		val t = doGetTable(db, table);
+		val t = dogetTable(db, table);
 		return dtoConverter.toTableDTO(t);
 	}
 
 	@Override
 	public List<CatalogTableDTO> getTablesByName(String dbName, List<String> tableNames) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		return MetastoreListUtils.map(tableNames, n -> dtoConverter.toTableDTO(getTable(db, n)));
 	}
 
 	@Override
 	public boolean tableExists(String dbName, String tableName) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		return dbTablesLookup.tableExists(db, tableName);
 	}
 
 	@Override
 	public List<String> listTables(String dbName) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		return dbTablesLookup.listTables(db);
 	}
 
 	@Override
 	public List<String> listTables(String dbName, String pattern) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		return dbTablesLookup.listTables(db, pattern);
 	}
 
 	@Override
 	public void loadTable(String dbName, String tableName, String loadPath, boolean isOverwrite, boolean isSrcLocal) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		dataLoaderManager.loadTable(db, table, loadPath, isOverwrite, isSrcLocal);
 	}
@@ -260,7 +255,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	@Override
 	public void createPartitions(String dbName, String tableName, 
 			List<CatalogTablePartitionDTO> parts, boolean ignoreIfExists) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val partModels = dbTablePartitionsDdl.createPartitions(db, table, parts, ignoreIfExists);
 		dbTablePartitionsLookup.addPartitions(partModels);
@@ -270,7 +265,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	public void dropPartitions(String dbName, String tableName, 
 				List<ImmutablePartitionSpec> partSpecs, boolean ignoreIfNotExists,
 				boolean purge, boolean retainData) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val partModels = dbTablePartitionsLookup.getPartitions(db, table, partSpecs);
 		dbTablePartitionsDdl.dropPartitions(db, table, partModels,
@@ -282,19 +277,19 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	public void renamePartitions(String dbName, String tableName, 
 				List<ImmutablePartitionSpec> oldPartSpecs, 
 				List<ImmutablePartitionSpec> newSpecs) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		validate(oldPartSpecs.size() == newSpecs.size(), "number of old and new partition specs differ");
 		val oldPartModels = dbTablePartitionsLookup.getPartitions(db, table, oldPartSpecs);
 		dbTablePartitionsLookup.requirePartitionsNotExist(db, table, newSpecs);
-		List<TPart> newPartModels = dbTablePartitionsDdl.renamePartitions(db, table, oldPartModels, newSpecs);
+		List<TablePartitionModel> newPartModels = dbTablePartitionsDdl.renamePartitions(db, table, oldPartModels, newSpecs);
 		dbTablePartitionsLookup.removeAddPartitions(oldPartModels, newPartModels);
 	}
 
 	@Override
 	public void alterPartitions(String dbName, String tableName, 
 			List<CatalogTablePartitionDTO> partDefs) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val partModels = dbTablePartitionsLookup.getPartitionByDefs(db, table, partDefs);
 		dbTablePartitionsDdl.alterPartitions(db, table, partModels, partDefs);
@@ -302,7 +297,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 
 	@Override
 	public CatalogTablePartitionDTO getPartition(String dbName, String tableName, ImmutablePartitionSpec spec) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tablePart = dbTablePartitionsLookup.getPartition(db, table, spec);
 		return dtoConverter.toTablePartitionDTO(tablePart, table);
@@ -311,7 +306,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	@Override
 	public List<CatalogTablePartitionDTO> listPartitionsByPartialSpec(String dbName, String tableName, 
 			ImmutablePartitionSpec partialSpec) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tableParts = dbTablePartitionsLookup.listPartitionsByPartialSpec(db, table, partialSpec);
 		return dtoConverter.toTablePartitionDTOs(tableParts, table);
@@ -320,7 +315,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	@Override
 	public List<String> listPartitionNamesByPartialSpec(String dbName, String tableName, 
 			ImmutablePartitionSpec partialSpec) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tableParts = dbTablePartitionsLookup.listPartitionsByPartialSpec(db, table, partialSpec);
 		return MetastoreListUtils.map(tableParts, x -> x.getPartitionName());
@@ -330,7 +325,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 //	public List<CatalogTablePartitionDTO> listPartitionsByFilter(String dbName, String tableName, 
 //			List<Expression> predicates,
 //			String defaultTimeZoneId) {
-//		val db = getDb(dbName);
+//		val db = geDatabaseModel(dbName);
 //		val table = getTable(db, tableName);
 //		val tableParts = dbTablePartitionsLookup.listPartitionsByFilter(db, table, predicates, defaultTimeZoneId);
 //		return dtoConverter.toTablePartitionDTOs(tableParts, table);
@@ -339,19 +334,19 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	@Override
 	public void loadPartition(String dbName, String tableName, String loadPath, 
 			ImmutablePartitionSpec partSpec, boolean isOverwrite,
-			boolean inheritTableSpecs, boolean isSrcLocal) {
-		val db = getDb(dbName);
+			boolean inheriTableModelSpecs, boolean isSrcLocal) {
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tablePart = dbTablePartitionsLookup.getPartition(db, table, partSpec);
 		dataLoaderManager.loadPartition(db, table, tablePart, 
-				loadPath, isOverwrite, inheritTableSpecs, isSrcLocal);
+				loadPath, isOverwrite, inheriTableModelSpecs, isSrcLocal);
 	}
 
 	@Override
 	public void loadDynamicPartitions(String dbName, String tableName, String loadPath, 
 			ImmutablePartitionSpec partSpec,
 			boolean replace, int numDP) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tablePart = dbTablePartitionsLookup.getPartition(db, table, partSpec);
 		dataLoaderManager.loadDynamicPartitions(db, table, tablePart,
@@ -364,7 +359,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 
 	@Override
 	public void createFunction(String dbName, String funcName, ImmutableCatalogFunctionDef funcDef) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val found = dbFuncsLookup.findFunction(db, funcName);
 		if (null == found) {
 			throw new CatalogRuntimeException("Function already exists '" + dbName + "." + funcName + "'");
@@ -375,7 +370,7 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 
 	@Override
 	public void dropFunction(String dbName, String funcName) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val func = dbFuncsLookup.getFunction(db, funcName);
 		dbFuncsDdl.dropFunction(db, func);
 		dbFuncsLookup.remove(func);
@@ -383,14 +378,14 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 
 	@Override
 	public void alterFunction(String dbName, String funcName, ImmutableCatalogFunctionDef funcDef) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val func = dbFuncsLookup.getFunction(db, funcName);
 		dbFuncsDdl.alterFunction(db, func, funcDef);
 	}
 
 	@Override
 	public void renameFunction(String dbName, String oldFuncName, String newFuncName) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val oldFunc = dbFuncsLookup.getFunction(db, oldFuncName);
 		dbFuncsLookup.requireFunctionNotExists(db, newFuncName);
 		val newFunc = dbFuncsDdl.renameFunction(db, oldFunc, newFuncName);
@@ -399,20 +394,20 @@ public class LookupsAndDdlsAdapterJavaDbCatalog<
 	
 	@Override
 	public CatalogFunctionDTO getFunction(String dbName, String funcName) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		val func = dbFuncsLookup.getFunction(db, funcName);
 		return dtoConverter.toFunctionDTO(func);
 	}
 
 	@Override
 	public boolean functionExists(String dbName, String funcName) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		return dbFuncsLookup.functionExists(db, funcName);
 	}
 
 	@Override
 	public List<String> listFunctions(String dbName, String pattern) {
-		val db = getDb(dbName);
+		val db = geDatabaseModel(dbName);
 		return dbFuncsLookup.listFunctions(db, pattern);
 	}
 
