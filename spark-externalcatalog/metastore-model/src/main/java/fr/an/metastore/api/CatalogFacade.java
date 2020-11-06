@@ -3,7 +3,6 @@ package fr.an.metastore.api;
 import java.util.List;
 import java.util.Optional;
 
-import fr.an.metastore.api.dto.CatalogDatabaseDTO;
 import fr.an.metastore.api.dto.CatalogFunctionDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
@@ -11,7 +10,10 @@ import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
 import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
+import fr.an.metastore.api.info.CatalogTablePartitionInfo;
 
 /**
  * API similar to spark ExternalCatalog, 
@@ -33,7 +35,7 @@ public abstract class CatalogFacade {
 
 	public abstract void alterDatabase(String db, ImmutableCatalogDatabaseDef dbDefinition);
 
-	public abstract CatalogDatabaseDTO getDatabase(String db);
+	public abstract ImmutableCatalogDatabaseDef getDatabase(String db);
 
 	public abstract boolean databaseExists(String db);
 
@@ -45,14 +47,13 @@ public abstract class CatalogFacade {
 	// Tables
 	// --------------------------------------------------------------------------
 
-	public abstract void createTable(CatalogTableDTO tableDefinition, boolean ignoreIfExists);
+	public abstract void createTable(ImmutableCatalogTableDef tableDef, boolean ignoreIfExists);
 
 	public abstract void dropTable(String db, String table, boolean ignoreIfNotExists, boolean purge);
 
-	public abstract void renameTable(String db, String oldName, String newName);
+	public abstract void renameTable(String db, String oldTableName, String newTableName);
 
-	public abstract void alterTable(
-			CatalogTableDTO tableDefinition);
+	public abstract void alterTable(ImmutableCatalogTableDef tableDef);
 
 	public abstract void alterTableDataSchema(String db, String table,
 			StructTypeDTO newDataSchema);
@@ -60,8 +61,10 @@ public abstract class CatalogFacade {
 	public abstract void alterTableStats(String db, String table,
 			CatalogStatisticsDTO stats);
 
+	public abstract ImmutableCatalogTableDef getTableDef(String db, String table);
 	public abstract CatalogTableDTO getTable(String db, String table);
 
+	public abstract List<ImmutableCatalogTableDef> getTableDefsByName(String db, List<String> tables);
 	public abstract List<CatalogTableDTO> getTablesByName(String db, List<String> tables);
 
 	public abstract boolean tableExists(String db, String table);
@@ -77,7 +80,7 @@ public abstract class CatalogFacade {
 	// --------------------------------------------------------------------------
 
 	public abstract void createPartitions(String db, String table, 
-			List<CatalogTablePartitionDTO> parts,
+			List<ImmutableCatalogTablePartitionDef> parts,
 			boolean ignoreIfExists);
 
 	public abstract void dropPartitions(String db, String table,
@@ -89,21 +92,21 @@ public abstract class CatalogFacade {
 			List<ImmutablePartitionSpec> newSpecs);
 
 	public abstract void alterPartitions(String db, String table, 
-			List<CatalogTablePartitionDTO> parts);
+			List<ImmutableCatalogTablePartitionDef> parts);
 
-	public abstract CatalogTablePartitionDTO getPartition(String db, String table,
+	public abstract CatalogTablePartitionInfo getPartition(String db, String table,
 			ImmutablePartitionSpec spec);
 
-	public Optional<CatalogTablePartitionDTO> getPartitionOption(String db, String table,
+	public Optional<CatalogTablePartitionInfo> getPartitionOption(String db, String table,
 			ImmutablePartitionSpec spec) {
-		CatalogTablePartitionDTO tmp = getPartition(db, table, spec);
+		CatalogTablePartitionInfo tmp = getPartition(db, table, spec);
 		return (tmp != null) ? Optional.of(tmp) : Optional.empty();
 	}
 
 	public abstract List<String> listPartitionNamesByPartialSpec(String db, String table,
 			ImmutablePartitionSpec partialSpec);
 
-	public abstract List<CatalogTablePartitionDTO> listPartitionsByPartialSpec(String db, String table,
+	public abstract List<CatalogTablePartitionInfo> listPartitionsByPartialSpec(String db, String table,
 			ImmutablePartitionSpec partialSpec);
 
 //	public abstract List<CatalogTablePartitionDTO> listPartitionsByFilter(String db, String table,

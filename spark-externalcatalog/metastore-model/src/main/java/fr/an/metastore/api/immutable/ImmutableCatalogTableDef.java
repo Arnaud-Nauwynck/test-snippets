@@ -16,12 +16,12 @@ import lombok.Value;
  * org.apache.spark.sql.catalyst.catalog.CatalogTable
  */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ImmutableCatalogTableDef implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public final ImmutableTableId identifier;
+	public final CatalogTableId identifier;
 	
 	public final CatalogTableTypeEnum tableType;
 	
@@ -50,8 +50,8 @@ public class ImmutableCatalogTableDef implements Serializable {
 	public final String viewOriginalText;
 
 	// --------------------------------------------------------------------------------------------
-	
-	@Value @Builder
+
+	@Value @Builder(toBuilder = true)
 	public static class ImmutableCatalogStorageFormat {
 		public final URI locationUri;
 	    public final String inputFormat;
@@ -61,21 +61,21 @@ public class ImmutableCatalogTableDef implements Serializable {
 	    public final ImmutableMap<String, String> properties;
 	}
 
-	@Value @Builder
+	@Value @Builder(toBuilder = true)
 	public static class ImmutableBucketSpec {
 		public final int numBuckets;
 		public final ImmutableList<String> bucketColumnNames;
 		public final ImmutableList<String> sortColumnNames;
 	}
 
-	@Value @Builder
+	@Value @Builder(toBuilder = true)
 	public static class ImmutableCatalogStatistics {
 		public final BigInteger sizeInBytes;
 		public final BigInteger rowCount;
 		public final ImmutableMap<String, ImmutableCatalogColumnStat> colStats;
 	}
 	    
-	@Value @Builder
+	@Value @Builder(toBuilder = true)
 	public static class ImmutableCatalogColumnStat {
 		public final BigInteger distinctCount;
 		public final String min;
@@ -87,13 +87,12 @@ public class ImmutableCatalogTableDef implements Serializable {
 		public final int version; // = CatalogColumnStat.VERSION;
 	}
 	
-	@Data
+	@Data @Builder(toBuilder = true)
 	public static class ImmutableHistogram {
 		public final BigInteger sizeInBytes;
 		public final BigInteger rowCount;
 	    // TODO
 //	    public final ImmutableAttributeMap<ColumnStat> attributeStats;
 	}
-	
 
 }

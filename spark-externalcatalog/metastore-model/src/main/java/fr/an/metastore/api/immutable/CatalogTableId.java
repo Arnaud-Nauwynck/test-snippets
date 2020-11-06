@@ -5,7 +5,7 @@ import lombok.Value;
 
 @Value
 @AllArgsConstructor
-public class ImmutableTableId {
+public class CatalogTableId {
 	public final String database;
 	public final String table;
 }

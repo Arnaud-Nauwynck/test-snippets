@@ -8,13 +8,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStorageFormatDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO.HistogramDTO;
-import fr.an.metastore.api.immutable.CatalogTableTypeEnum;
+import fr.an.metastore.api.immutable.CatalogTableId;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 
 @Data @EqualsAndHashCode(callSuper=true)
 public class TableModel extends ModelElement {
@@ -25,49 +26,22 @@ public class TableModel extends ModelElement {
 	
 	@Getter
 	private final DatabaseModel db;
-	@Getter
-	private final String tableName;
 	
-	private final CatalogTableTypeEnum tableType;
-	
-	CatalogStorageFormatDTO storage;
-	
-//    schema: StructType,
-//    provider: Option[String] = None,
-    final List<String> partitionColumnNames = new ArrayList<>();
-//    bucketSpec: Option[BucketSpec] = None,
-	String owner = "";
-	long createTime = System.currentTimeMillis();
-	long lastAccessTime = -1;
-//    createVersion: String = "",
-//    properties: Map[String, String] = Map.empty,
-//    stats: Option[CatalogStatistics] = None,
-//    viewText: Option[String] = None,
-//    comment: Option[String] = None,
-//    unsupportedFeatures: Seq[String] = Seq.empty,
-//    tracksPartitionsInCatalog: Boolean = false,
-//    schemaPreservesCase: Boolean = true,
-//    ignoredProperties: Map[String, String] = Map.empty,
-//    viewOriginalText: Option[String] = None) {
+	@Getter @Setter
+	private ImmutableCatalogTableDef def;
 
-    	
+	long lastAccessTime = -1;
+
+	// TOCHANGE externalise.. can be huge, so not not in-memory, use persistent db, like LevelDB
 	private Map<ImmutablePartitionSpec, TablePartitionModel> partitions = new HashMap<>();
 	
 	// --------------------------------------------------------------------------------------------
 
-	public TableModel(DatabaseModel db, String tableName, 
-			CatalogTableTypeEnum tableType,
-			//  storage: CatalogStorageFormat,
-			//  schema: StructType,
-			//  provider: Option[String] = None,
-			List<String> partitionColumnNames
+	public TableModel(DatabaseModel db, // String tableName, 
+			ImmutableCatalogTableDef def
 			) {
 		this.db = db;
-		this.tableName = tableName;
-		this.tableType = tableType;
-		if (partitionColumnNames != null) {
-			this.partitionColumnNames.addAll(partitionColumnNames);
-		}
+		this.def = def;
 	}
 
 	// implements ModelElement
@@ -85,10 +59,18 @@ public class TableModel extends ModelElement {
 	
 	@Override
 	public String childId() {
-		return tableName;
+		return def.getIdentifier().table;
 	}
 
 	// --------------------------------------------------------------------------------------------
+
+	public CatalogTableId getTableId() {
+		return def.getIdentifier();
+	}
+
+	public String getTableName() {
+		return def.getIdentifier().table;
+	}
 
 	public TablePartitionModel findPartition(ImmutablePartitionSpec spec) {
 		return partitions.get(spec);

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import fr.an.metastore.api.immutable.CatalogTableTypeEnum;
-import fr.an.metastore.api.immutable.ImmutableTableId;
+import fr.an.metastore.api.immutable.CatalogTableId;
 import lombok.Data;
 
 /**
@@ -22,7 +22,7 @@ public class CatalogTableDTO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	ImmutableTableId identifier;
+	CatalogTableId identifier;
 	
 	CatalogTableTypeEnum tableType;
 	

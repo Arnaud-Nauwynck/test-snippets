@@ -12,14 +12,14 @@ import lombok.val;
 
 public class DefaultCatalogFactory {
 
-	public static LookupsAndDdlsAdapterCatalog createDefaultJavaDbCatalog(Configuration hadoopConfig, CatalogModel dbCatalogModel) {
+	public static LookupsAndDdlsAdapterCatalogFacade createDefaultJavaDbCatalog(Configuration hadoopConfig, CatalogModel dbCatalogModel) {
 		val lookups = new ModelDelegateCatalogLookup(dbCatalogModel);
 		val ddls = new InMemoryCatalogDDLManager(dbCatalogModel, hadoopConfig);
 		
 		CatalogModel2DtoConverter dtoConverter = new CatalogModel2DtoConverter();
 		val dataLoaderManager = new DefaultDataLoaderManager<DatabaseModel,TableModel,TablePartitionModel>();
 	
-		val javaDbCatalog = new LookupsAndDdlsAdapterCatalog(
+		val javaDbCatalog = new LookupsAndDdlsAdapterCatalogFacade(
 				dtoConverter, //
 				lookups.dbsLookup, ddls.dbsDdl, //
 				lookups.dbTablesLookup, ddls.dbTablesDdl, //

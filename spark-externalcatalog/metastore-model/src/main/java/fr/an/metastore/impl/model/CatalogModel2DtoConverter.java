@@ -6,6 +6,7 @@ import fr.an.metastore.api.dto.CatalogDatabaseDTO;
 import fr.an.metastore.api.dto.CatalogFunctionDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO;
 import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
+import fr.an.metastore.api.info.CatalogTablePartitionInfo;
 import fr.an.metastore.impl.utils.MetastoreListUtils;
 
 public class CatalogModel2DtoConverter {
@@ -21,7 +22,17 @@ public class CatalogModel2DtoConverter {
 		// TODO 
 		return res;
 	}
-	
+
+	public CatalogTablePartitionInfo toTablePartitionInfo(TablePartitionModel src, TableModel table) {
+		return new CatalogTablePartitionInfo(src.getDef(),
+				src.getLastAccessTime(),
+				src.getStats());
+	}
+
+	public List<CatalogTablePartitionInfo> toTablePartitionInfos(List<TablePartitionModel> src, TableModel table) {
+		return MetastoreListUtils.map(src, x -> toTablePartitionInfo(x, table));
+	}
+
 	public CatalogTablePartitionDTO toTablePartitionDTO(TablePartitionModel src, TableModel table) {
 		CatalogTablePartitionDTO res = new CatalogTablePartitionDTO();
 		// TODO

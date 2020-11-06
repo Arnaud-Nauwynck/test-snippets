@@ -2,6 +2,7 @@ package fr.an.metastore.spark;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.apache.spark.sql.catalyst.catalog.CatalogDatabase;
 import org.apache.spark.sql.catalyst.catalog.CatalogFunction;
@@ -12,9 +13,16 @@ import org.apache.spark.sql.catalyst.catalog.ExternalCatalog;
 import org.apache.spark.sql.catalyst.expressions.Expression;
 import org.apache.spark.sql.types.StructType;
 
-import fr.an.metastore.api.AbstractJavaDbCatalog;
-import fr.an.metastore.api.PartitionSpec;
+import fr.an.metastore.api.CatalogFacade;
+import fr.an.metastore.api.immutable.*;
+import fr.an.metastore.impl.utils.MetastoreListUtils;
+import static fr.an.metastore.impl.utils.MetastoreListUtils.map;
+import fr.an.metastore.api.dto.*;
+import fr.an.metastore.api.info.*;
+
 import fr.an.metastore.spark.util.ScalaCollUtils;
+import fr.an.metastore.spark.modeladapter.*;
+
 import lombok.val;
 import scala.Option;
 import scala.collection.JavaConverters;
@@ -28,12 +36,14 @@ import scala.collection.Seq;
  */
 public class JavaAdapterExternalCatalog implements ExternalCatalog {
 
-	private final AbstractJavaDbCatalog delegate;
+	private final CatalogFacade delegate;
+	private final SparkModelConverter sparkConverter;
 
 	// --------------------------------------------------------------------------
 	
-	public JavaAdapterExternalCatalog(AbstractJavaDbCatalog delegate) {
+	public JavaAdapterExternalCatalog(CatalogFacade delegate, SparkModelConverter sparkConverter) {
 		this.delegate = delegate;
+		this.sparkConverter = sparkConverter;
 	}
 
 	// --------------------------------------------------------------------------
@@ -45,7 +55,9 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 
 	@Override
 	public void createDatabase(CatalogDatabase dbDefinition, boolean ignoreIfExists) {
-		delegate.createDatabase(dbDefinition, ignoreIfExists);
+		String db = dbDefinition.name();
+		ImmutableCatalogDatabaseDef def = sparkConverter.toImmutableCatalogDef(dbDefinition);
+		delegate.createDatabase(db, def, ignoreIfExists);
 	}
 
 	@Override
@@ -55,12 +67,15 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 
 	@Override
 	public void alterDatabase(CatalogDatabase dbDefinition) {
-		delegate.alterDatabase(dbDefinition);
+		String db = dbDefinition.name();
+		ImmutableCatalogDatabaseDef def = sparkConverter.toImmutableCatalogDef(dbDefinition);
+		delegate.alterDatabase(db, def);
 	}
 
 	@Override
 	public CatalogDatabase getDatabase(String db) {
-		return delegate.getDatabase(db);
+		ImmutableCatalogDatabaseDef def = delegate.getDatabase(db);
+		return sparkConverter.toSparkCatalogDatabase(def);
 	}
 
 	@Override
@@ -81,8 +96,9 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 	}
 
 	@Override
-	public void createTable(CatalogTable tableDefinition, boolean ignoreIfExists) {
-		delegate.createTable(tableDefinition, ignoreIfExists);
+	public void createTable(CatalogTable tableDef, boolean ignoreIfExists) {
+		ImmutableCatalogTableDef def = sparkConverter.toImmutableTableDef(tableDef);
+		delegate.createTable(def, ignoreIfExists);
 	}
 
 	@Override
@@ -97,30 +113,33 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 
 	@Override
 	public void alterTable(CatalogTable tableDefinition) {
-		delegate.alterTable(tableDefinition);
+		ImmutableCatalogTableDef def = sparkConverter.toImmutableTableDef(tableDefinition);
+		delegate.alterTable(def);
 	}
 
 	@Override
 	public void alterTableDataSchema(String db, String table, StructType newDataSchema) {
-		delegate.alterTableDataSchema(db, table, newDataSchema);
+		// TODO delegate.alterTableDataSchema(db, table, newDataSchema);
 	}
 
 	@Override
 	public void alterTableStats(String db, String table, scala.Option<CatalogStatistics> stats) {
 		CatalogStatistics jstats = toJavaOpt(stats);
-		delegate.alterTableStats(db, table, jstats);
+		// TODO delegate.alterTableStats(db, table, jstats);
 	}
 
 	@Override
 	public CatalogTable getTable(String db, String table) {
-		return delegate.getTable(db, table);
+		ImmutableCatalogTableDef tmpres = delegate.getTableDef(db, table);
+		return sparkConverter.toSparkTable(tmpres);
 	}
 
 	@Override
 	public Seq<CatalogTable> getTablesByName(String db, Seq<String> tables) {
 		val jtables = toJavaList(tables);
-		val tmpres = delegate.getTablesByName(db, jtables);
-		return toScalaSeq(tmpres);
+		val tableDefs = delegate.getTableDefsByName(db, jtables);
+		val sparkTables = MetastoreListUtils.map(tableDefs, t -> sparkConverter.toSparkTable(t));
+		return toScalaSeq(sparkTables);
 	}
 
 	@Override
@@ -147,15 +166,15 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 
 	@Override
 	public void createPartitions(String db, String table, Seq<CatalogTablePartition> parts, boolean ignoreIfExists) {
-		val scalaParts = toJavaList(parts);
-		delegate.createPartitions(db, table, scalaParts, ignoreIfExists);
+		List<ImmutableCatalogTablePartitionDef> immutablePartitionDefs = sparkConverter.toImmutableTablePartitionDefs(parts);
+		delegate.createPartitions(db, table, immutablePartitionDefs, ignoreIfExists);
 	}
 
 	@Override
 	public void dropPartitions(String db, String table, 
 			scala.collection.Seq<scala.collection.immutable.Map<String, String>> partSpecs, boolean ignoreIfNotExists,
 			boolean purge, boolean retainData) {
-		val jPartSpecs = toJavaListPartSpecs(partSpecs);
+		List<ImmutablePartitionSpec> jPartSpecs = sparkConverter.toImmutablePartitionSpecs(partSpecs);
 		delegate.dropPartitions(db, table, jPartSpecs, ignoreIfNotExists, purge, retainData);
 	}
 
@@ -163,41 +182,45 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 	public void renamePartitions(String db, String table, 
 			scala.collection.Seq<scala.collection.immutable.Map<String, String>> specs,
 			scala.collection.Seq<scala.collection.immutable.Map<String, String>> newSpecs) {
-		val jspecs = toJavaListPartSpecs(specs);
-		val jnewSpecs = toJavaListPartSpecs(newSpecs);
+		val jspecs = sparkConverter.toImmutablePartitionSpecs(specs);
+		val jnewSpecs = sparkConverter.toImmutablePartitionSpecs(newSpecs);
 		delegate.renamePartitions(db, table, jspecs, jnewSpecs);
 	}
 
 	@Override
 	public void alterPartitions(String db, String table, Seq<CatalogTablePartition> parts) {
-		val jparts = toJavaList(parts);
+		List<ImmutableCatalogTablePartitionDef> jparts = sparkConverter.toImmutableTablePartitionDefs(parts);
 		delegate.alterPartitions(db, table, jparts);
 	}
 
 	@Override
-	public CatalogTablePartition getPartition(String db, String table, scala.collection.immutable.Map<String, String> spec) {
-		val jspec = toJavaPartSpec(spec);
-		return delegate.getPartition(db, table, jspec);
+	public CatalogTablePartition getPartition(String db, String table, 
+			scala.collection.immutable.Map<String, String> spec) {
+		val jspec = sparkConverter.toImmutablePartitionSpec(spec);
+		CatalogTablePartitionInfo part = delegate.getPartition(db, table, jspec);
+		
 	}
 
 	@Override
-	public Option<CatalogTablePartition> getPartitionOption(String db, String table, scala.collection.immutable.Map<String, String> spec) {
-		val jspec = toJavaPartSpec(spec);
-		return delegate.getPartitionOption(db, table, jspec);
+	public Option<CatalogTablePartition> getPartitionOption(String db, String table, 
+			scala.collection.immutable.Map<String, String> spec) {
+		val jspec = sparkConverter.toImmutablePartitionSpec(spec);
+		delegate.getPartitionOption(db, table, jspec);
 	}
 
 	@Override
-	public Seq<String> listPartitionNames(String db, String table, scala.Option<scala.collection.immutable.Map<String, String>> partialSpec) {
-		val jpartialSpec = partialSpec.isDefined()? toJavaPartSpec(partialSpec.get()) : null;
-		val tmpres = delegate.listPartitionNames(db, table, jpartialSpec);
+	public Seq<String> listPartitionNames(String db, String table, 
+			scala.Option<scala.collection.immutable.Map<String, String>> partialSpec) {
+		ImmutablePartitionSpec jpartialSpec = partialSpec.isDefined()? sparkConverter.toImmutablePartitionSpec(partialSpec.get()) : null;
+		List<String> tmpres = delegate.listPartitionNamesByPartialSpec(db, table, jpartialSpec);
 		return toScalaSeq(tmpres);
 	}
 
 	@Override
 	public Seq<CatalogTablePartition> listPartitions(String db, String table, scala.Option<scala.collection.immutable.Map<String, String>> partialSpec) {
-		val jpartialSpec = partialSpec.isDefined()? toJavaPartSpec(partialSpec.get()) : null;
-		val tmpres = delegate.listPartitions(db, table, jpartialSpec);
-		return toScalaSeq(tmpres);
+		ImmutablePartitionSpec jpartialSpec = partialSpec.isDefined()? sparkConverter.toImmutablePartitionSpec(partialSpec.get()) : null;
+		List<CatalogTablePartitionInfo> jParts = delegate.listPartitionsByPartialSpec(db, table, jpartialSpec);
+		return toScalaSeq(map(jParts, x -> sparkConverter.toSparkTablePartition(src)));
 	}
 
 	@Override
@@ -276,6 +299,11 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 		return opt.isDefined()? opt.get() : null;
 	}
 
+	private static <TSrc,TDest> List<TDest> seqMapToList(scala.collection.Seq<TSrc> src, Function<TSrc,TDest> mapper) {
+		return map(toJavaList(src), mapper);
+	}
+	
+
 	private static List<PartitionSpec> toJavaListPartSpecs(scala.collection.Seq<scala.collection.immutable.Map<String, String>> partSpecs) {
 		return ScalaCollUtils.map(partSpecs, partSpec -> toJavaPartSpec(partSpec));
 	}
@@ -284,5 +312,6 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 		Map<String, String> jpartSpecs = JavaConverters.mapAsJavaMapConverter(partSpecs).asJava();
 		return new PartitionSpec(jpartSpecs);
 	}
+
 
 }

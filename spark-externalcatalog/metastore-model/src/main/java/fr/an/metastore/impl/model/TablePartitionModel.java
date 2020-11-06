@@ -1,9 +1,8 @@
 package fr.an.metastore.impl.model;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
+import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogStatistics;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,22 +18,21 @@ public class TablePartitionModel extends ModelElement {
 	private final TableModel table;
 	
 	@Getter
-	private final ImmutablePartitionSpec spec;
+	public ImmutableCatalogTablePartitionDef def;
 
-	@Getter
-	private final String partitionName;
-		
-	// TODO
+	// not in immutable def
+	private long lastAccessTime = -1;
+    private ImmutableCatalogStatistics stats;
+    
 //	@Getter @Setter
 //	CatalogTablePartition sparkDefinition;
-//    spec: CatalogTypes.TablePartitionSpec,
-//    storage: CatalogStorageFormat,
-    private final Map<String,String> parameters = new LinkedHashMap<String, String>();
-    private long createTime = System.currentTimeMillis();
-    private long lastAccessTime = -1;
-//    stats: Option[CatalogStatistics] = None;
 
-    	
+    // --------------------------------------------------------------------------------------------
+
+	public String getPartitionName() {
+		return def.getPartitionName();
+	}
+
 	// implements ModelElement
 	// --------------------------------------------------------------------------------------------
 
@@ -50,7 +48,11 @@ public class TablePartitionModel extends ModelElement {
 
 	@Override
 	public String childId() {
-		return partitionName;
+		return def.getPartitionName();
+	}
+
+	public ImmutablePartitionSpec getSpec() {
+		return def.getSpec();
 	}
 
 }

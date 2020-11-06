@@ -1,23 +1,26 @@
 package fr.an.metastore.impl.manager;
 
+import static fr.an.metastore.impl.utils.MetastoreListUtils.map;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
 import fr.an.metastore.api.CatalogFacade;
-import fr.an.metastore.api.dto.CatalogDatabaseDTO;
 import fr.an.metastore.api.dto.CatalogFunctionDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
-import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
 import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.exceptions.CatalogRuntimeException;
 import fr.an.metastore.api.exceptions.NoSuchTableRuntimeException;
 import fr.an.metastore.api.exceptions.TableAlreadyExistsRuntimeException;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
+import fr.an.metastore.api.info.CatalogTablePartitionInfo;
 import fr.an.metastore.api.manager.DataLoaderManager;
 import fr.an.metastore.api.manager.DatabasesDDLManager;
 import fr.an.metastore.api.manager.DatabasesLookup;
@@ -41,7 +44,7 @@ import lombok.val;
  * for Databases / Tables / Partitions / Functions
  */
 @RequiredArgsConstructor
-public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
+public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 
 	private final CatalogModel2DtoConverter dtoConverter;
 	private final DatabasesLookup<DatabaseModel> dbsLookup;
@@ -111,9 +114,9 @@ public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
 	}
 
 	@Override
-	public CatalogDatabaseDTO getDatabase(String dbName) {
+	public ImmutableCatalogDatabaseDef getDatabase(String dbName) {
 		val db = geDatabaseModel(dbName);
-		return dtoConverter.toDbDTO(db);
+		return db.getDbDef(); // dtoConverter.toDbDTO(db);
 	}
 
 	@Override
@@ -138,8 +141,8 @@ public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
 	// --------------------------------------------------------------------------
 
 	@Override
-	public void createTable(CatalogTableDTO tableDefinition, boolean ignoreIfExists) {
-		val tableId = tableDefinition.getIdentifier();
+	public void createTable(ImmutableCatalogTableDef tableDef, boolean ignoreIfExists) {
+		val tableId = tableDef.getIdentifier();
 		String dbName = tableId.database;
 		val db = geDatabaseModel(dbName);
 	    val tableName = tableId.table;
@@ -149,7 +152,7 @@ public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
 	        throw new TableAlreadyExistsRuntimeException(dbName, tableName);
 	      }
 	    } else {
-	    	val tbl = dbTablesDdl.createTable(db, tableDefinition, ignoreIfExists);
+	    	val tbl = dbTablesDdl.createTable(db, tableDef, ignoreIfExists);
 	    	dbTablesLookup.addTable(tbl);
 	    }
 	}
@@ -187,13 +190,13 @@ public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
 	}
 
 	@Override
-	public void alterTable(CatalogTableDTO tableDefinition) {
-		val tableId = tableDefinition.getIdentifier();
+	public void alterTable(ImmutableCatalogTableDef tableDef) {
+		val tableId = tableDef.getIdentifier();
 		String dbName = tableId.database;
 		validate(dbName != null, "table database name not set");
 		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableId.table);
-		dbTablesDdl.alterTable(db, table, tableDefinition);
+		dbTablesDdl.alterTable(db, table, tableDef);
 	}
 
 	@Override
@@ -212,9 +215,21 @@ public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
 	}
 
 	@Override
+	public ImmutableCatalogTableDef getTableDef(String db, String table) {
+		val t = dogetTable(db, table);
+		return t.getDef();
+	}
+
+	@Override
 	public CatalogTableDTO getTable(String db, String table) {
 		val t = dogetTable(db, table);
 		return dtoConverter.toTableDTO(t);
+	}
+
+	@Override
+	public List<ImmutableCatalogTableDef> getTableDefsByName(String dbName, List<String> tableNames) {
+		val db = geDatabaseModel(dbName);
+		return MetastoreListUtils.map(tableNames, n -> getTable(db, n).getDef());
 	}
 
 	@Override
@@ -254,7 +269,7 @@ public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
 
 	@Override
 	public void createPartitions(String dbName, String tableName, 
-			List<CatalogTablePartitionDTO> parts, boolean ignoreIfExists) {
+			List<ImmutableCatalogTablePartitionDef> parts, boolean ignoreIfExists) {
 		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val partModels = dbTablePartitionsDdl.createPartitions(db, table, parts, ignoreIfExists);
@@ -288,28 +303,29 @@ public class LookupsAndDdlsAdapterCatalog extends CatalogFacade {
 
 	@Override
 	public void alterPartitions(String dbName, String tableName, 
-			List<CatalogTablePartitionDTO> partDefs) {
+			List<ImmutableCatalogTablePartitionDef> partDefs) {
 		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
-		val partModels = dbTablePartitionsLookup.getPartitionByDefs(db, table, partDefs);
+		List<ImmutablePartitionSpec> partSpecs = map(partDefs, x -> x.getSpec());
+		val partModels = dbTablePartitionsLookup.getPartitions(db, table, partSpecs);
 		dbTablePartitionsDdl.alterPartitions(db, table, partModels, partDefs);
 	}
 
 	@Override
-	public CatalogTablePartitionDTO getPartition(String dbName, String tableName, ImmutablePartitionSpec spec) {
+	public CatalogTablePartitionInfo getPartition(String dbName, String tableName, ImmutablePartitionSpec spec) {
 		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tablePart = dbTablePartitionsLookup.getPartition(db, table, spec);
-		return dtoConverter.toTablePartitionDTO(tablePart, table);
+		return dtoConverter.toTablePartitionInfo(tablePart, table);
 	}
 
 	@Override
-	public List<CatalogTablePartitionDTO> listPartitionsByPartialSpec(String dbName, String tableName, 
+	public List<CatalogTablePartitionInfo> listPartitionsByPartialSpec(String dbName, String tableName, 
 			ImmutablePartitionSpec partialSpec) {
 		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tableParts = dbTablePartitionsLookup.listPartitionsByPartialSpec(db, table, partialSpec);
-		return dtoConverter.toTablePartitionDTOs(tableParts, table);
+		return dtoConverter.toTablePartitionInfos(tableParts, table);
 	}
 
 	@Override

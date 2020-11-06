@@ -7,15 +7,16 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
-import fr.an.metastore.api.dto.CatalogTableDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
 import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
 import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.exceptions.CatalogWrappedRuntimeException;
+import fr.an.metastore.api.immutable.CatalogTableId;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
-import fr.an.metastore.api.immutable.ImmutableTableId;
 import fr.an.metastore.api.manager.DatabasesDDLManager;
 import fr.an.metastore.api.manager.FunctionsDDLManager;
 import fr.an.metastore.api.manager.TablePartitionsDDLManager;
@@ -121,9 +122,9 @@ public class InMemoryCatalogDDLManager {
 	public class InMemoryDatabaseTableDDLManager extends TablesDDLManager<DatabaseModel,TableModel> {
 
 		@Override
-		public TableModel createTable(DatabaseModel db, CatalogTableDTO tableDef, boolean ignoreIfExists) {
+		public TableModel createTable(DatabaseModel db, ImmutableCatalogTableDef tableDef, boolean ignoreIfExists) {
 			val identifier = tableDef.getIdentifier();
-			val tableName = identifier.table;
+//			val tableName = identifier.table;
 //		      // Set the default table location if this is a managed table and its location is not specified.
 //		      // Ideally we should not create a managed table with location, but Hive serde table can
 //		      // specify location for managed table. And in [[CreateDataSourceTableAsSelectCommand]] we have
@@ -149,9 +150,7 @@ public class InMemoryCatalogDDLManager {
 //		      }
 //		      val tableProp = tableWithLocation.properties.filter(_._1 != "comment")
 //			tableWithLocation.copy(properties = tableProp)
-			return new TableModel(db, tableName, 
-					tableDef.getTableType(),
-					tableDef.getPartitionColumnNames());
+			return new TableModel(db, tableDef);
 		}
 
 		@Override
@@ -189,7 +188,9 @@ public class InMemoryCatalogDDLManager {
 
 		@Override
 		public TableModel renameTable(DatabaseModel db, TableModel table, String newTableName) {
-			val newIdentifier = new ImmutableTableId(db.getName(), newTableName);
+			val newIdentifier = new CatalogTableId(db.getName(), newTableName);
+			val defCopy = table.getDef().toBuilder();
+			defCopy.identifier(newIdentifier);
 			// TODO
 
 //		    if (oldDesc.table.tableType == CatalogTableType.MANAGED) {
@@ -208,18 +209,14 @@ public class InMemoryCatalogDDLManager {
 //		      }
 //		      oldDesc.table = oldDesc.table.withNewStorage(locationUri = Some(newDir.toUri))
 //		    }
-		//
-			List<String> partitionColumns = table.getPartitionColumnNames();
-			TableModel res = new TableModel(db, newTableName, table.getTableType(), 
-					partitionColumns);
-			// TODO
+
+			TableModel res = new TableModel(db, defCopy.build());
 			return res;
 		}
 
 		@Override
-		public void alterTable(DatabaseModel db, TableModel table, CatalogTableDTO tableDefinition) {
-			// TODO Auto-generated method stub
-			
+		public void alterTable(DatabaseModel db, TableModel table, ImmutableCatalogTableDef tableDef) {
+			table.setDef(tableDef);
 		}
 
 		@Override
@@ -245,7 +242,7 @@ public class InMemoryCatalogDDLManager {
 
 		@Override
 		public List<TablePartitionModel> createPartitions(DatabaseModel db, TableModel table,
-				List<CatalogTablePartitionDTO> parts, boolean ignoreIfExists) {
+				List<ImmutableCatalogTablePartitionDef> parts, boolean ignoreIfExists) {
 			throw new UnsupportedOperationException("TODO NOT IMPLEMENTED YET");
 		}
 
@@ -291,8 +288,8 @@ public class InMemoryCatalogDDLManager {
 
 		@Override
 		public void alterPartitions(DatabaseModel db, TableModel table, 
-				List<TablePartitionModel> parts,				
-				List<CatalogTablePartitionDTO> newPartDefs) {
+				List<TablePartitionModel> parts,		
+				List<ImmutableCatalogTablePartitionDef> newPartDefs) {
 
 			throw new UnsupportedOperationException("TODO NOT IMPLEMENTED YET");
 			
