@@ -2,6 +2,7 @@
 package fr.an.metastore.impl.model;
 
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
+import fr.an.metastore.api.spi.IFunctionModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @Data @EqualsAndHashCode(callSuper=true)
-public class FunctionModel extends ModelElement {
+public class FunctionModel extends ModelElement implements IFunctionModel {
 
 	private final DatabaseModel db;
 	

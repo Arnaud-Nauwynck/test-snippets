@@ -9,12 +9,13 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
+import fr.an.metastore.api.spi.IDatabaseModel;
 import fr.an.metastore.impl.model.CatalogModel.CatalogChildField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data @EqualsAndHashCode(callSuper=false)
-public class DatabaseModel extends ModelElement {
+public class DatabaseModel extends ModelElement implements IDatabaseModel {
 
 	public static enum DatabaseModelChildField {
 		table, function

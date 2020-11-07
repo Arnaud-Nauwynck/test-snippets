@@ -7,7 +7,7 @@ import fr.an.metastore.api.dto.CatalogFunctionDTO;
 import fr.an.metastore.api.dto.CatalogTableDTO;
 import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
-import fr.an.metastore.impl.utils.MetastoreListUtils;
+import fr.an.metastore.api.utils.MetastoreListUtils;
 
 public class CatalogModel2DtoConverter {
 

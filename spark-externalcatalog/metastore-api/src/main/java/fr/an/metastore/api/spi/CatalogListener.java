@@ -1,4 +1,4 @@
-package fr.an.metastore.impl.model;
+package fr.an.metastore.api.spi;
 
 public interface CatalogListener {
 

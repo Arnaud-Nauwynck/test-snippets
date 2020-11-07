@@ -3,15 +3,14 @@ package fr.an.metastore.api.spi;
 import java.util.List;
 
 import fr.an.metastore.api.exceptions.CatalogRuntimeException;
-import fr.an.metastore.impl.model.DatabaseModel;
-import fr.an.metastore.impl.utils.MetastoreListUtils;
+import fr.an.metastore.api.utils.MetastoreListUtils;
 import lombok.val;
 
 /**
  * part of AbstractJavaDbCatalog, for table lookup by name (on database)
  *
  */
-public abstract class TablesLookup<TDb extends DatabaseModel,TTable> {
+public abstract class TablesLookup<TDb extends IDatabaseModel,TTable extends ITableModel> {
 
 	public abstract TTable findTable(TDb db, String tableName);
 

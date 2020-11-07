@@ -1,6 +1,6 @@
 package fr.an.metastore.spark.modeladapter;
 
-import static fr.an.metastore.impl.utils.MetastoreListUtils.map;
+import static fr.an.metastore.api.utils.MetastoreListUtils.map;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -40,8 +40,9 @@ import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableHistogram
 import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
-import fr.an.metastore.impl.utils.NotImpl;
+import fr.an.metastore.api.utils.NotImpl;
 import fr.an.metastore.spark.util.ScalaCollUtils;
+import lombok.val;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 import scala.math.BigInt;
@@ -50,16 +51,6 @@ public class SparkModelConverter {
 
 	// Database
 	// --------------------------------------------------------------------------------------------
-
-//	public static CatalogDatabase toSparkDatabase(DatabaseModel src) {
-//		String name = src.getName();
-//	    String description = src.getDescription();
-//	    URI locationUri = src.getLocationUri();
-//		java.util.Map<String, String> props = src.getProperties();
-//		scala.collection.immutable.Map<String, String> scalaProps = ScalaCollUtils.toScalaImutableMap(props);
-//
-//		return new CatalogDatabase(name, description, locationUri, scalaProps);
-//	}
 
 	public ImmutableCatalogDatabaseDef toImmutableDatabaseDef(CatalogDatabase src) {
 		return ImmutableCatalogDatabaseDef.builder()
@@ -83,22 +74,18 @@ public class SparkModelConverter {
 	// --------------------------------------------------------------------------------------------
 
 	public ImmutableCatalogTableDef toImmutableTableDef(CatalogTable src) {
+		val identifier = toTableId(src.identifier());
+		CatalogTableTypeEnum tableType = toTableType(src.tableType());
+		ImmutableCatalogStorageFormat storage = toImmutableStorageFormat(src.storage());
 		return ImmutableCatalogTableDef.builder()
-				.identifier(new CatalogTableId(src.identifier().database().getOrElse(() -> null), 
-						src.identifier().table()))
+				.identifier(identifier)
+				.tableType(tableType)
+				.storage(storage)
 // TODO
-//		CatalogTableTypeEnum tableType;
-//		
-//		ImmutableCatalogStorageFormat storage;
-//
 //		ImmutableStructType schema;
-//
 //		String provider;
-//		
 //		ImmutableList<String> partitionColumnNames;
-//		
 //		ImmutableBucketSpec bucketSpec;
-//		
 //		String owner;
 //		long createTime;
 //		String createVersion;
@@ -114,13 +101,16 @@ public class SparkModelConverter {
 				.build();
 	}
 	
+	public CatalogTableId toTableId(TableIdentifier src) {
+		return new CatalogTableId(toJavaOpt(src.database()), src.table());
+	}
+
 	public CatalogTable toSparkTable(ImmutableCatalogTableDef src) {
 		TableIdentifier identifier = new TableIdentifier(
-				src.identifier.database, toScalaOption(src.identifier.table));
+				src.identifier.table, toScalaOption(src.identifier.database));
 		CatalogTableType catalogType = toSparkTableType(src.tableType);
 //		return new CatalogTable(
-//			    identifier,
-//			    tableType,
+//			    identifier, tableType,
 //			    storage: CatalogStorageFormat,
 //			    schema: StructType,
 //			    provider: Option[String] = None,
@@ -146,8 +136,24 @@ public class SparkModelConverter {
 	public Seq<CatalogTable> toSparkTables(List<ImmutableCatalogTableDef> src) {
 		return toScalaSeq(map(src, t -> toSparkTable(t)));
 	}
-	
-	protected static CatalogTableType toSparkTableType(CatalogTableTypeEnum src) {
+
+	// Table properties
+	// --------------------------------------------------------------------------------------------
+
+	protected CatalogTableTypeEnum toTableType(CatalogTableType src) {
+		switch(src.name()) { // can not use package protected CatalogTableType$MODULE
+		case "EXTERNAL":
+			return CatalogTableTypeEnum.EXTERNAL;
+		case "MANAGED":
+			return CatalogTableTypeEnum.MANAGED;
+		case "VIEW":
+			return CatalogTableTypeEnum.VIEW;
+		default:
+			throw new IllegalStateException();
+		}
+	}
+
+	protected CatalogTableType toSparkTableType(CatalogTableTypeEnum src) {
 		switch(src) {
 		case EXTERNAL: return CatalogTableType.EXTERNAL();
 		case MANAGED: return CatalogTableType.MANAGED();
@@ -156,8 +162,18 @@ public class SparkModelConverter {
 		}
 	}
 	
+	public ImmutableCatalogStorageFormat toImmutableStorageFormat(CatalogStorageFormat src) {
+		URI locationUri = toJavaOpt(src.locationUri());
+	    String inputFormat = toJavaOpt(src.inputFormat());
+	    String outputFormat = toJavaOpt(src.outputFormat());
+	    String serde = toJavaOpt(src.serde());
+	    boolean compressed = src.compressed();
+	    ImmutableMap<String, String> properties = toImmutableMapCopy(src.properties());
+		return new ImmutableCatalogStorageFormat(locationUri, //
+				inputFormat, outputFormat, serde, compressed, properties);
+	}
 
-	private CatalogStorageFormat toSparkStorageFormat(ImmutableCatalogStorageFormat src) {
+	public CatalogStorageFormat toSparkStorageFormat(ImmutableCatalogStorageFormat src) {
 		scala.Option<URI> locationUri = toScalaOption(src.locationUri);
 		scala.Option<String> inputFormat = toScalaOption(src.inputFormat);
 		scala.Option<String> outputFormat = toScalaOption(src.outputFormat);
@@ -286,39 +302,53 @@ public class SparkModelConverter {
 		CatalogFunctionId identifier = toFunctionId(func.identifier());
 		String className = func.className();
 		List<ImmutableCatalogFunctionResource> resources = toImmutableFunctionResources(func.resources());
-		return ImmutableCatalogFunctionDef.builder()
-				.identifier(identifier)
-				.className(className)
-				.resources(resources)
-				.build();
+		return new ImmutableCatalogFunctionDef(identifier, className, resources);
 	}
 
-	private List<ImmutableCatalogFunctionResource> toImmutableFunctionResources(scala.collection.Seq<FunctionResource> resources) {
-		return map(toJavaList(resources), x -> toImmutableFunctionResource(x));
+	public CatalogFunction toSparkFunction(ImmutableCatalogFunctionDef src) {
+		FunctionIdentifier identifier = toSparkFunctionId(src.identifier);
+		String className = src.className;
+		scala.collection.Seq<FunctionResource> resources = toSparkFunctionResources(src.resources);
+		return new CatalogFunction(identifier, className, resources);
 	}
 
 	public CatalogFunctionId toFunctionId(FunctionIdentifier sparkId) {
 		return new CatalogFunctionId(toJavaOpt(sparkId.database()), sparkId.funcName());
 	}
 
+	public FunctionIdentifier toSparkFunctionId(CatalogFunctionId src) {
+		return new FunctionIdentifier(src.funcName, toScalaOption(src.database));
+	}
+
+	public List<ImmutableCatalogFunctionResource> toImmutableFunctionResources(scala.collection.Seq<FunctionResource> resources) {
+		return map(toJavaList(resources), x -> toImmutableFunctionResource(x));
+	}
+
 	public ImmutableCatalogFunctionResource toImmutableFunctionResource(FunctionResource src) {
+		val resourceType = toFunctionResourceType(src.resourceType());
 		URI uri = toJavaURI(src.uri());
-		FunctionResourceTypeEnum resourceType = toFunctionResourceType(src.resourceType());
-		return new ImmutableCatalogFunctionResource(
-				resourceType, uri);
+		return new ImmutableCatalogFunctionResource(resourceType, uri);
 	}
 
-	private FunctionResourceTypeEnum toFunctionResourceType(FunctionResourceType src) {
-		switch(src.resourceType()) {
-		case "jar": return FunctionResourceTypeEnum.jar;
-		case "file": return FunctionResourceTypeEnum.file;
-		case "archive": return  FunctionResourceTypeEnum.archive;
-		default: 
-			throw new IllegalStateException();
-		}
+	public FunctionResource toSparkFunctionResource(ImmutableCatalogFunctionResource src) {
+		val resourceType = toSparkFunctionResourceType(src.resourceType);
+		val uri = src.uri.toString();
+		return new FunctionResource(resourceType, uri);
 	}
 
-	private static URI toJavaURI(String src) {
+	public scala.collection.Seq<FunctionResource> toSparkFunctionResources(List<ImmutableCatalogFunctionResource> src) {
+		return toScalaSeq(map(src, x -> toSparkFunctionResource(x)));
+	}
+	
+	public FunctionResourceTypeEnum toFunctionResourceType(FunctionResourceType src) {
+		return FunctionResourceTypeEnum.valueOf(src.resourceType());
+	}
+
+	public FunctionResourceType toSparkFunctionResourceType(FunctionResourceTypeEnum src) {
+		return FunctionResourceType.fromString(src.name());
+	}
+
+	private URI toJavaURI(String src) {
 		try {
 			return new URI(src);
 		} catch (URISyntaxException ex) {
@@ -326,18 +356,22 @@ public class SparkModelConverter {
 		}
 	}
 
+	private URI toJavaURI(scala.Option<String> src) {
+		return src.isDefined()? toJavaURI(src.get()) : null;
+	}
+	
 	// --------------------------------------------------------------------------------------------
 
-	protected static <T> scala.Option<T> toScalaOption(T src) {
+	protected <T> scala.Option<T> toScalaOption(T src) {
 		return (src != null)? scala.Option.apply(src) : scala.Option.empty();
 	}
 
-	private static <A> A toJavaOpt(scala.Option<A> opt) {
+	private <A> A toJavaOpt(scala.Option<A> opt) {
 		return opt.isDefined()? opt.get() : null;
 	}
 
 	// strange Option<Object> in spark instead of Option<Long> ?
-	private static Long optObjectToJavaLong(scala.Option<Object> opt) {
+	private Long optObjectToJavaLong(scala.Option<Object> opt) {
 		if (!opt.isDefined()) return null;
 		Object obj = opt.get();
 		if (obj instanceof Number) {
@@ -346,39 +380,39 @@ public class SparkModelConverter {
 		return null;
 	}
 
-	private static <A> List<A> toJavaList(scala.collection.Seq<A> ls) {
+	private <A> List<A> toJavaList(scala.collection.Seq<A> ls) {
 		return JavaConverters.seqAsJavaList(ls);
 	}
 	
-	private static <A> scala.collection.Seq<A> toScalaSeq(java.util.Collection<A> ls) {
+	private <A> scala.collection.Seq<A> toScalaSeq(java.util.Collection<A> ls) {
 		return JavaConverters.collectionAsScalaIterable(ls).toSeq();
 	}
 	
-	protected static <K,V> ImmutableMap<K,V> toImmutableMapCopy(scala.collection.Map<K,V> src) {
+	protected <K,V> ImmutableMap<K,V> toImmutableMapCopy(scala.collection.Map<K,V> src) {
 		return ImmutableMap.copyOf(ScalaCollUtils.mapAsJavaMap(src));
 	}
 
-	protected static <K,V> scala.collection.immutable.Map<K,V> toScalaImmutableMap(java.util.Map<K,V> src) {
+	protected <K,V> scala.collection.immutable.Map<K,V> toScalaImmutableMap(java.util.Map<K,V> src) {
 		return ScalaCollUtils.toScalaImutableMap(src);
 	}
 
-	protected static <K,V> scala.collection.mutable.Map<K,V> toScalaMutableMap(java.util.Map<K,V> src) {
+	protected <K,V> scala.collection.mutable.Map<K,V> toScalaMutableMap(java.util.Map<K,V> src) {
 		return ScalaCollUtils.toScalaMutableMap(src);
 	}
 
-	protected static BigInt toScalaBigInt(BigInteger src) {
+	protected BigInt toScalaBigInt(BigInteger src) {
 		return new BigInt(src);
 	}
 
-	protected static BigInteger toJavaBigInt(BigInt src) {
+	protected BigInteger toJavaBigInt(BigInt src) {
 		return (src != null)? src.bigInteger() : null;
 	}
 
-	protected static BigInteger toJavaBigInt(scala.Option<BigInt> src) {
+	protected BigInteger toJavaBigInt(scala.Option<BigInt> src) {
 		return (src != null && src.isDefined())? src.get().bigInteger() : null;
 	}
 
-	protected static scala.Option<BigInt> toScalaOptionBigInt(BigInteger src) {
+	protected scala.Option<BigInt> toScalaOptionBigInt(BigInteger src) {
 		return (src != null)? scala.Option.apply(toScalaBigInt(src)) : scala.Option.empty();
 	}
 

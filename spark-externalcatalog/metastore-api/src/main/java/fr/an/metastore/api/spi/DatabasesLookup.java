@@ -3,7 +3,7 @@ package fr.an.metastore.api.spi;
 import java.util.List;
 
 import fr.an.metastore.api.exceptions.CatalogRuntimeException;
-import fr.an.metastore.impl.utils.MetastoreListUtils;
+import fr.an.metastore.api.utils.MetastoreListUtils;
 
 /**
  * part of AbstractJavaDbCatalog, for databases lookups by name

@@ -26,16 +26,16 @@ public class ModelCatalogLookups {
 	private final CatalogModel dbCatalogModel;
 	
 	@Getter
-	DatabaseModelDelegateDatabasesLookup dbsLookup = new DatabaseModelDelegateDatabasesLookup();
+	ModelDelegateDatabasesLookup dbsLookup = new ModelDelegateDatabasesLookup();
 
 	@Getter
-	DatabaseModelDelegateTablesLookup dbTablesLookup = new DatabaseModelDelegateTablesLookup();
+	ModelDelegateTablesLookup dbTablesLookup = new ModelDelegateTablesLookup();
 
 	@Getter
-	TableModelDelegateTablePartitionsLookup dbTablePartitionsLookup = new TableModelDelegateTablePartitionsLookup();
+	ModelDelegateTablePartitionsLookup dbTablePartitionsLookup = new ModelDelegateTablePartitionsLookup();
 	
 	@Getter
-	DatabaseModelDelegateFunctionsLookup dbFuncsLookup = new DatabaseModelDelegateFunctionsLookup();
+	ModelDelegateFunctionsLookup dbFuncsLookup = new ModelDelegateFunctionsLookup();
 
 	// --------------------------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ public class ModelCatalogLookups {
 	/**
 	 * implementation of DatabasesLookup, using in-memory DatabaseModel
 	 */
-	public class DatabaseModelDelegateDatabasesLookup extends DatabasesLookup<DatabaseModel> {
+	public class ModelDelegateDatabasesLookup extends DatabasesLookup<DatabaseModel> {
 
 		@Override
 		public DatabaseModel findDatabase(String db) {
@@ -77,7 +77,7 @@ public class ModelCatalogLookups {
 	/**
 	 * implementation of DatabaseTablesLookup, delegating to DatabaseModel
 	 */
-	public class DatabaseModelDelegateTablesLookup extends TablesLookup<DatabaseModel,TableModel> {
+	public class ModelDelegateTablesLookup extends TablesLookup<DatabaseModel,TableModel> {
 
 		@Override
 		public TableModel findTable(DatabaseModel db, String tableName) {
@@ -108,7 +108,7 @@ public class ModelCatalogLookups {
 	/**
 	 * implementation of DatabaseTablePartitionsLookup delegating to TableModel
 	 */
-	public class TableModelDelegateTablePartitionsLookup extends TablePartitionsLookup<DatabaseModel, TableModel, TablePartitionModel> {
+	public class ModelDelegateTablePartitionsLookup extends TablePartitionsLookup<DatabaseModel, TableModel, TablePartitionModel> {
 
 		@Override
 		public TablePartitionModel findPartition(DatabaseModel db, TableModel table, ImmutablePartitionSpec spec) {
@@ -145,7 +145,7 @@ public class ModelCatalogLookups {
 	/**
 	 * implementation of DatabaseFunctionsLookup delegating to DatabaseModel
 	 */
-	public class DatabaseModelDelegateFunctionsLookup extends FunctionsLookup<DatabaseModel, FunctionModel> {
+	public class ModelDelegateFunctionsLookup extends FunctionsLookup<DatabaseModel, FunctionModel> {
 
 		@Override
 		public FunctionModel findFunction(DatabaseModel db, String funcName) {

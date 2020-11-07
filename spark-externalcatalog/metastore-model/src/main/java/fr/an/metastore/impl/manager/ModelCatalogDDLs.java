@@ -21,12 +21,12 @@ import fr.an.metastore.api.spi.DatabasesDDL;
 import fr.an.metastore.api.spi.FunctionsDDL;
 import fr.an.metastore.api.spi.TablePartitionsDDL;
 import fr.an.metastore.api.spi.TablesDDL;
+import fr.an.metastore.api.utils.NotImpl;
 import fr.an.metastore.impl.model.CatalogModel;
 import fr.an.metastore.impl.model.DatabaseModel;
 import fr.an.metastore.impl.model.FunctionModel;
 import fr.an.metastore.impl.model.TableModel;
 import fr.an.metastore.impl.model.TablePartitionModel;
-import fr.an.metastore.impl.utils.NotImpl;
 import lombok.Getter;
 import lombok.val;
 

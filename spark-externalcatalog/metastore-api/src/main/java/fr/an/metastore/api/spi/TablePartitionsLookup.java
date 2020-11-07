@@ -6,16 +6,13 @@ import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
 import fr.an.metastore.api.exceptions.NoSuchPartitionRuntimeException;
 import fr.an.metastore.api.exceptions.PartitionAlreadyExistsRuntimeException;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
-import fr.an.metastore.impl.model.DatabaseModel;
-import fr.an.metastore.impl.model.TableModel;
-import fr.an.metastore.impl.model.TablePartitionModel;
-import fr.an.metastore.impl.utils.MetastoreListUtils;
+import fr.an.metastore.api.utils.MetastoreListUtils;
 import lombok.val;
 
 /**
  * part of AbstractJavaDbCatalog, for table partitions
  */
-public abstract class TablePartitionsLookup<TDb extends DatabaseModel,TTable extends TableModel,TPart extends TablePartitionModel> {
+public abstract class TablePartitionsLookup<TDb extends IDatabaseModel,TTable extends ITableModel,TPart extends ITablePartitionModel> {
 
 	public abstract TPart findPartition(TDb db, TTable table,
 			ImmutablePartitionSpec spec);

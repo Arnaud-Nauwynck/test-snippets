@@ -1,4 +1,4 @@
-package fr.an.metastore.impl.utils;
+package fr.an.metastore.api.utils;
 
 public class NotImpl {
 

@@ -11,6 +11,7 @@ import lombok.Value;
  *
  */
 @Value
+@AllArgsConstructor
 @Builder(toBuilder = true)
 public class ImmutableCatalogFunctionDef {
 
@@ -22,7 +23,7 @@ public class ImmutableCatalogFunctionDef {
 
 	@Value
 	@AllArgsConstructor 
-	// @Builder(toBuilder = true)
+	@Builder(toBuilder = true)
 	public static class ImmutableCatalogFunctionResource {
 		public final FunctionResourceTypeEnum resourceType;
 		public final URI uri;

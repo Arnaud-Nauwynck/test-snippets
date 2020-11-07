@@ -10,7 +10,8 @@ import lombok.Builder;
 import lombok.Value;
 
 @Value
-@AllArgsConstructor @Builder
+@AllArgsConstructor 
+@Builder(toBuilder = true)
 public class ImmutableCatalogDatabaseDef {
 
 	public final String name;

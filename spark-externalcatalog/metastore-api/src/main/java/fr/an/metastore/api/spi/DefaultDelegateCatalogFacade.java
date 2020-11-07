@@ -1,6 +1,6 @@
-package fr.an.metastore.impl.manager;
+package fr.an.metastore.api.spi;
 
-import static fr.an.metastore.impl.utils.MetastoreListUtils.map;
+import static fr.an.metastore.api.utils.MetastoreListUtils.map;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,20 +21,7 @@ import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
 import fr.an.metastore.api.info.CatalogTableInfo;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
-import fr.an.metastore.api.spi.DataLoader;
-import fr.an.metastore.api.spi.DatabasesDDL;
-import fr.an.metastore.api.spi.DatabasesLookup;
-import fr.an.metastore.api.spi.FunctionsDDL;
-import fr.an.metastore.api.spi.FunctionsLookup;
-import fr.an.metastore.api.spi.TablePartitionsDDL;
-import fr.an.metastore.api.spi.TablePartitionsLookup;
-import fr.an.metastore.api.spi.TablesDDL;
-import fr.an.metastore.api.spi.TablesLookup;
-import fr.an.metastore.impl.model.DatabaseModel;
-import fr.an.metastore.impl.model.FunctionModel;
-import fr.an.metastore.impl.model.TableModel;
-import fr.an.metastore.impl.model.TablePartitionModel;
-import fr.an.metastore.impl.utils.MetastoreListUtils;
+import fr.an.metastore.api.utils.MetastoreListUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
@@ -43,17 +30,22 @@ import lombok.val;
  * for Databases / Tables / Partitions / Functions
  */
 @RequiredArgsConstructor
-public class ModelCatalogFacade extends CatalogFacade {
+public class DefaultDelegateCatalogFacade<
+	TDb extends IDatabaseModel,
+	TTable extends ITableModel,
+	TTablePartition extends ITablePartitionModel,
+	TFunction extends IFunctionModel
+	> extends CatalogFacade {
 
-	private final DatabasesLookup<DatabaseModel> dbsLookup;
-	private final DatabasesDDL<DatabaseModel> dbsDdl;
-	private final TablesLookup<DatabaseModel, TableModel> dbTablesLookup;
-	private final TablesDDL<DatabaseModel, TableModel> dbTablesDdl;
-	private final TablePartitionsLookup<DatabaseModel, TableModel, TablePartitionModel> dbTablePartitionsLookup;
-	private final TablePartitionsDDL<DatabaseModel, TableModel, TablePartitionModel> dbTablePartitionsDdl;
-	private final FunctionsLookup<DatabaseModel, FunctionModel> dbFuncsLookup;
-	private final FunctionsDDL<DatabaseModel, FunctionModel> dbFuncsDdl;
-	private final DataLoader<DatabaseModel,TableModel,TablePartitionModel> dataLoaderManager;
+	private final DatabasesLookup<TDb> dbsLookup;
+	private final DatabasesDDL<TDb> dbsDdl;
+	private final TablesLookup<TDb, TTable> dbTablesLookup;
+	private final TablesDDL<TDb, TTable> dbTablesDdl;
+	private final TablePartitionsLookup<TDb, TTable, TTablePartition> dbTablePartitionsLookup;
+	private final TablePartitionsDDL<TDb, TTable, TTablePartition> dbTablePartitionsDdl;
+	private final FunctionsLookup<TDb, TFunction> dbFuncsLookup;
+	private final FunctionsDDL<TDb, TFunction> dbFuncsDdl;
+	private final DataLoader<TDb,TTable,TTablePartition> dataLoaderManager;
 
 	String currentDatabase = "default";
 
@@ -101,7 +93,7 @@ public class ModelCatalogFacade extends CatalogFacade {
 		}
 	}
 
-	protected DatabaseModel geDatabaseModel(String dbName) {
+	protected TDb geDatabaseModel(String dbName) {
 		return dbsLookup.getDatabase(dbName);
 	}
 
@@ -114,7 +106,7 @@ public class ModelCatalogFacade extends CatalogFacade {
 	@Override
 	public ImmutableCatalogDatabaseDef getDatabase(String dbName) {
 		val db = geDatabaseModel(dbName);
-		return db.getDbDef(); // dtoConverter.toDbDTO(db);
+		return db.getDbDef();
 	}
 
 	@Override
@@ -169,11 +161,11 @@ public class ModelCatalogFacade extends CatalogFacade {
 		}
 	}
 
-	protected TableModel getTable(DatabaseModel db, String tableName) {
+	protected TTable getTable(TDb db, String tableName) {
 		return dbTablesLookup.getTable(db, tableName);
 	}
 
-	protected TableModel doGetTable(String dbName, String tableName) {
+	protected TTable doGetTable(String dbName, String tableName) {
 		val db = geDatabaseModel(dbName);
 		return dbTablesLookup.getTable(db, tableName);
 	}
@@ -224,7 +216,7 @@ public class ModelCatalogFacade extends CatalogFacade {
 		return toTableInfo(t);
 	}
 
-	protected CatalogTableInfo toTableInfo(TableModel src) {
+	protected CatalogTableInfo toTableInfo(TTable src) {
 		return new CatalogTableInfo(src.getDef(), src.getLastAccessTime(), 
 				src.getStats());
 	}
@@ -300,7 +292,7 @@ public class ModelCatalogFacade extends CatalogFacade {
 		validate(oldPartSpecs.size() == newSpecs.size(), "number of old and new partition specs differ");
 		val oldPartModels = dbTablePartitionsLookup.getPartitions(db, table, oldPartSpecs);
 		dbTablePartitionsLookup.requirePartitionsNotExist(db, table, newSpecs);
-		List<TablePartitionModel> newPartModels = dbTablePartitionsDdl.renamePartitions(db, table, oldPartModels, newSpecs);
+		List<TTablePartition> newPartModels = dbTablePartitionsDdl.renamePartitions(db, table, oldPartModels, newSpecs);
 		dbTablePartitionsLookup.removeAddPartitions(oldPartModels, newPartModels);
 	}
 
@@ -322,7 +314,7 @@ public class ModelCatalogFacade extends CatalogFacade {
 		return toTablePartitionInfo(tablePart);
 	}
 
-	protected CatalogTablePartitionInfo toTablePartitionInfo(TablePartitionModel src) {
+	protected CatalogTablePartitionInfo toTablePartitionInfo(TTablePartition src) {
 		return new CatalogTablePartitionInfo(src.getDef(),
 				src.getLastAccessTime(),
 				src.getStats());

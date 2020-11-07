@@ -15,6 +15,11 @@
 	
 		<dependency>
 			<groupId>fr.an.metastore</groupId>
+			<artifactId>metastore-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>fr.an.metastore</groupId>
 			<artifactId>metastore-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>

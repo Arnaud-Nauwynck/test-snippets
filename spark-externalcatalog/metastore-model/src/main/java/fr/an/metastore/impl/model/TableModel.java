@@ -13,14 +13,15 @@ import fr.an.metastore.api.immutable.CatalogTableId;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
-import fr.an.metastore.impl.utils.NotImpl;
+import fr.an.metastore.api.spi.ITableModel;
+import fr.an.metastore.api.utils.NotImpl;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Data @EqualsAndHashCode(callSuper=true)
-public class TableModel extends ModelElement {
+public class TableModel extends ModelElement implements ITableModel {
 
 	public static enum TableModelChildField {
 		partition

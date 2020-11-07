@@ -17,6 +17,7 @@
 	</properties>
 
 	<modules>
+		<module>metastore-api</module>
 		<module>metastore-model</module>
 		<module>metastore-spark-externalcatalog</module>
 		<module>metastore-hive</module>

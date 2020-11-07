@@ -7,6 +7,7 @@ import java.net.URI;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
@@ -51,7 +52,9 @@ public class ImmutableCatalogTableDef implements Serializable {
 
 	// --------------------------------------------------------------------------------------------
 
-	@Value @Builder(toBuilder = true)
+	@Value 
+	@AllArgsConstructor
+	@Builder(toBuilder = true) 
 	public static class ImmutableCatalogStorageFormat {
 		public final URI locationUri;
 	    public final String inputFormat;
@@ -61,21 +64,27 @@ public class ImmutableCatalogTableDef implements Serializable {
 	    public final ImmutableMap<String, String> properties;
 	}
 
-	@Value @Builder(toBuilder = true)
+	@Value
+	@AllArgsConstructor
+	@Builder(toBuilder = true)
 	public static class ImmutableBucketSpec {
 		public final int numBuckets;
 		public final ImmutableList<String> bucketColumnNames;
 		public final ImmutableList<String> sortColumnNames;
 	}
 
-	@Value @Builder(toBuilder = true)
+	@Value
+	@AllArgsConstructor
+	@Builder(toBuilder = true)
 	public static class ImmutableCatalogTableStatistics {
 		public final BigInteger sizeInBytes;
 		public final BigInteger rowCount;
 		public final ImmutableMap<String, ImmutableCatalogColumnStat> colStats;
 	}
 	    
-	@Value @Builder(toBuilder = true)
+	@Value
+	@AllArgsConstructor
+	@Builder(toBuilder = true)
 	public static class ImmutableCatalogColumnStat {
 		public final BigInteger distinctCount;
 		public final String min;
@@ -87,7 +96,9 @@ public class ImmutableCatalogTableDef implements Serializable {
 		public final int version; // = CatalogColumnStat.VERSION;
 	}
 	
-	@Data @Builder(toBuilder = true)
+	@Data
+	@AllArgsConstructor
+	@Builder(toBuilder = true)
 	public static class ImmutableHistogram {
 		public final BigInteger sizeInBytes;
 		public final BigInteger rowCount;

@@ -2,6 +2,7 @@ package fr.an.metastore.impl.model;
 
 import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
+import fr.an.metastore.api.spi.ITablePartitionModel;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -10,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Data @EqualsAndHashCode(callSuper=true)
 @RequiredArgsConstructor
-public class TablePartitionModel extends ModelElement {
+public class TablePartitionModel extends ModelElement implements ITablePartitionModel {
 
 	public final DatabaseModel db() { return table.getDb(); }
 	

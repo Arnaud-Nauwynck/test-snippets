@@ -9,14 +9,9 @@
 		<relativePath>..</relativePath>
 	</parent>
 	
-	<artifactId>metastore-model</artifactId>
+	<artifactId>metastore-api</artifactId>
 
 	<dependencies>
-		<dependency>
-			<groupId>fr.an.metastore</groupId>
-			<artifactId>metastore-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		<dependency>
 		    <groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>

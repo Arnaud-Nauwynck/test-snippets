@@ -3,13 +3,12 @@ package fr.an.metastore.api.spi;
 import java.util.List;
 
 import fr.an.metastore.api.exceptions.CatalogRuntimeException;
-import fr.an.metastore.impl.model.DatabaseModel;
-import fr.an.metastore.impl.utils.MetastoreListUtils;
+import fr.an.metastore.api.utils.MetastoreListUtils;
 
 /**
  * part of AbstractJavaDbCatalog, for functions lookup by name
  */
-public abstract class FunctionsLookup<TDb extends DatabaseModel,TFunc> {
+public abstract class FunctionsLookup<TDb extends IDatabaseModel,TFunc extends IFunctionModel> {
 
 	public abstract TFunc findFunction(TDb db, String funcName);
 
