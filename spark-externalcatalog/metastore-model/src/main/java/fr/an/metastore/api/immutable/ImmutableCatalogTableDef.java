@@ -69,7 +69,7 @@ public class ImmutableCatalogTableDef implements Serializable {
 	}
 
 	@Value @Builder(toBuilder = true)
-	public static class ImmutableCatalogStatistics {
+	public static class ImmutableCatalogTableStatistics {
 		public final BigInteger sizeInBytes;
 		public final BigInteger rowCount;
 		public final ImmutableMap<String, ImmutableCatalogColumnStat> colStats;

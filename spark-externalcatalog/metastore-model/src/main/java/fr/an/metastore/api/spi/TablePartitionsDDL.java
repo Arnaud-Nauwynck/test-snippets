@@ -1,4 +1,4 @@
-package fr.an.metastore.api.manager;
+package fr.an.metastore.api.spi;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
 /**
  * part of AbstractJavaDbCatalog, for table partitions DDL
  */
-public abstract class TablePartitionsDDLManager<TDb,TTable,TPart> {
+public abstract class TablePartitionsDDL<TDb,TTable,TPart> {
 	
 	public abstract List<TPart> createPartitions(TDb db, TTable table, 
 			List<ImmutableCatalogTablePartitionDef> parts,

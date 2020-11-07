@@ -1,15 +1,15 @@
-package fr.an.metastore.api.manager;
+package fr.an.metastore.api.spi;
 
 
-import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
 import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 
 /**
  * part of AbstractJavaDbCatalog, for table DDL
  *
  */
-public abstract class TablesDDLManager<TDb,TTable> {
+public abstract class TablesDDL<TDb,TTable> {
 	
 	public abstract TTable createTable(TDb db, ImmutableCatalogTableDef tableDef, boolean ignoreIfExists);
 
@@ -25,6 +25,6 @@ public abstract class TablesDDLManager<TDb,TTable> {
 			StructTypeDTO newDataSchema);
 
 	public abstract void alterTableStats(TDb db, TTable table, //
-			CatalogStatisticsDTO stats);
+			ImmutableCatalogTableStatistics stats);
 
 }

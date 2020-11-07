@@ -8,29 +8,28 @@ import java.util.List;
 import java.util.TreeSet;
 
 import fr.an.metastore.api.CatalogFacade;
-import fr.an.metastore.api.dto.CatalogFunctionDTO;
-import fr.an.metastore.api.dto.CatalogTableDTO;
-import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
 import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.exceptions.CatalogRuntimeException;
 import fr.an.metastore.api.exceptions.NoSuchTableRuntimeException;
 import fr.an.metastore.api.exceptions.TableAlreadyExistsRuntimeException;
+import fr.an.metastore.api.immutable.CatalogFunctionId;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
+import fr.an.metastore.api.info.CatalogTableInfo;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
-import fr.an.metastore.api.manager.DataLoaderManager;
-import fr.an.metastore.api.manager.DatabasesDDLManager;
-import fr.an.metastore.api.manager.DatabasesLookup;
-import fr.an.metastore.api.manager.FunctionsDDLManager;
-import fr.an.metastore.api.manager.FunctionsLookup;
-import fr.an.metastore.api.manager.TablePartitionsDDLManager;
-import fr.an.metastore.api.manager.TablePartitionsLookup;
-import fr.an.metastore.api.manager.TablesDDLManager;
-import fr.an.metastore.api.manager.TablesLookup;
-import fr.an.metastore.impl.model.CatalogModel2DtoConverter;
+import fr.an.metastore.api.spi.DataLoader;
+import fr.an.metastore.api.spi.DatabasesDDL;
+import fr.an.metastore.api.spi.DatabasesLookup;
+import fr.an.metastore.api.spi.FunctionsDDL;
+import fr.an.metastore.api.spi.FunctionsLookup;
+import fr.an.metastore.api.spi.TablePartitionsDDL;
+import fr.an.metastore.api.spi.TablePartitionsLookup;
+import fr.an.metastore.api.spi.TablesDDL;
+import fr.an.metastore.api.spi.TablesLookup;
 import fr.an.metastore.impl.model.DatabaseModel;
 import fr.an.metastore.impl.model.FunctionModel;
 import fr.an.metastore.impl.model.TableModel;
@@ -44,18 +43,17 @@ import lombok.val;
  * for Databases / Tables / Partitions / Functions
  */
 @RequiredArgsConstructor
-public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
+public class ModelCatalogFacade extends CatalogFacade {
 
-	private final CatalogModel2DtoConverter dtoConverter;
 	private final DatabasesLookup<DatabaseModel> dbsLookup;
-	private final DatabasesDDLManager<DatabaseModel> dbsDdl;
+	private final DatabasesDDL<DatabaseModel> dbsDdl;
 	private final TablesLookup<DatabaseModel, TableModel> dbTablesLookup;
-	private final TablesDDLManager<DatabaseModel, TableModel> dbTablesDdl;
+	private final TablesDDL<DatabaseModel, TableModel> dbTablesDdl;
 	private final TablePartitionsLookup<DatabaseModel, TableModel, TablePartitionModel> dbTablePartitionsLookup;
-	private final TablePartitionsDDLManager<DatabaseModel, TableModel, TablePartitionModel> dbTablePartitionsDdl;
+	private final TablePartitionsDDL<DatabaseModel, TableModel, TablePartitionModel> dbTablePartitionsDdl;
 	private final FunctionsLookup<DatabaseModel, FunctionModel> dbFuncsLookup;
-	private final FunctionsDDLManager<DatabaseModel, FunctionModel> dbFuncsDdl;
-	private final DataLoaderManager<DatabaseModel,TableModel,TablePartitionModel> dataLoaderManager;
+	private final FunctionsDDL<DatabaseModel, FunctionModel> dbFuncsDdl;
+	private final DataLoader<DatabaseModel,TableModel,TablePartitionModel> dataLoaderManager;
 
 	String currentDatabase = "default";
 
@@ -175,7 +173,7 @@ public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 		return dbTablesLookup.getTable(db, tableName);
 	}
 
-	protected TableModel dogetTable(String dbName, String tableName) {
+	protected TableModel doGetTable(String dbName, String tableName) {
 		val db = geDatabaseModel(dbName);
 		return dbTablesLookup.getTable(db, tableName);
 	}
@@ -208,7 +206,7 @@ public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 	}
 
 	@Override
-	public void alterTableStats(String dbName, String tableName, CatalogStatisticsDTO stats) {
+	public void alterTableStats(String dbName, String tableName, ImmutableCatalogTableStatistics stats) {
 		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		dbTablesDdl.alterTableStats(db, table, stats);
@@ -216,26 +214,31 @@ public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 
 	@Override
 	public ImmutableCatalogTableDef getTableDef(String db, String table) {
-		val t = dogetTable(db, table);
+		val t = doGetTable(db, table);
 		return t.getDef();
 	}
 
 	@Override
-	public CatalogTableDTO getTable(String db, String table) {
-		val t = dogetTable(db, table);
-		return dtoConverter.toTableDTO(t);
+	public CatalogTableInfo getTableInfo(String db, String table) {
+		val t = doGetTable(db, table);
+		return toTableInfo(t);
+	}
+
+	protected CatalogTableInfo toTableInfo(TableModel src) {
+		return new CatalogTableInfo(src.getDef(), src.getLastAccessTime(), 
+				src.getStats());
 	}
 
 	@Override
 	public List<ImmutableCatalogTableDef> getTableDefsByName(String dbName, List<String> tableNames) {
 		val db = geDatabaseModel(dbName);
-		return MetastoreListUtils.map(tableNames, n -> getTable(db, n).getDef());
+		return map(tableNames, n -> getTable(db, n).getDef());
 	}
 
 	@Override
-	public List<CatalogTableDTO> getTablesByName(String dbName, List<String> tableNames) {
+	public List<CatalogTableInfo> getTableInfosByName(String dbName, List<String> tableNames) {
 		val db = geDatabaseModel(dbName);
-		return MetastoreListUtils.map(tableNames, n -> dtoConverter.toTableDTO(getTable(db, n)));
+		return map(tableNames, n -> toTableInfo(getTable(db, n)));
 	}
 
 	@Override
@@ -245,13 +248,13 @@ public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 	}
 
 	@Override
-	public List<String> listTables(String dbName) {
+	public List<String> listTableNames(String dbName) {
 		val db = geDatabaseModel(dbName);
 		return dbTablesLookup.listTables(db);
 	}
 
 	@Override
-	public List<String> listTables(String dbName, String pattern) {
+	public List<String> listTableNamesByPattern(String dbName, String pattern) {
 		val db = geDatabaseModel(dbName);
 		return dbTablesLookup.listTables(db, pattern);
 	}
@@ -316,7 +319,13 @@ public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tablePart = dbTablePartitionsLookup.getPartition(db, table, spec);
-		return dtoConverter.toTablePartitionInfo(tablePart, table);
+		return toTablePartitionInfo(tablePart);
+	}
+
+	protected CatalogTablePartitionInfo toTablePartitionInfo(TablePartitionModel src) {
+		return new CatalogTablePartitionInfo(src.getDef(),
+				src.getLastAccessTime(),
+				src.getStats());
 	}
 
 	@Override
@@ -325,7 +334,7 @@ public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 		val db = geDatabaseModel(dbName);
 		val table = getTable(db, tableName);
 		val tableParts = dbTablePartitionsLookup.listPartitionsByPartialSpec(db, table, partialSpec);
-		return dtoConverter.toTablePartitionInfos(tableParts, table);
+		return map(tableParts, x -> toTablePartitionInfo(x));
 	}
 
 	@Override
@@ -374,28 +383,30 @@ public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 	// --------------------------------------------------------------------------
 
 	@Override
-	public void createFunction(String dbName, String funcName, ImmutableCatalogFunctionDef funcDef) {
+	public void createFunction(ImmutableCatalogFunctionDef funcDef) {
+		String dbName = funcDef.identifier.database;
+		String funcName = funcDef.identifier.funcName;
 		val db = geDatabaseModel(dbName);
 		val found = dbFuncsLookup.findFunction(db, funcName);
 		if (null == found) {
 			throw new CatalogRuntimeException("Function already exists '" + dbName + "." + funcName + "'");
 		}
-		val func = dbFuncsDdl.createFunction(db, funcName, funcDef);
+		val func = dbFuncsDdl.createFunction(db, funcDef);
 		dbFuncsLookup.add(func);
 	}
 
 	@Override
-	public void dropFunction(String dbName, String funcName) {
-		val db = geDatabaseModel(dbName);
-		val func = dbFuncsLookup.getFunction(db, funcName);
+	public void dropFunction(CatalogFunctionId id) {
+		val db = geDatabaseModel(id.database);
+		val func = dbFuncsLookup.getFunction(db, id.funcName);
 		dbFuncsDdl.dropFunction(db, func);
 		dbFuncsLookup.remove(func);
 	}
 
 	@Override
-	public void alterFunction(String dbName, String funcName, ImmutableCatalogFunctionDef funcDef) {
-		val db = geDatabaseModel(dbName);
-		val func = dbFuncsLookup.getFunction(db, funcName);
+	public void alterFunction(ImmutableCatalogFunctionDef funcDef) {
+		val db = geDatabaseModel(funcDef.identifier.database);
+		val func = dbFuncsLookup.getFunction(db, funcDef.identifier.funcName);
 		dbFuncsDdl.alterFunction(db, func, funcDef);
 	}
 
@@ -409,16 +420,16 @@ public class LookupsAndDdlsAdapterCatalogFacade extends CatalogFacade {
 	}
 	
 	@Override
-	public CatalogFunctionDTO getFunction(String dbName, String funcName) {
-		val db = geDatabaseModel(dbName);
-		val func = dbFuncsLookup.getFunction(db, funcName);
-		return dtoConverter.toFunctionDTO(func);
+	public ImmutableCatalogFunctionDef getFunction(CatalogFunctionId id) {
+		val db = geDatabaseModel(id.database);
+		val func = dbFuncsLookup.getFunction(db, id.funcName);
+		return func.getFuncDef();
 	}
 
 	@Override
-	public boolean functionExists(String dbName, String funcName) {
-		val db = geDatabaseModel(dbName);
-		return dbFuncsLookup.functionExists(db, funcName);
+	public boolean functionExists(CatalogFunctionId id) {
+		val db = geDatabaseModel(id.database);
+		return dbFuncsLookup.functionExists(db, id.funcName);
 	}
 
 	@Override

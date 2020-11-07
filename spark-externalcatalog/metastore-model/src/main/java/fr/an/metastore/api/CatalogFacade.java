@@ -3,16 +3,15 @@ package fr.an.metastore.api;
 import java.util.List;
 import java.util.Optional;
 
-import fr.an.metastore.api.dto.CatalogFunctionDTO;
-import fr.an.metastore.api.dto.CatalogTableDTO;
-import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
-import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
 import fr.an.metastore.api.dto.StructTypeDTO;
+import fr.an.metastore.api.immutable.CatalogFunctionId;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
+import fr.an.metastore.api.info.CatalogTableInfo;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
 
 /**
@@ -59,19 +58,19 @@ public abstract class CatalogFacade {
 			StructTypeDTO newDataSchema);
 
 	public abstract void alterTableStats(String db, String table,
-			CatalogStatisticsDTO stats);
+			ImmutableCatalogTableStatistics stats);
 
 	public abstract ImmutableCatalogTableDef getTableDef(String db, String table);
-	public abstract CatalogTableDTO getTable(String db, String table);
+	public abstract CatalogTableInfo getTableInfo(String db, String table);
 
 	public abstract List<ImmutableCatalogTableDef> getTableDefsByName(String db, List<String> tables);
-	public abstract List<CatalogTableDTO> getTablesByName(String db, List<String> tables);
+	public abstract List<CatalogTableInfo> getTableInfosByName(String db, List<String> tables);
 
 	public abstract boolean tableExists(String db, String table);
 
-	public abstract List<String> listTables(String db);
+	public abstract List<String> listTableNames(String db);
 
-	public abstract List<String> listTables(String db, String pattern);
+	public abstract List<String> listTableNamesByPattern(String db, String pattern);
 
 	public abstract void loadTable(String db, String table, String loadPath, boolean isOverwrite, boolean isSrcLocal);
 
@@ -127,17 +126,17 @@ public abstract class CatalogFacade {
 	// Functions
 	// --------------------------------------------------------------------------
 
-	public abstract void createFunction(String db, String funcName, ImmutableCatalogFunctionDef funcDef);
+	public abstract void createFunction(ImmutableCatalogFunctionDef funcDef);
 
-	public abstract void dropFunction(String db, String funcName);
+	public abstract void dropFunction(CatalogFunctionId identifier);
 
-	public abstract void alterFunction(String db, String funcName, ImmutableCatalogFunctionDef funcDef);
+	public abstract void alterFunction(ImmutableCatalogFunctionDef funcDef);
 
 	public abstract void renameFunction(String db, String oldFuncName, String newFuncName);
 
-	public abstract CatalogFunctionDTO getFunction(String db, String funcName);
+	public abstract ImmutableCatalogFunctionDef getFunction(CatalogFunctionId identifier);
 
-	public abstract boolean functionExists(String db, String funcName);
+	public abstract boolean functionExists(CatalogFunctionId identifier);
 
 	public abstract List<String> listFunctions(String db, String pattern);
 

@@ -1,4 +1,4 @@
-package fr.an.metastore.api.manager;
+package fr.an.metastore.api.spi;
 
 import java.util.List;
 

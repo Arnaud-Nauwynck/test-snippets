@@ -1,6 +1,6 @@
 package fr.an.metastore.api.info;
 
-import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogStatistics;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import lombok.AllArgsConstructor;
 
@@ -11,6 +11,6 @@ public class CatalogTablePartitionInfo {
 	
 	// .. not in definition: 
 	public long lastAccessTime;
-	public ImmutableCatalogStatistics stats;
+	public ImmutableCatalogTableStatistics stats;
 
 }

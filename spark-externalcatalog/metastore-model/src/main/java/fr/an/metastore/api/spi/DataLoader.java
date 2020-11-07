@@ -1,6 +1,6 @@
-package fr.an.metastore.api.manager;
+package fr.an.metastore.api.spi;
 
-public abstract class DataLoaderManager<TDb,TTable,TPart> {
+public abstract class DataLoader<TDb,TTable,TPart> {
 
 	public abstract void loadTable(TDb db, TTable table, //
 			String loadPath, boolean isOverwrite, boolean isSrcLocal);
@@ -14,7 +14,7 @@ public abstract class DataLoaderManager<TDb,TTable,TPart> {
 	/**
 	 * 
 	 */
-	public static class DefaultDataLoaderManager<TDb,TTable,TPart> extends DataLoaderManager<TDb,TTable,TPart> {
+	public static class DoNothingDataLoader<TDb,TTable,TPart> extends DataLoader<TDb,TTable,TPart> {
 
 		@Override
 		public void loadTable(TDb db, TTable table, //

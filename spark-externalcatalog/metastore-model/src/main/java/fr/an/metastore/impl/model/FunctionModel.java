@@ -14,10 +14,11 @@ public class FunctionModel extends ModelElement {
 
 	private final DatabaseModel db;
 	
-	private final String funcName;
-	
 	private ImmutableCatalogFunctionDef funcDef;
 	
+	public String getFuncName() {
+		return funcDef.identifier.funcName;
+	}
 
 	// implements ModelElement
 	// --------------------------------------------------------------------------------------------
@@ -34,7 +35,7 @@ public class FunctionModel extends ModelElement {
 
 	@Override
 	public String childId() {
-		return funcName;
+		return funcDef.identifier.funcName;
 	}
 	
 }

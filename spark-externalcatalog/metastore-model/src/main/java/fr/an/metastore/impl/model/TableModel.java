@@ -11,7 +11,9 @@ import java.util.Map;
 import fr.an.metastore.api.dto.CatalogTableDTO.HistogramDTO;
 import fr.an.metastore.api.immutable.CatalogTableId;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
+import fr.an.metastore.impl.utils.NotImpl;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,8 +32,12 @@ public class TableModel extends ModelElement {
 	@Getter @Setter
 	private ImmutableCatalogTableDef def;
 
-	long lastAccessTime = -1;
+	@Getter @Setter
+	private long lastAccessTime = -1;
 
+	@Getter @Setter
+	private ImmutableCatalogTableStatistics stats;
+	
 	// TOCHANGE externalise.. can be huge, so not not in-memory, use persistent db, like LevelDB
 	private Map<ImmutablePartitionSpec, TablePartitionModel> partitions = new HashMap<>();
 	
@@ -81,13 +87,13 @@ public class TableModel extends ModelElement {
 			return new ArrayList<>(partitions.values());
 		}
 		// TODO
-		throw new UnsupportedOperationException("TODO NOT IMPLEMENTED YET");
+		throw NotImpl.notImplEx();
 	}
 
 //	public List<TablePartitionModel> listPartitionsByFilter(
 //			List<Expression> predicates, String defaultTimeZoneId) {
 //		// TODO
-//		throw new UnsupportedOperationException("TODO NOT IMPLEMENTED YET");
+//		throw NotImpl.notImplEx();
 //	}
 
 	public void addPartition(TablePartitionModel part) {

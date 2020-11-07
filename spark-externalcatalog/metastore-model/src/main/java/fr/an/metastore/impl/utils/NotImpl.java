@@ -1,4 +1,4 @@
-package fr.an.metastore.spark.util;
+package fr.an.metastore.impl.utils;
 
 public class NotImpl {
 

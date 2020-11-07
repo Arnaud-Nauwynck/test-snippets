@@ -2,7 +2,7 @@ package fr.an.metastore.impl.model;
 
 import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
-import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogStatistics;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,7 +22,7 @@ public class TablePartitionModel extends ModelElement {
 
 	// not in immutable def
 	private long lastAccessTime = -1;
-    private ImmutableCatalogStatistics stats;
+    private ImmutableCatalogTableStatistics stats;
     
 //	@Getter @Setter
 //	CatalogTablePartition sparkDefinition;

@@ -3,10 +3,10 @@ package fr.an.metastore.impl.manager;
 import java.util.List;
 
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
-import fr.an.metastore.api.manager.DatabasesLookup;
-import fr.an.metastore.api.manager.FunctionsLookup;
-import fr.an.metastore.api.manager.TablePartitionsLookup;
-import fr.an.metastore.api.manager.TablesLookup;
+import fr.an.metastore.api.spi.DatabasesLookup;
+import fr.an.metastore.api.spi.FunctionsLookup;
+import fr.an.metastore.api.spi.TablePartitionsLookup;
+import fr.an.metastore.api.spi.TablesLookup;
 import fr.an.metastore.impl.model.CatalogModel;
 import fr.an.metastore.impl.model.DatabaseModel;
 import fr.an.metastore.impl.model.FunctionModel;
@@ -21,7 +21,7 @@ import lombok.val;
  * delegating to corresponding model class DatabaseModel, TableModel
  * => to in-memory Map get() / keySet() / put() / remove() methods
  */
-public class ModelDelegateCatalogLookup {
+public class ModelCatalogLookups {
 
 	private final CatalogModel dbCatalogModel;
 	
@@ -39,7 +39,7 @@ public class ModelDelegateCatalogLookup {
 
 	// --------------------------------------------------------------------------------------------
 
-	public ModelDelegateCatalogLookup(CatalogModel dbCatalogModel) {
+	public ModelCatalogLookups(CatalogModel dbCatalogModel) {
 		this.dbCatalogModel = dbCatalogModel;
 	}
 

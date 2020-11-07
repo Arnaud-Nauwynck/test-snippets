@@ -1,11 +1,11 @@
-package fr.an.metastore.api.manager;
+package fr.an.metastore.api.spi;
 
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 
 /**
  * part of AbstractJavaDbCatalog, for databases DDL
  */
-public abstract class DatabasesDDLManager<TDb> {
+public abstract class DatabasesDDL<TDb> {
 
 	public abstract TDb createDatabase(String dbName, ImmutableCatalogDatabaseDef dbDef, boolean ignoreIfExists);
 

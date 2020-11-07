@@ -7,32 +7,33 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
-import fr.an.metastore.api.dto.CatalogTableDTO.CatalogStatisticsDTO;
-import fr.an.metastore.api.dto.CatalogTablePartitionDTO;
 import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.exceptions.CatalogWrappedRuntimeException;
+import fr.an.metastore.api.immutable.CatalogFunctionId;
 import fr.an.metastore.api.immutable.CatalogTableId;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
 import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
-import fr.an.metastore.api.manager.DatabasesDDLManager;
-import fr.an.metastore.api.manager.FunctionsDDLManager;
-import fr.an.metastore.api.manager.TablePartitionsDDLManager;
-import fr.an.metastore.api.manager.TablesDDLManager;
+import fr.an.metastore.api.spi.DatabasesDDL;
+import fr.an.metastore.api.spi.FunctionsDDL;
+import fr.an.metastore.api.spi.TablePartitionsDDL;
+import fr.an.metastore.api.spi.TablesDDL;
 import fr.an.metastore.impl.model.CatalogModel;
 import fr.an.metastore.impl.model.DatabaseModel;
 import fr.an.metastore.impl.model.FunctionModel;
 import fr.an.metastore.impl.model.TableModel;
 import fr.an.metastore.impl.model.TablePartitionModel;
+import fr.an.metastore.impl.utils.NotImpl;
 import lombok.Getter;
 import lombok.val;
 
 /**
  * class containing default implementations of DDLs for Databases | Tables | Partitions | Functions
  */
-public class InMemoryCatalogDDLManager {
+public class ModelCatalogDDLs {
 
 	private Configuration hadoopConfig;
 
@@ -40,20 +41,20 @@ public class InMemoryCatalogDDLManager {
 	CatalogModel catalog;
 	
 	@Getter
-	InMemoryDatabasesDDLManager dbsDdl = new InMemoryDatabasesDDLManager();
+	ModelDatabasesDDL dbsDdl = new ModelDatabasesDDL();
 
 	@Getter
-	InMemoryDatabaseTableDDLManager dbTablesDdl = new InMemoryDatabaseTableDDLManager();
+	ModelDatabaseTableDDL dbTablesDdl = new ModelDatabaseTableDDL();
 
 	@Getter
-	InMemoryTablePartitionsDDLManager dbTablePartitionsDdl = new InMemoryTablePartitionsDDLManager();
+	ModelTablePartitionsDDL dbTablePartitionsDdl = new ModelTablePartitionsDDL();
 	
 	@Getter
-	InMemoryDatabaseFunctionsDDLManager dbFuncsDdl = new InMemoryDatabaseFunctionsDDLManager();
+	ModelDatabaseFunctionsDDL dbFuncsDdl = new ModelDatabaseFunctionsDDL();
 
 	// --------------------------------------------------------------------------------------------
 
-	public InMemoryCatalogDDLManager(CatalogModel catalog, Configuration hadoopConfig) {
+	public ModelCatalogDDLs(CatalogModel catalog, Configuration hadoopConfig) {
 		this.catalog = catalog;
 		this.hadoopConfig = hadoopConfig;
 	}
@@ -63,7 +64,7 @@ public class InMemoryCatalogDDLManager {
 	/**
 	 * implementation of DatabasesDDLManager, using in-memory DatabaseModel
 	 */
-	public class InMemoryDatabasesDDLManager extends DatabasesDDLManager<DatabaseModel> {
+	public class ModelDatabasesDDL extends DatabasesDDL<DatabaseModel> {
 		
 		@Override
 		public DatabaseModel createDatabase(
@@ -119,7 +120,7 @@ public class InMemoryCatalogDDLManager {
 	/**
 	 * implementation of DatabaseTablesDDLManager using in-memory TableModel
 	 */
-	public class InMemoryDatabaseTableDDLManager extends TablesDDLManager<DatabaseModel,TableModel> {
+	public class ModelDatabaseTableDDL extends TablesDDL<DatabaseModel,TableModel> {
 
 		@Override
 		public TableModel createTable(DatabaseModel db, ImmutableCatalogTableDef tableDef, boolean ignoreIfExists) {
@@ -221,14 +222,12 @@ public class InMemoryCatalogDDLManager {
 
 		@Override
 		public void alterTableDataSchema(DatabaseModel db, TableModel table, StructTypeDTO newDataSchema) {
-			// TODO Auto-generated method stub
-			
+			throw NotImpl.notImplEx();
 		}
 
 		@Override
-		public void alterTableStats(DatabaseModel db, TableModel table, CatalogStatisticsDTO stats) {
-			// TODO Auto-generated method stub
-			
+		public void alterTableStats(DatabaseModel db, TableModel table, ImmutableCatalogTableStatistics stats) {
+			table.setStats(stats);
 		}
 
 	}
@@ -238,19 +237,19 @@ public class InMemoryCatalogDDLManager {
 	/**
 	 * implementation of DatabaseTablePartitionsDDLManager using in-memory TablePartitionModel
 	 */
-	public class InMemoryTablePartitionsDDLManager extends TablePartitionsDDLManager<DatabaseModel, TableModel, TablePartitionModel> {
+	public class ModelTablePartitionsDDL extends TablePartitionsDDL<DatabaseModel, TableModel, TablePartitionModel> {
 
 		@Override
 		public List<TablePartitionModel> createPartitions(DatabaseModel db, TableModel table,
 				List<ImmutableCatalogTablePartitionDef> parts, boolean ignoreIfExists) {
-			throw new UnsupportedOperationException("TODO NOT IMPLEMENTED YET");
+			throw NotImpl.notImplEx();
 		}
 
 		@Override
 		public void dropPartitions(DatabaseModel db, TableModel table,
 				List<TablePartitionModel> parts, 
 				boolean ignoreIfNotExists, boolean purge, boolean retainData) {
-			throw new UnsupportedOperationException("TODO NOT IMPLEMENTED YET");
+			throw NotImpl.notImplEx();
 		}
 
 		@Override
@@ -283,7 +282,7 @@ public class InMemoryCatalogDDLManager {
 //		        oldPartition.copy(spec = newSpec)
 //		      }
 
-			throw new UnsupportedOperationException("TODO NOT IMPLEMENTED YET");
+			throw NotImpl.notImplEx();
 		}
 
 		@Override
@@ -291,7 +290,7 @@ public class InMemoryCatalogDDLManager {
 				List<TablePartitionModel> parts,		
 				List<ImmutableCatalogTablePartitionDef> newPartDefs) {
 
-			throw new UnsupportedOperationException("TODO NOT IMPLEMENTED YET");
+			throw NotImpl.notImplEx();
 			
 		}
 
@@ -303,11 +302,11 @@ public class InMemoryCatalogDDLManager {
 	/**
 	 * implementation of DatabaseFunctionsDDLManager using in-memory FunctionModel
 	 */
-	public class InMemoryDatabaseFunctionsDDLManager extends FunctionsDDLManager<DatabaseModel, FunctionModel> {
+	public class ModelDatabaseFunctionsDDL extends FunctionsDDL<DatabaseModel, FunctionModel> {
 
-		public FunctionModel createFunction(DatabaseModel db, String funcName, ImmutableCatalogFunctionDef funcDef) {
+		public FunctionModel createFunction(DatabaseModel db, ImmutableCatalogFunctionDef funcDef) {
 			// do nothing, only manage memory model
-			return new FunctionModel(db, funcName, funcDef);
+			return new FunctionModel(db, funcDef);
 		}
 
 		@Override
@@ -322,10 +321,13 @@ public class InMemoryCatalogDDLManager {
 		}
 
 		@Override
-		public FunctionModel renameFunction(DatabaseModel db, FunctionModel func, String newFuncName) {
+		public FunctionModel renameFunction(DatabaseModel db, FunctionModel oldFunc, String newFuncName) {
 			// do nothing, only manage memory model
-			val funcDef = func.getFuncDef();
-			return new FunctionModel(db, newFuncName, funcDef);
+			val newId = new CatalogFunctionId(db.getName(), newFuncName);
+			val funcDef = oldFunc.getFuncDef().toBuilder()
+					.identifier(newId)
+					.build();
+			return new FunctionModel(db, funcDef);
 		}
 
 	}
