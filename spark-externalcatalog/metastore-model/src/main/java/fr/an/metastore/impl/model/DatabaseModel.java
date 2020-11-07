@@ -21,7 +21,6 @@ public class DatabaseModel extends ModelElement implements IDatabaseModel {
 		table, function
 	}
 	private final CatalogModel catalog;
-	private final String name;
 	
 	private ImmutableCatalogDatabaseDef dbDef;
 //	private String description;
@@ -34,9 +33,8 @@ public class DatabaseModel extends ModelElement implements IDatabaseModel {
 
 	// --------------------------------------------------------------------------------------------
 
-	public DatabaseModel(CatalogModel catalog, String name, ImmutableCatalogDatabaseDef dbDef) {
+	public DatabaseModel(CatalogModel catalog, ImmutableCatalogDatabaseDef dbDef) {
 		this.catalog = catalog;
-		this.name = name;
 		this.dbDef = dbDef;
 	}
 
@@ -55,10 +53,15 @@ public class DatabaseModel extends ModelElement implements IDatabaseModel {
 
 	@Override
 	public String childId() {
-		return name;
+		return dbDef.name;
 	}
 
 	// --------------------------------------------------------------------------------------------
+
+	@Override
+	public String getName() {
+		return dbDef.name;
+	}
 
 	public TableModel findTable(String tableName) {
 		return tables.get(tableName);
@@ -97,7 +100,7 @@ public class DatabaseModel extends ModelElement implements IDatabaseModel {
 	}
 
 	public void setDescription(String p) {
-		this.dbDef = dbDef.copyWithDescription(p);
+		this.dbDef = dbDef.toBuilder().description(p).build();
 	}
 
 	public URI getLocationUri() {
@@ -105,7 +108,7 @@ public class DatabaseModel extends ModelElement implements IDatabaseModel {
 	}
 
 	public void setLoactionUri(URI p) {
-		this.dbDef = dbDef.copyWithLocationUri(p);
+		this.dbDef = dbDef.toBuilder().locationUri(p).build();
 	}
 
 	public ImmutableMap<String,String> getProperties() {
@@ -113,7 +116,7 @@ public class DatabaseModel extends ModelElement implements IDatabaseModel {
 	}
 
 	public void setProperties(Map<String, String> p) {
-		this.dbDef = dbDef.copyWithProperties(p);
+		this.dbDef = dbDef.toBuilder().properties(ImmutableMap.copyOf(p)).build();
 	}
 
 }

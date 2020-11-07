@@ -14,12 +14,14 @@
 <!--
 			<spark.version>3.1.0-SNAPSHOT</spark.version>
 -->
+		<parquet.version>1.11.0</parquet.version>
 	</properties>
 
 	<modules>
 		<module>metastore-api</module>
 		<module>metastore-model</module>
 		<module>metastore-spark-externalcatalog</module>
+		<module>metastore-spark-externalcatalog-embedded</module>
 		<module>metastore-hive</module>
 	</modules>
 	
@@ -36,6 +38,33 @@
 				<version>${spark.version}</version>
 			</dependency>
 		
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-common</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-encoding</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-column</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-hadoop</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
+	
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-avro</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
+			
 		</dependencies>
 	</dependencyManagement>
 

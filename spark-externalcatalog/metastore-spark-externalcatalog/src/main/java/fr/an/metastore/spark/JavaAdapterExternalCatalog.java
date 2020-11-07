@@ -270,9 +270,9 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 
 	@Override
 	public void alterFunction(String db, CatalogFunction func) {
-		val def = sparkConverter.toImmutableFunctionDef(func);
+		ImmutableCatalogFunctionDef def = sparkConverter.toImmutableFunctionDef(func);
 		if (!def.identifier.database.equals(db)) {
-			throw NotImpl.notImplEx();
+			throw new IllegalStateException();
 		}
 		delegate.alterFunction(def);
 	}

@@ -72,7 +72,7 @@ public class ModelCatalogDDLs {
 				ImmutableCatalogDatabaseDef dbDef,
 				boolean ignoreIfExists) {
 			ensureCreateLocationDir(dbDef.getLocationUri(), "create database " + dbName);
-			val dbModel = new DatabaseModel(catalog, dbName, dbDef);
+			val dbModel = new DatabaseModel(catalog, dbDef);
 			return dbModel;
 		}
 
