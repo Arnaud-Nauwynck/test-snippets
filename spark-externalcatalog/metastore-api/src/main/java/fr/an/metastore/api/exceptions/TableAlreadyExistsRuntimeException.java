@@ -1,16 +1,16 @@
 package fr.an.metastore.api.exceptions;
 
+import fr.an.metastore.api.immutable.CatalogTableId;
+
 public class TableAlreadyExistsRuntimeException extends CatalogRuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	public final String dbName;
-	public final String tableName;
-	
-	public TableAlreadyExistsRuntimeException(String dbName, String tableName) {
-		super("Table '" + dbName + "." + tableName + "' already exists");
-		this.dbName = dbName;
-		this.tableName = tableName;
+	public final CatalogTableId tableId;
+
+	public TableAlreadyExistsRuntimeException(CatalogTableId tableId) {
+		super("Table '" + tableId + "' already exists");
+		this.tableId = tableId;
 	}
 	
 }

@@ -22,6 +22,9 @@ public class AvroImmutableStructTypeUtils {
 		
 		ImmutableStructType res = new ImmutableStructType(ImmutableList.copyOf(structFields));
 		res.setAsAvroSchema(schema);
+		
+		// also convert to Spark StructType !
+		
 		return res;
 	}
 

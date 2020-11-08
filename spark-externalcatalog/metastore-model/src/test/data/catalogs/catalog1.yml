@@ -1,0 +1,4 @@
+
+databases:
+  - name: db1
+    locationUri: file:///src/test/data/test1

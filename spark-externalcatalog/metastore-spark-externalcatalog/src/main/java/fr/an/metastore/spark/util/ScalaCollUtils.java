@@ -11,7 +11,6 @@ import scala.Predef;
 import scala.Tuple2;
 import scala.collection.IterableLike;
 import scala.collection.JavaConverters;
-import scala.collection.immutable.Map;
 import scala.collection.mutable.ArrayBuffer;
 
 public class ScalaCollUtils {

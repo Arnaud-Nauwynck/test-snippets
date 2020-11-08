@@ -5,6 +5,7 @@ import java.io.File;
 import fr.an.metastore.api.spi.DefaultDelegateCatalogFacade;
 import fr.an.metastore.impl.loader.ConfigImporter;
 import fr.an.metastore.impl.manager.ModelCatalogFacadeFactory;
+import fr.an.metastore.impl.model.CatalogModel;
 import fr.an.metastore.impl.model.DatabaseModel;
 import fr.an.metastore.impl.model.FunctionModel;
 import fr.an.metastore.impl.model.TableModel;
@@ -14,30 +15,39 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EmbeddedCatalogFacade 
 	extends DefaultDelegateCatalogFacade<DatabaseModel, TableModel, TablePartitionModel, FunctionModel> {
+
+	public final CatalogModel catalogModel;
 	
-	public static final String DEFAULT_CONFIG_FILENAME = "embeded-catalog.yml";
+	ConfigImporter configImporter = new ConfigImporter();
 	
 	public EmbeddedCatalogFacade() {
-		this(new ModelCatalogFacadeFactory());
+		this(null);
 	}
 	
-	private EmbeddedCatalogFacade(ModelCatalogFacadeFactory b) {
+	public EmbeddedCatalogFacade(File configFile) {
+		this(new ModelCatalogFacadeFactory(), configFile);
+	}
+	
+	private EmbeddedCatalogFacade(ModelCatalogFacadeFactory b, File configFile) {
 		super(// call super with empty in-memory CatalogModel from ModelCatalogFacadeFactory
 				b.lookups.getDbsLookup(), b.ddls.getDbsDdl(), //
 				b.lookups.getDbTablesLookup(), b.ddls.getDbTablesDdl(), //
 				b.lookups.getDbTablePartitionsLookup(), b.ddls.getDbTablePartitionsDdl(), //
 				b.lookups.getDbFuncsLookup(), b.ddls.getDbFuncsDdl(), //
 				b.dataLoaderManager);
-		
+		this.catalogModel = b.dbCatalogModel;
+		if (configFile != null) {
+			loadConfigFile(configFile);
+		}
+	}
+
+	public void loadConfigFile(File configFile) {
 		// Fill CatalogModel from yaml config files
-		ConfigImporter configImporter = new ConfigImporter();
-		String configFileName = System.getProperty("fr.an.metastore.configFileName", DEFAULT_CONFIG_FILENAME);
-		File configFile = new File(configFileName);
 		if (configFile.exists()) {
-			configImporter.importConfig(configFile, b.dbCatalogModel);
+			configImporter.importConfig(configFile, catalogModel);
 		} else {
 			log.error("Config file '" + configFile + "' not found! using empty model");
-		}
+		}				
 	}
 
 }

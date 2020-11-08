@@ -1,0 +1,10 @@
+{"namespace": "example.avro",
+ "type": "record",
+ "name": "Table1",
+ "fields": [
+     {"name": "strField", "type": "string"},
+     {"name": "strNullableField", "type": ["string", "null"]},
+     {"name": "intField",  "type": "int"},
+     {"name": "intNullableField",  "type": ["int", "null"]}
+ ]
+}

@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.apache.spark.sql.catalyst.FunctionIdentifier;
 import org.apache.spark.sql.catalyst.TableIdentifier;
+import org.apache.spark.sql.catalyst.catalog.BucketSpec;
 import org.apache.spark.sql.catalyst.catalog.CatalogColumnStat;
 import org.apache.spark.sql.catalyst.catalog.CatalogDatabase;
 import org.apache.spark.sql.catalyst.catalog.CatalogFunction;
@@ -22,6 +23,7 @@ import org.apache.spark.sql.catalyst.catalog.CatalogTableType;
 import org.apache.spark.sql.catalyst.catalog.FunctionResource;
 import org.apache.spark.sql.catalyst.catalog.FunctionResourceType;
 import org.apache.spark.sql.catalyst.plans.logical.Histogram;
+import org.apache.spark.sql.types.StructType;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -33,6 +35,7 @@ import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef.ImmutableCatalogFunctionResource;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
+import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableBucketSpec;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogColumnStat;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogStorageFormat;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef.ImmutableCatalogTableStatistics;
@@ -108,29 +111,50 @@ public class SparkModelConverter {
 	public CatalogTable toSparkTable(ImmutableCatalogTableDef src) {
 		TableIdentifier identifier = new TableIdentifier(
 				src.identifier.table, toScalaOption(src.identifier.database));
-		CatalogTableType catalogType = toSparkTableType(src.tableType);
-//		return new CatalogTable(
-//			    identifier, tableType,
-//			    storage: CatalogStorageFormat,
-//			    schema: StructType,
-//			    provider: Option[String] = None,
-//			    partitionColumnNames: Seq[String] = Seq.empty,
-//			    bucketSpec: Option[BucketSpec] = None,
-//			    owner: String = "",
-//			    createTime: Long = System.currentTimeMillis,
-//			    lastAccessTime: Long = -1,
-//			    createVersion: String = "",
-//			    properties: Map[String, String] = Map.empty,
-//			    stats: Option[CatalogStatistics] = None,
-//			    viewText: Option[String] = None,
-//			    comment: Option[String] = None,
-//			    unsupportedFeatures: Seq[String] = Seq.empty,
-//			    tracksPartitionsInCatalog: Boolean = false,
-//			    schemaPreservesCase: Boolean = true,
-//			    ignoredProperties: Map[String, String] = Map.empty,
-//			    viewOriginalText: Option[String] = None) {
-//				);
-		throw NotImpl.notImplEx(); // TODO
+		CatalogTableType tableType = toSparkTableType(src.tableType);
+		CatalogStorageFormat storage = toSparkStorageFormat(src.storage);
+		StructType schema = (StructType) src.schema.getAsSparkStruct();
+	    scala.Option<String> provider = toScalaOption(src.provider);
+	    scala.collection.Seq<String> partitionColumnNames = toScalaSeq(src.partitionColumnNames);
+	    scala.Option<BucketSpec> bucketSpec = toSparkBucketSpecOpt(src.bucketSpec);
+	    String owner = toStringOrEmpty(src.owner);
+	    long createTime = src.createTime;
+	    long lastAccessTime = -1; // TOCHANGE
+	    String createVersion = toStringOrEmpty(src.createVersion);
+	    scala.collection.immutable.Map<String, String> properties = toScalaImmutableMap(src.properties);
+	    scala.Option<CatalogStatistics> stats = scala.Option.empty(); // TODO
+	    scala.Option<String> viewText = toScalaOption(src.viewText);
+	    scala.Option<String> comment = toScalaOption(src.comment);
+	    scala.collection.Seq<String> unsupportedFeatures = toScalaSeq(src.unsupportedFeatures);
+	    boolean tracksPartitionsInCatalog = src.tracksPartitionsInCatalog;
+	    boolean schemaPreservesCase = src.schemaPreservesCase;
+	    scala.collection.immutable.Map<String, String> ignoredProperties = toScalaImmutableMap(src.ignoredProperties);
+	    scala.Option<String> viewOriginalText = toScalaOption(src.viewOriginalText);
+	    	
+		return new CatalogTable(
+			    identifier, tableType, storage, schema, provider, 
+			    partitionColumnNames,
+			    bucketSpec, owner, createTime, lastAccessTime, createVersion, 
+			    properties,
+			    stats, viewText, comment, unsupportedFeatures, tracksPartitionsInCatalog,
+			    schemaPreservesCase, 
+			    ignoredProperties, 
+			    viewOriginalText);
+	}
+
+	private String toStringOrEmpty(String src) {
+		return (src != null)? src : "";
+	}
+
+	private scala.Option<BucketSpec> toSparkBucketSpecOpt(ImmutableBucketSpec src) {
+		return (src != null)? scala.Option.apply(toSparkBucketSpec(src)) : scala.Option.empty();
+	}
+	
+	private BucketSpec toSparkBucketSpec(ImmutableBucketSpec src) {
+		return new BucketSpec(
+				src.numBuckets,
+				toScalaSeq(src.bucketColumnNames),
+				toScalaSeq(src.sortColumnNames));
 	}
 
 	public Seq<CatalogTable> toSparkTables(List<ImmutableCatalogTableDef> src) {

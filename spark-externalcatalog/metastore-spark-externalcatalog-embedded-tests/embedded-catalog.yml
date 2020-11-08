@@ -1,0 +1,13 @@
+
+databases:
+  - name: db1
+    locationUri: file:///src/test/data/db1
+    
+    tables:
+      - name: table1
+        tableType: EXTERNAL
+        storage:
+          serde: AVRO
+          locationUri: file:///src/test/data/db1/table1
+        schema:  
+          avroSchemaFile: src/test/data/catalogs/table1.avsc

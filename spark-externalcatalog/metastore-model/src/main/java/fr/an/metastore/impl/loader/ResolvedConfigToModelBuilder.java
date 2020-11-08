@@ -136,7 +136,8 @@ public class ResolvedConfigToModelBuilder {
 	}
 
 	private ImmutableCatalogStorageFormat toStorageFormat(CatalogStorageFormatConfig storage) {
-		URI locationUri = storage.locationUri;
+		ensureNotNull(storage, "table storage");
+		URI locationUri = ensureNotNull(storage.locationUri, "table storage locationUri");
 	    String inputFormat = storage.inputFormat;
 	    String outputFormat = storage.outputFormat;
 	    String serde = storage.serde;
@@ -146,6 +147,7 @@ public class ResolvedConfigToModelBuilder {
 	}
 
 	private ImmutableStructType toSchema(CatalogTableSchemaConfig schemaConfig) {
+		ensureNotNull(schemaConfig, "table schema");
 		String avroSchemaContent = schemaConfig.avroSchema;
 		String avroSchemaFile = schemaConfig.avroSchemaFile;
 		String sampleAvroDataFile = schemaConfig.sampleAvroDataFile;
@@ -188,6 +190,9 @@ public class ResolvedConfigToModelBuilder {
 	}
 
 	private ImmutableBucketSpec toBucketSpec(BucketSpecConfig bucketSpec) {
+		if (bucketSpec == null) {
+			return null; // or empty BucketSpec?
+		}
 		return new ImmutableBucketSpec(
 				bucketSpec.numBuckets,
 				toListOrEmpty(bucketSpec.bucketColumnNames),

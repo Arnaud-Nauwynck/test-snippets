@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.immutable.CatalogFunctionId;
+import fr.an.metastore.api.immutable.CatalogTableId;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
@@ -48,76 +49,76 @@ public abstract class CatalogFacade {
 
 	public abstract void createTable(ImmutableCatalogTableDef tableDef, boolean ignoreIfExists);
 
-	public abstract void dropTable(String db, String table, boolean ignoreIfNotExists, boolean purge);
+	public abstract void dropTable(CatalogTableId tableId, boolean ignoreIfNotExists, boolean purge);
 
-	public abstract void renameTable(String db, String oldTableName, String newTableName);
+	public abstract void renameTable(CatalogTableId oldTableId, String newTableName);
 
 	public abstract void alterTable(ImmutableCatalogTableDef tableDef);
 
-	public abstract void alterTableDataSchema(String db, String table,
+	public abstract void alterTableDataSchema(CatalogTableId tableId,
 			StructTypeDTO newDataSchema);
 
-	public abstract void alterTableStats(String db, String table,
+	public abstract void alterTableStats(CatalogTableId tableId,
 			ImmutableCatalogTableStatistics stats);
 
-	public abstract ImmutableCatalogTableDef getTableDef(String db, String table);
-	public abstract CatalogTableInfo getTableInfo(String db, String table);
+	public abstract ImmutableCatalogTableDef getTableDef(CatalogTableId tableId);
+	public abstract CatalogTableInfo getTableInfo(CatalogTableId tableId);
 
 	public abstract List<ImmutableCatalogTableDef> getTableDefsByName(String db, List<String> tables);
 	public abstract List<CatalogTableInfo> getTableInfosByName(String db, List<String> tables);
 
-	public abstract boolean tableExists(String db, String table);
+	public abstract boolean tableExists(CatalogTableId tableId);
 
 	public abstract List<String> listTableNames(String db);
 
 	public abstract List<String> listTableNamesByPattern(String db, String pattern);
 
-	public abstract void loadTable(String db, String table, String loadPath, boolean isOverwrite, boolean isSrcLocal);
+	public abstract void loadTable(CatalogTableId tableId, String loadPath, boolean isOverwrite, boolean isSrcLocal);
 
 	// --------------------------------------------------------------------------
 	// Partitions
 	// --------------------------------------------------------------------------
 
-	public abstract void createPartitions(String db, String table, 
+	public abstract void createPartitions(CatalogTableId tableId, 
 			List<ImmutableCatalogTablePartitionDef> parts,
 			boolean ignoreIfExists);
 
-	public abstract void dropPartitions(String db, String table,
+	public abstract void dropPartitions(CatalogTableId tableId,
 			List<ImmutablePartitionSpec> partSpecs, boolean ignoreIfNotExists,
 			boolean purge, boolean retainData);
 
-	public abstract void renamePartitions(String db, String table,
+	public abstract void renamePartitions(CatalogTableId tableId,
 			List<ImmutablePartitionSpec> specs,
 			List<ImmutablePartitionSpec> newSpecs);
 
-	public abstract void alterPartitions(String db, String table, 
+	public abstract void alterPartitions(CatalogTableId tableId, 
 			List<ImmutableCatalogTablePartitionDef> parts);
 
-	public abstract CatalogTablePartitionInfo getPartition(String db, String table,
+	public abstract CatalogTablePartitionInfo getPartition(CatalogTableId tableId,
 			ImmutablePartitionSpec spec);
 
-	public Optional<CatalogTablePartitionInfo> getPartitionOption(String db, String table,
+	public Optional<CatalogTablePartitionInfo> getPartitionOption(CatalogTableId tableId,
 			ImmutablePartitionSpec spec) {
-		CatalogTablePartitionInfo tmp = getPartition(db, table, spec);
+		CatalogTablePartitionInfo tmp = getPartition(tableId, spec);
 		return (tmp != null) ? Optional.of(tmp) : Optional.empty();
 	}
 
-	public abstract List<String> listPartitionNamesByPartialSpec(String db, String table,
+	public abstract List<String> listPartitionNamesByPartialSpec(CatalogTableId tableId,
 			ImmutablePartitionSpec partialSpec);
 
-	public abstract List<CatalogTablePartitionInfo> listPartitionsByPartialSpec(String db, String table,
+	public abstract List<CatalogTablePartitionInfo> listPartitionsByPartialSpec(CatalogTableId tableId,
 			ImmutablePartitionSpec partialSpec);
 
-//	public abstract List<CatalogTablePartitionDTO> listPartitionsByFilter(String db, String table,
+//	public abstract List<CatalogTablePartitionDTO> listPartitionsByFilter(CatalogTableId tableId,
 //			List<ExpressionDTO> predicates, 
 //			String defaultTimeZoneId);
 
-	public abstract void loadPartition(String db, String table, String loadPath,
+	public abstract void loadPartition(CatalogTableId tableId, String loadPath,
 			ImmutablePartitionSpec partition, 
 			boolean isOverwrite, boolean inheritTableSpecs,
 			boolean isSrcLocal);
 
-	public abstract void loadDynamicPartitions(String db, String table, String loadPath,
+	public abstract void loadDynamicPartitions(CatalogTableId tableId, String loadPath,
 			ImmutablePartitionSpec partition, 
 			boolean replace, int numDP);
 

@@ -1,8 +1,16 @@
 package fr.an.metastore.spark;
 
+import static fr.an.metastore.api.utils.MetastoreListUtils.map;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import org.apache.spark.sql.catalyst.analysis.NamespaceAlreadyExistsException;
+import org.apache.spark.sql.catalyst.analysis.NoSuchNamespaceException;
+import org.apache.spark.sql.catalyst.analysis.NoSuchTableException;
+import org.apache.spark.sql.catalyst.analysis.TableAlreadyExistsException;
 import org.apache.spark.sql.catalyst.catalog.CatalogDatabase;
 import org.apache.spark.sql.catalyst.catalog.CatalogFunction;
 import org.apache.spark.sql.catalyst.catalog.CatalogStatistics;
@@ -10,10 +18,19 @@ import org.apache.spark.sql.catalyst.catalog.CatalogTable;
 import org.apache.spark.sql.catalyst.catalog.CatalogTablePartition;
 import org.apache.spark.sql.catalyst.catalog.ExternalCatalog;
 import org.apache.spark.sql.catalyst.expressions.Expression;
+import org.apache.spark.sql.connector.catalog.Identifier;
+import org.apache.spark.sql.connector.catalog.NamespaceChange;
+import org.apache.spark.sql.connector.catalog.SupportsNamespaces;
+import org.apache.spark.sql.connector.catalog.Table;
+import org.apache.spark.sql.connector.catalog.TableCatalog;
+import org.apache.spark.sql.connector.catalog.TableChange;
+import org.apache.spark.sql.connector.expressions.Transform;
 import org.apache.spark.sql.types.StructType;
+import org.apache.spark.sql.util.CaseInsensitiveStringMap;
 
 import fr.an.metastore.api.CatalogFacade;
 import fr.an.metastore.api.immutable.CatalogFunctionId;
+import fr.an.metastore.api.immutable.CatalogTableId;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogTableDef;
@@ -22,6 +39,7 @@ import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
 import fr.an.metastore.api.utils.NotImpl;
+import fr.an.metastore.spark.impl.SparkV2CatalogTable;
 import fr.an.metastore.spark.modeladapter.SparkModelConverter;
 import lombok.val;
 import scala.Option;
@@ -34,7 +52,7 @@ import scala.collection.Seq;
  * convert scala Seq to java List
  *
  */
-public class JavaAdapterExternalCatalog implements ExternalCatalog {
+public class JavaAdapterExternalCatalog implements ExternalCatalog, TableCatalog, SupportsNamespaces {
 
 	private final CatalogFacade delegate;
 	private final SparkModelConverter sparkConverter;
@@ -101,14 +119,18 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 		delegate.createTable(def, ignoreIfExists);
 	}
 
+	// Tables
+	// --------------------------------------------------------------------------------------------
+
 	@Override
 	public void dropTable(String db, String table, boolean ignoreIfNotExists, boolean purge) {
-		delegate.dropTable(db, table, ignoreIfNotExists, purge);
+		delegate.dropTable(toTableId(db, table), ignoreIfNotExists, purge);
 	}
 
 	@Override
 	public void renameTable(String db, String oldName, String newName) {
-		delegate.renameTable(db, oldName, newName);
+		val oldTableId = toTableId(db, oldName);
+		delegate.renameTable(oldTableId, newName);
 	}
 
 	@Override
@@ -128,13 +150,18 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 		ImmutableCatalogTableStatistics jstats = stats.isDefined()
 				? sparkConverter.toImmutableTableStatistics(stats.get())
 				: null;
-		delegate.alterTableStats(db, table, jstats);
+		delegate.alterTableStats(toTableId(db, table), jstats);
 	}
 
 	@Override
 	public CatalogTable getTable(String db, String table) {
-		ImmutableCatalogTableDef tmpres = delegate.getTableDef(db, table);
+		val tableId = toTableId(db, table);
+		ImmutableCatalogTableDef tmpres = delegate.getTableDef(tableId);
 		return sparkConverter.toSparkTable(tmpres);
+	}
+
+	private CatalogTableId toTableId(String db, String table) {
+		return new CatalogTableId(db, table);
 	}
 
 	@Override
@@ -146,7 +173,8 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 
 	@Override
 	public boolean tableExists(String db, String table) {
-		return delegate.tableExists(db, table);
+		val tableId = toTableId(db, table);
+		return delegate.tableExists(tableId);
 	}
 
 	@Override
@@ -163,14 +191,19 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 
 	@Override
 	public void loadTable(String db, String table, String loadPath, boolean isOverwrite, boolean isSrcLocal) {
-		delegate.loadTable(db, table, loadPath, isOverwrite, isSrcLocal);
+		val tableId = toTableId(db, table);
+		delegate.loadTable(tableId, loadPath, isOverwrite, isSrcLocal);
 	}
+
+	// Table Partitions
+	// --------------------------------------------------------------------------------------------
 
 	@Override
 	public void createPartitions(String db, String table, Seq<CatalogTablePartition> parts, boolean ignoreIfExists) {
 		List<ImmutableCatalogTablePartitionDef> immutablePartitionDefs = sparkConverter
 				.toImmutableTablePartitionDefs(parts);
-		delegate.createPartitions(db, table, immutablePartitionDefs, ignoreIfExists);
+		val tableId = toTableId(db, table);
+		delegate.createPartitions(tableId, immutablePartitionDefs, ignoreIfExists);
 	}
 
 	@Override
@@ -178,7 +211,8 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 			scala.collection.Seq<scala.collection.immutable.Map<String, String>> partSpecs, boolean ignoreIfNotExists,
 			boolean purge, boolean retainData) {
 		List<ImmutablePartitionSpec> jPartSpecs = sparkConverter.toImmutablePartitionSpecs(partSpecs);
-		delegate.dropPartitions(db, table, jPartSpecs, ignoreIfNotExists, purge, retainData);
+		val tableId = toTableId(db, table);
+		delegate.dropPartitions(tableId, jPartSpecs, ignoreIfNotExists, purge, retainData);
 	}
 
 	@Override
@@ -187,20 +221,23 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 			scala.collection.Seq<scala.collection.immutable.Map<String, String>> newSpecs) {
 		val jspecs = sparkConverter.toImmutablePartitionSpecs(specs);
 		val jnewSpecs = sparkConverter.toImmutablePartitionSpecs(newSpecs);
-		delegate.renamePartitions(db, table, jspecs, jnewSpecs);
+		val tableId = toTableId(db, table);
+		delegate.renamePartitions(tableId, jspecs, jnewSpecs);
 	}
 
 	@Override
 	public void alterPartitions(String db, String table, Seq<CatalogTablePartition> parts) {
 		List<ImmutableCatalogTablePartitionDef> jparts = sparkConverter.toImmutableTablePartitionDefs(parts);
-		delegate.alterPartitions(db, table, jparts);
+		val tableId = toTableId(db, table);
+		delegate.alterPartitions(tableId, jparts);
 	}
 
 	@Override
 	public CatalogTablePartition getPartition(String db, String table,
 			scala.collection.immutable.Map<String, String> spec) {
 		val jspec = sparkConverter.toImmutablePartitionSpec(spec);
-		CatalogTablePartitionInfo part = delegate.getPartition(db, table, jspec);
+		val tableId = toTableId(db, table);
+		CatalogTablePartitionInfo part = delegate.getPartition(tableId, jspec);
 		return sparkConverter.toSparkTablePartition(part);
 	}
 
@@ -208,27 +245,28 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 	public Option<CatalogTablePartition> getPartitionOption(String db, String table,
 			scala.collection.immutable.Map<String, String> spec) {
 		val jspec = sparkConverter.toImmutablePartitionSpec(spec);
-		Optional<CatalogTablePartitionInfo> partOpt = delegate.getPartitionOption(db, table, jspec);
+		val tableId = toTableId(db, table);
+		Optional<CatalogTablePartitionInfo> partOpt = delegate.getPartitionOption(tableId, jspec);
 		return sparkConverter.toSparkTablePartitionOpt(partOpt);
 	}
 
 	@Override
 	public Seq<String> listPartitionNames(String db, String table,
 			scala.Option<scala.collection.immutable.Map<String, String>> partialSpec) {
-		ImmutablePartitionSpec jpartialSpec = partialSpec.isDefined()
-				? sparkConverter.toImmutablePartitionSpec(partialSpec.get())
-				: null;
-		List<String> partNames = delegate.listPartitionNamesByPartialSpec(db, table, jpartialSpec);
+		ImmutablePartitionSpec jpartialSpec = (partialSpec.isDefined())?
+				sparkConverter.toImmutablePartitionSpec(partialSpec.get()) : null;
+		val tableId = toTableId(db, table);
+		List<String> partNames = delegate.listPartitionNamesByPartialSpec(tableId, jpartialSpec);
 		return toScalaSeq(partNames);
 	}
 
 	@Override
 	public Seq<CatalogTablePartition> listPartitions(String db, String table,
 			scala.Option<scala.collection.immutable.Map<String, String>> partialSpec) {
-		ImmutablePartitionSpec jpartialSpec = partialSpec.isDefined()
-				? sparkConverter.toImmutablePartitionSpec(partialSpec.get())
-				: null;
-		List<CatalogTablePartitionInfo> jParts = delegate.listPartitionsByPartialSpec(db, table, jpartialSpec);
+		ImmutablePartitionSpec jpartialSpec = (partialSpec.isDefined())?
+				sparkConverter.toImmutablePartitionSpec(partialSpec.get()) : null;
+		val tableId = toTableId(db, table);
+		List<CatalogTablePartitionInfo> jParts = delegate.listPartitionsByPartialSpec(tableId, jpartialSpec);
 		return sparkConverter.toSparkTablePartitions(jParts);
 	}
 
@@ -246,15 +284,20 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 			scala.collection.immutable.Map<String, String> spec, boolean isOverwrite, boolean inheritTableSpecs,
 			boolean isSrcLocal) {
 		val jspec = sparkConverter.toImmutablePartitionSpec(spec);
-		delegate.loadPartition(db, table, loadPath, jspec, isOverwrite, inheritTableSpecs, isSrcLocal);
+		val tableId = toTableId(db, table);
+		delegate.loadPartition(tableId, loadPath, jspec, isOverwrite, inheritTableSpecs, isSrcLocal);
 	}
 
 	@Override
 	public void loadDynamicPartitions(String db, String table, String loadPath,
 			scala.collection.immutable.Map<String, String> spec, boolean replace, int numDP) {
 		val jspec = sparkConverter.toImmutablePartitionSpec(spec);
-		delegate.loadDynamicPartitions(db, table, loadPath, jspec, replace, numDP);
+		val tableId = toTableId(db, table);
+		delegate.loadDynamicPartitions(tableId, loadPath, jspec, replace, numDP);
 	}
+
+	// Functions
+	// --------------------------------------------------------------------------------------------
 
 	@Override
 	public void createFunction(String db, CatalogFunction func) {
@@ -301,6 +344,136 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog {
 		return toScalaSeq(tmpres);
 	}
 
+
+
+	// implements SupportsNamespaces
+	// --------------------------------------------------------------------------------------------
+	
+	// cf org.apache.spark.sql.connector.catalog.CatalogV2Implicits
+	//
+	//   def asNamespaceCatalog: SupportsNamespaces = plugin match {
+	//   case namespaceCatalog: SupportsNamespaces =>
+	//     namespaceCatalog
+	//   case _ =>
+	//     throw new AnalysisException(
+	//       s"Cannot use catalog ${plugin.name}: does not support namespaces")
+	// }
+
+	@Override
+	public String[][] listNamespaces() throws NoSuchNamespaceException {
+		List<String> dbs = delegate.listDatabases();
+		List<String[]> namespaces = map(dbs, db -> new String[] { db });
+		return namespaces.toArray(new String[dbs.size()][]);
+	}
+
+	@Override
+	public String[][] listNamespaces(String[] namespace) throws NoSuchNamespaceException {
+		throw NotImpl.notImplEx();
+	}
+
+	@Override
+	public Map<String, String> loadNamespaceMetadata(String[] namespace) throws NoSuchNamespaceException {
+		throw NotImpl.notImplEx();
+	}
+
+	@Override
+	public void createNamespace(String[] namespace, Map<String, String> metadata)
+			throws NamespaceAlreadyExistsException {
+		throw NotImpl.notImplEx();
+	}
+
+	@Override
+	public void alterNamespace(String[] namespace, NamespaceChange... changes) throws NoSuchNamespaceException {
+		throw NotImpl.notImplEx();
+		
+	}
+
+	@Override
+	public boolean dropNamespace(String[] namespace) throws NoSuchNamespaceException {
+		throw NotImpl.notImplEx();
+	}
+
+	// implements TableCatalog (V2..)
+	// --------------------------------------------------------------------------------------------
+
+	@Override
+	public void initialize(String name, CaseInsensitiveStringMap options) {
+		// do nothing, cf override
+	}
+
+	@Override
+	public String name() {
+		return "spark_catalog";
+	}
+
+	@Override
+	public Identifier[] listTables(String[] namespace) throws NoSuchNamespaceException {
+		List<Identifier> res = new ArrayList<>();
+		for(String db: namespace) {
+			val tmpres = delegate.listTableNames(db);
+			String[] dbNamespaces = new String[] { db };
+			res.addAll(map(tmpres, n -> Identifier.of(dbNamespaces, n)));
+		}
+		return res.toArray(new Identifier[res.size()]);
+	}
+
+	@Override
+	public Table loadTable(Identifier ident) throws NoSuchTableException {
+		val tableId = toTableId(ident);
+		ImmutableCatalogTableDef tableDef = delegate.getTableDef(tableId);
+		return new SparkV2CatalogTable(tableDef);
+	}
+
+	protected CatalogTableId toTableId(Identifier ident) {
+		String[] namespace = ident.namespace();
+		String db = (namespace != null && namespace.length >= 1)? namespace[0] : null; // TOCHECK
+		String table = ident.name();
+		return new CatalogTableId(db, table);
+	}
+	
+	@Override
+	public Table createTable(Identifier ident, StructType schema, Transform[] partitions,
+			Map<String, String> properties) throws TableAlreadyExistsException, NoSuchNamespaceException {
+		val tableId = toTableId(ident);
+		throw NotImpl.notImplEx();
+	}
+
+	@Override
+	public Table alterTable(Identifier ident, TableChange... changes) throws NoSuchTableException {
+		val tableId = toTableId(ident);
+		throw NotImpl.notImplEx();
+	}
+
+	/**
+	 * @return true if a table was deleted, false if no table exists for the identifier
+	 */
+	@Override
+	public boolean dropTable(Identifier ident) {
+		val tableId = toTableId(ident);
+		boolean tableExists = delegate.tableExists(tableId);
+		if (tableExists) {
+			boolean purge = false; // ??
+			delegate.dropTable(tableId, true, purge);
+		}
+		return tableExists;
+	}
+
+	@Override
+	public void renameTable(Identifier oldIdent, Identifier newIdent)
+			throws NoSuchTableException, TableAlreadyExistsException {
+		val oldTableId = toTableId(oldIdent);
+		val newTableId = toTableId(newIdent);
+		delegate.renameTable(oldTableId, newTableId.table);
+	}
+
+	// new in spark 3.0.1
+	@Override
+	public Seq<String> listViews(String db, String pattern) {
+		throw NotImpl.notImplEx();
+	}
+
+	
+	
 	// converter helper scala.collection <-> java.collection
 	// --------------------------------------------------------------------------------------------
 

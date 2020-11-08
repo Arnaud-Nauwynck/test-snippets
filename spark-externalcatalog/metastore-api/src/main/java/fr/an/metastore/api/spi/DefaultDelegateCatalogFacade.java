@@ -12,6 +12,7 @@ import fr.an.metastore.api.dto.StructTypeDTO;
 import fr.an.metastore.api.exceptions.CatalogRuntimeException;
 import fr.an.metastore.api.exceptions.NoSuchTableRuntimeException;
 import fr.an.metastore.api.exceptions.TableAlreadyExistsRuntimeException;
+import fr.an.metastore.api.immutable.CatalogTableId;
 import fr.an.metastore.api.immutable.CatalogFunctionId;
 import fr.an.metastore.api.immutable.ImmutableCatalogDatabaseDef;
 import fr.an.metastore.api.immutable.ImmutableCatalogFunctionDef;
@@ -22,6 +23,7 @@ import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
 import fr.an.metastore.api.info.CatalogTableInfo;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
 import fr.an.metastore.api.utils.MetastoreListUtils;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
@@ -130,6 +132,12 @@ public class DefaultDelegateCatalogFacade<
 	// Tables
 	// --------------------------------------------------------------------------
 
+	@AllArgsConstructor
+	private static class DbAndTable<TDb extends IDatabaseModel, TTable extends ITableModel> { 
+		TDb db;
+		TTable table;
+	}
+	
 	@Override
 	public void createTable(ImmutableCatalogTableDef tableDef, boolean ignoreIfExists) {
 		val tableId = tableDef.getIdentifier();
@@ -139,7 +147,7 @@ public class DefaultDelegateCatalogFacade<
 	    val found = dbTablesLookup.findTable(db, tableName);
 	    if (null != found) {
 	      if (!ignoreIfExists) {
-	        throw new TableAlreadyExistsRuntimeException(dbName, tableName);
+	        throw new TableAlreadyExistsRuntimeException(tableId);
 	      }
 	    } else {
 	    	val tbl = dbTablesDdl.createTable(db, tableDef, ignoreIfExists);
@@ -148,15 +156,15 @@ public class DefaultDelegateCatalogFacade<
 	}
 
 	@Override
-	public void dropTable(String dbName, String tableName, boolean ignoreIfNotExists, boolean purge) {
-		val db = geDatabaseModel(dbName);
-		val table = dbTablesLookup.findTable(db, tableName);
+	public void dropTable(CatalogTableId tableId, boolean ignoreIfNotExists, boolean purge) {
+		val db = geDatabaseModel(tableId.database);
+		val table = dbTablesLookup.findTable(db, tableId.table);
 		if (null != table) {
 			dbTablesDdl.dropTable(db, table, ignoreIfNotExists, purge);
 			dbTablesLookup.removeTable(table);
 		} else {
 			if (!ignoreIfNotExists) {
-				throw new NoSuchTableRuntimeException(dbName, tableName);
+				throw new NoSuchTableRuntimeException(tableId);
 			}
 		}
 	}
@@ -165,60 +173,60 @@ public class DefaultDelegateCatalogFacade<
 		return dbTablesLookup.getTable(db, tableName);
 	}
 
-	protected TTable doGetTable(String dbName, String tableName) {
-		val db = geDatabaseModel(dbName);
-		return dbTablesLookup.getTable(db, tableName);
+	protected DbAndTable<TDb,TTable> getDbAndTable(CatalogTableId tableId) {
+		val db = geDatabaseModel(tableId.database);
+		val table = dbTablesLookup.getTable(db, tableId.table);
+		return new DbAndTable<>(db, table);
+	}
+
+	protected TTable doGetTable(CatalogTableId tableId) {
+		val db = geDatabaseModel(tableId.database);
+		return dbTablesLookup.getTable(db, tableId.table);
 	}
 
 	@Override
-	public void renameTable(String dbName, String oldTableName, String newTableName) {
-		val db = geDatabaseModel(dbName);
-		val table = dbTablesLookup.getTable(db, oldTableName);
-		dbTablesLookup.requireTableNotExists(db, newTableName);
-		val newTable = dbTablesDdl.renameTable(db, table, newTableName);
-		dbTablesLookup.removePutTable(table, newTable);
+	public void renameTable(CatalogTableId oldTableId, String newTableName) {
+		val old = getDbAndTable(oldTableId);
+		dbTablesLookup.requireTableNotExists(old.db, newTableName);
+		val newTable = dbTablesDdl.renameTable(old.db, old.table, newTableName);
+		dbTablesLookup.removePutTable(old.table, newTable);
 	}
 
 	@Override
 	public void alterTable(ImmutableCatalogTableDef tableDef) {
 		val tableId = tableDef.getIdentifier();
-		String dbName = tableId.database;
-		validate(dbName != null, "table database name not set");
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableId.table);
-		dbTablesDdl.alterTable(db, table, tableDef);
+		validate(tableId.database != null, "table database name not set");
+		val t = getDbAndTable(tableId);
+		dbTablesDdl.alterTable(t.db, t.table, tableDef);
 	}
 
 	@Override
-	public void alterTableDataSchema(String dbName, String tableName, 
+	public void alterTableDataSchema(CatalogTableId tableId, 
 			StructTypeDTO newDataSchema) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		dbTablesDdl.alterTableDataSchema(db, table, newDataSchema);
+		val t = getDbAndTable(tableId);
+		dbTablesDdl.alterTableDataSchema(t.db, t.table, newDataSchema);
 	}
 
 	@Override
-	public void alterTableStats(String dbName, String tableName, ImmutableCatalogTableStatistics stats) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		dbTablesDdl.alterTableStats(db, table, stats);
+	public void alterTableStats(CatalogTableId tableId, ImmutableCatalogTableStatistics stats) {
+		val t = getDbAndTable(tableId);
+		dbTablesDdl.alterTableStats(t.db, t.table, stats);
 	}
 
 	@Override
-	public ImmutableCatalogTableDef getTableDef(String db, String table) {
-		val t = doGetTable(db, table);
-		return t.getDef();
+	public ImmutableCatalogTableDef getTableDef(CatalogTableId tableId) {
+		val t = getDbAndTable(tableId);
+		return t.table.getDef();
 	}
 
 	@Override
-	public CatalogTableInfo getTableInfo(String db, String table) {
-		val t = doGetTable(db, table);
-		return toTableInfo(t);
+	public CatalogTableInfo getTableInfo(CatalogTableId tableId) {
+		val t = getDbAndTable(tableId);
+		return toTableInfo(t.table);
 	}
 
 	protected CatalogTableInfo toTableInfo(TTable src) {
-		return new CatalogTableInfo(src.getDef(), src.getLastAccessTime(), 
-				src.getStats());
+		return new CatalogTableInfo(src.getDef(), src.getLastAccessTime(), src.getStats());
 	}
 
 	@Override
@@ -234,9 +242,9 @@ public class DefaultDelegateCatalogFacade<
 	}
 
 	@Override
-	public boolean tableExists(String dbName, String tableName) {
-		val db = geDatabaseModel(dbName);
-		return dbTablesLookup.tableExists(db, tableName);
+	public boolean tableExists(CatalogTableId tableId) {
+		val db = geDatabaseModel(tableId.database);
+		return dbTablesLookup.tableExists(db, tableId.table);
 	}
 
 	@Override
@@ -252,10 +260,9 @@ public class DefaultDelegateCatalogFacade<
 	}
 
 	@Override
-	public void loadTable(String dbName, String tableName, String loadPath, boolean isOverwrite, boolean isSrcLocal) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		dataLoaderManager.loadTable(db, table, loadPath, isOverwrite, isSrcLocal);
+	public void loadTable(CatalogTableId tableId, String loadPath, boolean isOverwrite, boolean isSrcLocal) {
+		val t = getDbAndTable(tableId);
+		dataLoaderManager.loadTable(t.db, t.table, loadPath, isOverwrite, isSrcLocal);
 	}
 
 	// --------------------------------------------------------------------------
@@ -263,54 +270,49 @@ public class DefaultDelegateCatalogFacade<
 	// --------------------------------------------------------------------------
 
 	@Override
-	public void createPartitions(String dbName, String tableName, 
+	public void createPartitions(CatalogTableId tableId, 
 			List<ImmutableCatalogTablePartitionDef> parts, boolean ignoreIfExists) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		val partModels = dbTablePartitionsDdl.createPartitions(db, table, parts, ignoreIfExists);
+		val t = getDbAndTable(tableId);
+		val partModels = dbTablePartitionsDdl.createPartitions(t.db, t.table, parts, ignoreIfExists);
 		dbTablePartitionsLookup.addPartitions(partModels);
 	}
 
 	@Override
-	public void dropPartitions(String dbName, String tableName, 
+	public void dropPartitions(CatalogTableId tableId, 
 				List<ImmutablePartitionSpec> partSpecs, boolean ignoreIfNotExists,
 				boolean purge, boolean retainData) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		val partModels = dbTablePartitionsLookup.getPartitions(db, table, partSpecs);
-		dbTablePartitionsDdl.dropPartitions(db, table, partModels,
+		val t = getDbAndTable(tableId);
+		val partModels = dbTablePartitionsLookup.getPartitions(t.db, t.table, partSpecs);
+		dbTablePartitionsDdl.dropPartitions(t.db, t.table, partModels,
 				ignoreIfNotExists, purge, retainData);
 		dbTablePartitionsLookup.removePartitions(partModels);
 	}
 
 	@Override
-	public void renamePartitions(String dbName, String tableName, 
+	public void renamePartitions(CatalogTableId tableId, 
 				List<ImmutablePartitionSpec> oldPartSpecs, 
 				List<ImmutablePartitionSpec> newSpecs) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
+		val t = getDbAndTable(tableId);
 		validate(oldPartSpecs.size() == newSpecs.size(), "number of old and new partition specs differ");
-		val oldPartModels = dbTablePartitionsLookup.getPartitions(db, table, oldPartSpecs);
-		dbTablePartitionsLookup.requirePartitionsNotExist(db, table, newSpecs);
-		List<TTablePartition> newPartModels = dbTablePartitionsDdl.renamePartitions(db, table, oldPartModels, newSpecs);
+		val oldPartModels = dbTablePartitionsLookup.getPartitions(t.db, t.table, oldPartSpecs);
+		dbTablePartitionsLookup.requirePartitionsNotExist(t.db, t.table, newSpecs);
+		List<TTablePartition> newPartModels = dbTablePartitionsDdl.renamePartitions(t.db, t.table, oldPartModels, newSpecs);
 		dbTablePartitionsLookup.removeAddPartitions(oldPartModels, newPartModels);
 	}
 
 	@Override
-	public void alterPartitions(String dbName, String tableName, 
+	public void alterPartitions(CatalogTableId tableId, 
 			List<ImmutableCatalogTablePartitionDef> partDefs) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
+		val t = getDbAndTable(tableId);
 		List<ImmutablePartitionSpec> partSpecs = map(partDefs, x -> x.getSpec());
-		val partModels = dbTablePartitionsLookup.getPartitions(db, table, partSpecs);
-		dbTablePartitionsDdl.alterPartitions(db, table, partModels, partDefs);
+		val partModels = dbTablePartitionsLookup.getPartitions(t.db, t.table, partSpecs);
+		dbTablePartitionsDdl.alterPartitions(t.db, t.table, partModels, partDefs);
 	}
 
 	@Override
-	public CatalogTablePartitionInfo getPartition(String dbName, String tableName, ImmutablePartitionSpec spec) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		val tablePart = dbTablePartitionsLookup.getPartition(db, table, spec);
+	public CatalogTablePartitionInfo getPartition(CatalogTableId tableId, ImmutablePartitionSpec spec) {
+		val t = getDbAndTable(tableId);
+		val tablePart = dbTablePartitionsLookup.getPartition(t.db, t.table, spec);
 		return toTablePartitionInfo(tablePart);
 	}
 
@@ -321,25 +323,23 @@ public class DefaultDelegateCatalogFacade<
 	}
 
 	@Override
-	public List<CatalogTablePartitionInfo> listPartitionsByPartialSpec(String dbName, String tableName, 
+	public List<CatalogTablePartitionInfo> listPartitionsByPartialSpec(CatalogTableId tableId, 
 			ImmutablePartitionSpec partialSpec) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		val tableParts = dbTablePartitionsLookup.listPartitionsByPartialSpec(db, table, partialSpec);
+		val t = getDbAndTable(tableId);
+		val tableParts = dbTablePartitionsLookup.listPartitionsByPartialSpec(t.db, t.table, partialSpec);
 		return map(tableParts, x -> toTablePartitionInfo(x));
 	}
 
 	@Override
-	public List<String> listPartitionNamesByPartialSpec(String dbName, String tableName, 
+	public List<String> listPartitionNamesByPartialSpec(CatalogTableId tableId, 
 			ImmutablePartitionSpec partialSpec) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		val tableParts = dbTablePartitionsLookup.listPartitionsByPartialSpec(db, table, partialSpec);
+		val t = getDbAndTable(tableId);
+		val tableParts = dbTablePartitionsLookup.listPartitionsByPartialSpec(t.db, t.table, partialSpec);
 		return MetastoreListUtils.map(tableParts, x -> x.getPartitionName());
 	}
 
 //	@Override
-//	public List<CatalogTablePartitionDTO> listPartitionsByFilter(String dbName, String tableName, 
+//	public List<CatalogTablePartitionDTO> listPartitionsByFilter(CatalogTableId tableId, 
 //			List<Expression> predicates,
 //			String defaultTimeZoneId) {
 //		val db = geDatabaseModel(dbName);
@@ -349,24 +349,22 @@ public class DefaultDelegateCatalogFacade<
 //	}
 
 	@Override
-	public void loadPartition(String dbName, String tableName, String loadPath, 
+	public void loadPartition(CatalogTableId tableId, String loadPath, 
 			ImmutablePartitionSpec partSpec, boolean isOverwrite,
 			boolean inheriTableModelSpecs, boolean isSrcLocal) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		val tablePart = dbTablePartitionsLookup.getPartition(db, table, partSpec);
-		dataLoaderManager.loadPartition(db, table, tablePart, 
+		val t = getDbAndTable(tableId);
+		val tablePart = dbTablePartitionsLookup.getPartition(t.db, t.table, partSpec);
+		dataLoaderManager.loadPartition(t.db, t.table, tablePart, 
 				loadPath, isOverwrite, inheriTableModelSpecs, isSrcLocal);
 	}
 
 	@Override
-	public void loadDynamicPartitions(String dbName, String tableName, String loadPath, 
+	public void loadDynamicPartitions(CatalogTableId tableId, String loadPath, 
 			ImmutablePartitionSpec partSpec,
 			boolean replace, int numDP) {
-		val db = geDatabaseModel(dbName);
-		val table = getTable(db, tableName);
-		val tablePart = dbTablePartitionsLookup.getPartition(db, table, partSpec);
-		dataLoaderManager.loadDynamicPartitions(db, table, tablePart,
+		val t = getDbAndTable(tableId);
+		val tablePart = dbTablePartitionsLookup.getPartition(t.db, t.table, partSpec);
+		dataLoaderManager.loadDynamicPartitions(t.db, t.table, tablePart,
 				loadPath, replace, numDP);
 	}
 
