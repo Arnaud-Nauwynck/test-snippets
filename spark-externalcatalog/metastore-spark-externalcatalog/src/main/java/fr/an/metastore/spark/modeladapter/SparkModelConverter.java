@@ -5,6 +5,7 @@ import static fr.an.metastore.api.utils.MetastoreListUtils.map;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -213,7 +214,12 @@ public class SparkModelConverter {
 			schema = SparkAvroSchemaConversionUtils.schemaDefToSparkStructType(tableDef.schema);
 		}
 		Transform[] partitioning = new Transform[0]; // TODO
-		Table res = tableProviderOpt.get().getTable(schema, partitioning, tableDef.properties);
+		
+		Map<String,String> propertiesWithPath = new HashMap<>();
+		propertiesWithPath.putAll(tableDef.properties);
+		propertiesWithPath.put("path", tableDef.storage.locationUri.toString());
+		
+		Table res = tableProviderOpt.get().getTable(schema, partitioning, propertiesWithPath);
 		return res;
 	}
 

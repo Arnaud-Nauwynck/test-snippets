@@ -272,4 +272,89 @@ execution/datasources/DataSource.scala:
 	      case _ => None
 	    }
 	  }
+
+
+WARN datasources.DataSource: All paths were ignored:
+....
+
+Thread [main] (Suspended (breakpoint at line 326 in FileOutputStream))	
+	Log4jLoggerAdapter.warn(String) line: 401	
+	DataSource$(Logging).logWarning(Function0<String>) line: 69	
+	Logging.logWarning$(Logging, Function0) line: 68	
+	DataSource$.logWarning(Function0<String>) line: 584	
+	DataSource$.checkAndGlobPathIfNecessary(Seq<String>, Configuration, boolean, boolean) line: 775	
+	ParquetTable(FileTable).fileIndex$lzycompute() line: 56	
+	ParquetTable(FileTable).fileIndex() line: 44	
+	FileTable.$anonfun$dataSchema$1(FileTable, StructType) line: 65	
+	783983592.apply(Object) line: not available	
+	Some<A>(Option<A>).map(Function1<A,B>) line: 230	
+	ParquetTable(FileTable).dataSchema$lzycompute() line: 64	
+	ParquetTable(FileTable).dataSchema() line: 63	
+	ParquetTable(FileTable).schema$lzycompute() line: 82	
+	ParquetTable(FileTable).schema() line: 80	
+	DataSourceV2Relation$.create(Table, Option<CatalogPlugin>, Option<Identifier>, CaseInsensitiveStringMap) line: 150	
+	DataSourceV2Relation$.create(Table, Option<CatalogPlugin>, Option<Identifier>) line: 158	
+	Analyzer$ResolveTables$.org$apache$spark$sql$catalyst$analysis$Analyzer$ResolveTables$$lookupV2Relation(Seq<String>) line: 924	
+	Analyzer$ResolveTables$$anonfun$apply$8.applyOrElse(A1, Function1<A1,B1>) line: 886	
+	Analyzer$ResolveTables$$anonfun$apply$8.applyOrElse(Object, Function1) line: 884	
+	AnalysisHelper.$anonfun$resolveOperatorsUp$3(AnalysisHelper, PartialFunction) line: 90	
+	1302262641.apply() line: not available	
+	CurrentOrigin$.withOrigin(Origin, Function0<A>) line: 72	
+	AnalysisHelper.$anonfun$resolveOperatorsUp$1(AnalysisHelper, PartialFunction) line: 90	
+	114332542.apply() line: not available	
+	AnalysisHelper$.allowInvokingTransformsInAnalyzer(Function0<T>) line: 194	
+	UnresolvedRelation(AnalysisHelper).resolveOperatorsUp(PartialFunction<LogicalPlan,LogicalPlan>) line: 86	
+	AnalysisHelper.resolveOperatorsUp$(AnalysisHelper, PartialFunction) line: 84	
+	UnresolvedRelation(LogicalPlan).resolveOperatorsUp(PartialFunction<LogicalPlan,LogicalPlan>) line: 29	
+	AnalysisHelper.$anonfun$resolveOperatorsUp$2(PartialFunction, LogicalPlan) line: 87	
+	2108139826.apply(Object) line: not available	
+	TreeNode<BaseType>.$anonfun$mapChildren$1(TreeNode, Function1, boolean, BooleanRef, Object) line: 399	
+	1567433186.apply(Object) line: not available	
+	Project(TreeNode<BaseType>).mapProductIterator(Function1<Object,B>, ClassTag<B>) line: 237	
+	Project(TreeNode<BaseType>).mapChildren(Function1<BaseType,BaseType>, boolean) line: 397	
+	Project(TreeNode<BaseType>).mapChildren(Function1<BaseType,BaseType>) line: 350	
+	AnalysisHelper.$anonfun$resolveOperatorsUp$1(AnalysisHelper, PartialFunction) line: 87	
+	114332542.apply() line: not available	
+	AnalysisHelper$.allowInvokingTransformsInAnalyzer(Function0<T>) line: 194	
+	Project(AnalysisHelper).resolveOperatorsUp(PartialFunction<LogicalPlan,LogicalPlan>) line: 86	
+	AnalysisHelper.resolveOperatorsUp$(AnalysisHelper, PartialFunction) line: 84	
+	Project(LogicalPlan).resolveOperatorsUp(PartialFunction<LogicalPlan,LogicalPlan>) line: 29	
+	Analyzer$ResolveTables$.apply(LogicalPlan) line: 884	
+	Analyzer$ResolveTables$.apply(TreeNode) line: 883	
+	RuleExecutor<TreeType>.$anonfun$execute$2(RuleExecutor, QueryExecutionMetering, RuleExecutor$PlanChangeLogger, Option, RuleExecutor$Batch, TreeNode, Rule) line: 149	
+	1007483565.apply(Object, Object) line: not available	
+	$colon$colon<B>(LinearSeqOptimized<A,Repr>).foldLeft(B, Function2<B,A,B>) line: 126	
+	LinearSeqOptimized<A,Repr>.foldLeft$(LinearSeqOptimized, Object, Function2) line: 122	
+	$colon$colon<B>(List<A>).foldLeft(B, Function2<B,A,B>) line: 89	
+	RuleExecutor<TreeType>.$anonfun$execute$1(RuleExecutor, ObjectRef, QueryExecutionMetering, RuleExecutor$PlanChangeLogger, Option, RuleExecutor$Batch) line: 146	
+	RuleExecutor<TreeType>.$anonfun$execute$1$adapted(RuleExecutor, ObjectRef, QueryExecutionMetering, RuleExecutor$PlanChangeLogger, Option, RuleExecutor$Batch) line: 138	
+	1792893551.apply(Object) line: not available	
+	$colon$colon<B>(List<A>).foreach(Function1<A,U>) line: 392	
+	HiveSessionStateBuilder$$anon$1(RuleExecutor<TreeType>).execute(TreeType) line: 138	
+	HiveSessionStateBuilder$$anon$1(Analyzer).org$apache$spark$sql$catalyst$analysis$Analyzer$$executeSameContext(LogicalPlan) line: 176	
+	HiveSessionStateBuilder$$anon$1(Analyzer).execute(LogicalPlan) line: 170	
+	HiveSessionStateBuilder$$anon$1(Analyzer).execute(TreeNode) line: 130	
+	RuleExecutor<TreeType>.$anonfun$executeAndTrack$1(RuleExecutor, TreeNode) line: 116	
+	379782668.apply() line: not available	
+	QueryPlanningTracker$.withTracker(QueryPlanningTracker, Function0<T>) line: 88	
+	HiveSessionStateBuilder$$anon$1(RuleExecutor<TreeType>).executeAndTrack(TreeType, QueryPlanningTracker) line: 116	
+	Analyzer.$anonfun$executeAndCheck$1(Analyzer, LogicalPlan, QueryPlanningTracker) line: 154	
+	2066514832.apply() line: not available	
+	AnalysisHelper$.markInAnalyzer(Function0<T>) line: 201	
+	HiveSessionStateBuilder$$anon$1(Analyzer).executeAndCheck(LogicalPlan, QueryPlanningTracker) line: 153	
+	QueryExecution.$anonfun$analyzed$1(QueryExecution) line: 68	
+	895029075.apply() line: not available	
+	QueryPlanningTracker.measurePhase(String, Function0<T>) line: 111	
+	QueryExecution.$anonfun$executePhase$1(QueryExecution, String, Function0) line: 133	
+	495628508.apply() line: not available	
+	SparkSession.withActive(Function0<T>) line: 764	
+	QueryExecution.executePhase(String, Function0<T>) line: 133	
+	QueryExecution.analyzed$lzycompute() line: 68	
+	QueryExecution.analyzed() line: 66	
+	QueryExecution.assertAnalyzed() line: 58	
+	Dataset$.$anonfun$ofRows$2(SparkSession, LogicalPlan, QueryPlanningTracker) line: 99	
+	268402121.apply() line: not available	
+	SparkSession.withActive(Function0<T>) line: 764	
+	Dataset$.ofRows(SparkSession, LogicalPlan, QueryPlanningTracker) line: 97	
+	SparkSession.$anonfun$sql$1(SparkSession, String) line: 607	
     
