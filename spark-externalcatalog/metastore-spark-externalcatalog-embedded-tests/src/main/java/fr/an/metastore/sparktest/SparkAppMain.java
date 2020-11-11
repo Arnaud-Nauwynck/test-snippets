@@ -15,6 +15,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.catalog.Catalog;
 import org.apache.spark.sql.catalog.Database;
@@ -192,7 +193,7 @@ public class SparkAppMain {
 		{
 			Seq<String> listDatabases = embeddedExternalCatalog.listDatabases();
 			log.info("currentCatalog listDatabases():" + seqAsJavaList(listDatabases));
-			// => [ "db1" ]
+			// => [ "localdb1" ]
 		}
 
 		{
@@ -202,32 +203,32 @@ public class SparkAppMain {
 			// +---------+
 			// |namespace|
 			// +---------+
-			// |db1      |
+			// |localdb1 |
 			// +---------+
 		}
 		
-		log.info("spark.sql('SHOW TABLES IN db1')");
+		log.info("spark.sql('SHOW TABLES IN localdb1')");
 		spark.sql("SHOW TABLES IN db1").show(false);
 		// => 
 		// +---------+---------+
 		// |namespace|tableName|
 		// +---------+---------+
-		// |db1      |table1   |
+		// |localdb1 |table1   |
 		// +---------+---------+
 
 		
-		log.info("spark.sql('SHOW TABLES FROM db1')");
+		log.info("spark.sql('SHOW TABLES FROM localdb1')");
 		spark.sql("SHOW TABLES FROM db1").show(false);
 		// => 
 		// +---------+---------+
 		// |namespace|tableName|
 		// +---------+---------+
-		// |db1      |table1   |
+		// |localdb1 |table1   |
 		// +---------+---------+
 		// 
 		
-		log.info("spark.sql('DESCRIBE TABLE db1.table1')");
-		spark.sql("DESCRIBE TABLE db1.table1").show(false);
+		log.info("spark.sql('DESCRIBE TABLE localdb1.table1')");
+		spark.sql("DESCRIBE TABLE localdb1.table1").show(false);
 		// => 
 		// +----------------+---------+-------+
 		// |col_name        |data_type|comment|
@@ -242,8 +243,8 @@ public class SparkAppMain {
 		// +----------------+---------+-------+
 
 //		try {
-//			log.info("spark.sql('DESCRIBE EXTENDED TABLE db1.table1') .... FAILS?!");
-//			spark.sql("DESCRIBE EXTENDED TABLE db1.table1").show(false);
+//			log.info("spark.sql('DESCRIBE EXTENDED TABLE localdb1.table1') .... FAILS?!");
+//			spark.sql("DESCRIBE EXTENDED TABLE localdb1.table1").show(false);
 //		} catch(Exception ex) {
 //			// Failed
 //			// org.apache.spark.sql.AnalysisException: Describing columns is not supported for v2 tables.;
@@ -253,8 +254,8 @@ public class SparkAppMain {
 //		}
 		
 		{ // get table V1
-			log.info("catalog.getTable(db1, table1)  .. as V1");
-			CatalogTable table1 = embeddedExternalCatalog.getTable("db1", "table1");
+			log.info("catalog.getTable(localdb1, table1)  .. as V1");
+			CatalogTable table1 = embeddedExternalCatalog.getTable("localdb1", "table1");
 			log.info("CatalogTable:" + table1);
 			log.info("table1.location" + table1.location());
 			// =>
@@ -275,13 +276,38 @@ public class SparkAppMain {
 		}
 		
 		{ // get table V2
-			Identifier identifier = Identifier.of(new String[] { "db1" }, "table1");
+			log.info("catalog.loadTable(identifier(localdb1,table1))");
+			Identifier identifier = Identifier.of(new String[] { "localdb1" }, "table1");
 			Table table1 = embeddedExternalCatalog.loadTable(identifier);
 			log.info("Table:" + table1);
-			log.info("table1.properties('path')" + table1.properties().get("path"));
+			// log.info("table1.options('path')" + table1.options().get("path"));
 		}
 		
+		{ // load 
+			log.info("spark.sql('SELECT * FROM localdb1.table1')");
+			List<Row> rows = spark.sql("SELECT * from localdb1.table1").collectAsList();
+			log.info("=> rows.size()" + rows.size());
+			// Failed
+			// org.apache.spark.sql.AnalysisException: Table table1 does not support batch scan.;;
+			// Project [strField#197, strNullableField#198, intField#199, intNullableField#200]
+			// +- SubqueryAlias embedded-catalog.db1.table1
+			//    +- RelationV2[strField#197, strNullableField#198, intField#199, intNullableField#200] table1
+            // 
+			// 	at org.apache.spark.sql.execution.datasources.v2.TableCapabilityCheck$.failAnalysis(TableCapabilityCheck.scala:34)
+			// 	at org.apache.spark.sql.execution.datasources.v2.TableCapabilityCheck$.$anonfun$apply$1(TableCapabilityCheck.scala:43)
+			// 	at org.apache.spark.sql.execution.datasources.v2.TableCapabilityCheck$.$anonfun$apply$1$adapted(TableCapabilityCheck.scala:41)
+			// 	at org.apache.spark.sql.catalyst.trees.TreeNode.foreach(TreeNode.scala:167)
 
+				
+		}
+		
+		{
+//			// write append to table..
+//			{"name": "strField", "type": "string"},
+//		     {"name": "strNullableField", "type": ["string", "null"]},
+//		     {"name": "intField",  "type": "int"},
+//		     {"name": "intNullableField",  "type": ["int", "null"]}
+		}
 	}
 
 }

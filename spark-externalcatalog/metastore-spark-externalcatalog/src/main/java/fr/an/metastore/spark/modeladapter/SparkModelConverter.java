@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.catalyst.FunctionIdentifier;
 import org.apache.spark.sql.catalyst.TableIdentifier;
 import org.apache.spark.sql.catalyst.catalog.BucketSpec;
@@ -23,6 +24,10 @@ import org.apache.spark.sql.catalyst.catalog.CatalogTableType;
 import org.apache.spark.sql.catalyst.catalog.FunctionResource;
 import org.apache.spark.sql.catalyst.catalog.FunctionResourceType;
 import org.apache.spark.sql.catalyst.plans.logical.Histogram;
+import org.apache.spark.sql.connector.catalog.Table;
+import org.apache.spark.sql.connector.catalog.TableProvider;
+import org.apache.spark.sql.connector.expressions.Transform;
+import org.apache.spark.sql.internal.SQLConf;
 import org.apache.spark.sql.types.StructType;
 
 import com.google.common.collect.ImmutableMap;
@@ -44,12 +49,17 @@ import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
 import fr.an.metastore.api.utils.NotImpl;
+import fr.an.metastore.spark.impl.SparkV2CatalogTable;
 import fr.an.metastore.spark.util.ScalaCollUtils;
+import fr.an.metastore.spark.util.SparkAvroSchemaConversionUtils;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+import scala.Option;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
 import scala.math.BigInt;
 
+@Slf4j
 public class SparkModelConverter {
 
 	// Database
@@ -161,6 +171,54 @@ public class SparkModelConverter {
 		return toScalaSeq(map(src, t -> toSparkTable(t)));
 	}
 
+	public Table toSparkTableV2(ImmutableCatalogTableDef tableDef) {
+		// does not work yet when querying data on table ...
+		// return new SparkV2CatalogTable(tableDef);
+
+		// does not work either when querying data on table ...
+		// CatalogTable v1Table = sparkConverter.toSparkTable(tableDef);
+		// return Accessor_V1Table.createV1Table(v1Table);
+		String provider = tableDef.provider;
+		if (provider == null) {
+			String serde = tableDef.storage.serde;
+			if (serde != null && serde.toLowerCase().endsWith("parquet")) {
+				provider = "parquet";
+			}
+		}
+		SQLConf conf = SparkSession.active().sqlContext().conf();
+		Option<TableProvider> tableProviderOpt = org.apache.spark.sql.execution.datasources.DataSource$.MODULE$
+					.lookupDataSourceV2(provider, conf);
+		if (tableProviderOpt.isEmpty()) {
+			// cf code... "parquet", "orc", ... are explicitly configured to use V1 !!!
+			// val useV1Sources = conf.getConf(SQLConf.USE_V1_SOURCE_LIST).toLowerCase(Locale.ROOT).split(","); // .map(_.trim)
+			// force explicit retry..
+			try {
+				Object tableProviderObj = Class.forName(provider).newInstance();
+				if (tableProviderObj instanceof TableProvider) {
+					tableProviderOpt = scala.Option.apply((TableProvider) tableProviderObj);
+				}
+			} catch(Exception ex) {
+				log.error("Failed to instanciate " + provider + " TableProvider " + ex.getMessage());
+			}
+		}
+		if (tableProviderOpt.isEmpty()) {
+			// does not work yet when querying data on table ...
+			log.warn("tableProvider not found for '" + provider + "' .. use dummy (unreadable) Table description");
+			return new SparkV2CatalogTable(tableDef);
+		}
+		StructType schema = SparkAvroSchemaConversionUtils.schemaDefToSparkStructType(tableDef.schema);
+		if (schema == null) {
+			log.error("NULL schema for table ??");
+			// redo for debug?!
+			schema = SparkAvroSchemaConversionUtils.schemaDefToSparkStructType(tableDef.schema);
+		}
+		Transform[] partitioning = new Transform[0]; // TODO
+		Table res = tableProviderOpt.get().getTable(schema, partitioning, tableDef.properties);
+		return res;
+	}
+
+
+	
 	// Table properties
 	// --------------------------------------------------------------------------------------------
 
@@ -439,6 +497,7 @@ public class SparkModelConverter {
 	protected scala.Option<BigInt> toScalaOptionBigInt(BigInteger src) {
 		return (src != null)? scala.Option.apply(toScalaBigInt(src)) : scala.Option.empty();
 	}
+
 
 
 }

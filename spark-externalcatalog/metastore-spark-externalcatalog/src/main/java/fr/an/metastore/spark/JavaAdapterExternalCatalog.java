@@ -39,9 +39,9 @@ import fr.an.metastore.api.immutable.ImmutableCatalogTablePartitionDef;
 import fr.an.metastore.api.immutable.ImmutablePartitionSpec;
 import fr.an.metastore.api.info.CatalogTablePartitionInfo;
 import fr.an.metastore.api.utils.NotImpl;
-import fr.an.metastore.spark.impl.SparkV2CatalogTable;
 import fr.an.metastore.spark.modeladapter.SparkModelConverter;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 import scala.Option;
 import scala.collection.JavaConverters;
 import scala.collection.Seq;
@@ -52,6 +52,7 @@ import scala.collection.Seq;
  * convert scala Seq to java List
  *
  */
+@Slf4j
 public class JavaAdapterExternalCatalog implements ExternalCatalog, TableCatalog, SupportsNamespaces {
 
 	private final CatalogFacade delegate;
@@ -419,9 +420,17 @@ public class JavaAdapterExternalCatalog implements ExternalCatalog, TableCatalog
 
 	@Override
 	public Table loadTable(Identifier ident) throws NoSuchTableException {
-		val tableId = toTableId(ident);
-		ImmutableCatalogTableDef tableDef = delegate.getTableDef(tableId);
-		return new SparkV2CatalogTable(tableDef);
+		try {
+			val tableId = toTableId(ident);
+			ImmutableCatalogTableDef tableDef = delegate.getTableDef(tableId);
+			return sparkConverter.toSparkTableV2(tableDef);
+//		} catch(NoSuchTableException ex) {
+//			log.error("NoSuchTable " + ident);
+//			throw ex;
+		} catch(RuntimeException ex) {
+			log.error("Failed to get V2 table " + ident, ex);
+			throw ex;
+		}
 	}
 
 	protected CatalogTableId toTableId(Identifier ident) {

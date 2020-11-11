@@ -1,0 +1,8 @@
+{"namespace": "fr.an.metastore.sparktest",
+ "type": "record",
+ "name": "T1",
+ "fields": [
+     {"name": "col_str", "type": "string"},
+     {"name": "col_int",  "type": "int"}
+ ]
+}

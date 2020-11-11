@@ -1,13 +1,19 @@
 
 databases:
-  - name: db1
-    locationUri: file:///src/test/data/db1
+  - name: localdb1
+    locationUri: file:///src/test/data/localdb1
     
     tables:
       - name: table1
         tableType: EXTERNAL
+        provider: org.apache.spark.sql.execution.datasources.v2.parquet.ParquetDataSourceV2
         storage:
-          serde: AVRO
-          locationUri: file:///src/test/data/db1/table1
+          locationUri: file:///src/test/data/localdb1/table1
+          # useless?
+          serde: org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+          inputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+          outputFormat: org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat          
+          #properties:
+          #  serialization.format: 1
         schema:  
-          avroSchemaFile: src/test/data/catalogs/table1.avsc
+          avroSchemaFile: src/main/avro/table1.avsc

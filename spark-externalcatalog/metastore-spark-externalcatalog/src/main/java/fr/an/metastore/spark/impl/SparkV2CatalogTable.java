@@ -17,16 +17,18 @@ import fr.an.metastore.api.immutable.ImmutableStructType;
 import fr.an.metastore.api.utils.NotImpl;
 import fr.an.metastore.spark.util.ScalaCollUtils;
 import fr.an.metastore.spark.util.SparkAvroSchemaConversionUtils;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 /**
  * adapter class for ImmutableCatalogTableDef -> v2 Table interface 
  * 
+ * TODO ... need SupportsRead, SupportsWrite
+ * 
  * cf corresponding (private[sql]) code in org.apache.spark.sql.connector.catalog.V1Table
  *
  */
+@Deprecated // currently replaced by Accessor_V1Table.createV1Table()
 @RequiredArgsConstructor
 public class SparkV2CatalogTable implements org.apache.spark.sql.connector.catalog.Table 
 	// SupportsRead, SupportsWrite
@@ -42,22 +44,7 @@ public class SparkV2CatalogTable implements org.apache.spark.sql.connector.catal
 
 	@Override
 	public StructType schema() {
-		ImmutableStructType schemaDef = def.schema;
-		StructType res = (StructType) schemaDef.getAsSparkStruct();
-		if (res == null) {
-			Schema avroSchema = schemaDef.getAsAvroSchema();
-			if (avroSchema != null) {
-				// Convert Avro Schema -> Spark StructType
-				StructType structType = SparkAvroSchemaConversionUtils.avroSchemaToSparkStructType(avroSchema);
-				schemaDef.setAsSparkStruct(structType);
-				res = structType;
-			}
-			
-			if (res == null) {
-				throw NotImpl.notImplEx();
-			}
-		}
-		return res;
+		return SparkAvroSchemaConversionUtils.schemaDefToSparkStructType(def.schema);
 	}
 
 	@Override
