@@ -1,0 +1,68 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.an.test</groupId>
+	<artifactId>test-checkerframework</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<checkerframework.version>2.11.1</checkerframework.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.checkerframework</groupId>
+			<artifactId>checker-qual</artifactId>
+			<version>${checkerframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.checkerframework</groupId>
+			<artifactId>checker</artifactId>
+			<version>${checkerframework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.checkerframework</groupId>
+			<artifactId>jdk8</artifactId>
+			<version>${checkerframework.version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<compilerArguments>
+						<Xmaxerrs>10000</Xmaxerrs>
+						<Xmaxwarns>10000</Xmaxwarns>
+					</compilerArguments>
+					<annotationProcessors>
+						<annotationProcessor>
+							org.checkerframework.checker.nullness.NullnessChecker
+						</annotationProcessor>
+						<annotationProcessor>
+							org.checkerframework.checker.interning.InterningChecker
+						</annotationProcessor>
+						<annotationProcessor>
+							org.checkerframework.checker.fenum.FenumChecker
+						</annotationProcessor>
+						<annotationProcessor>
+							org.checkerframework.checker.formatter.FormatterChecker
+						</annotationProcessor>
+					</annotationProcessors>
+					<compilerArgs>
+						<arg>-AprintErrorStack</arg>
+						<arg>-Awarns</arg>
+					</compilerArgs>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
