@@ -1,0 +1,104 @@
+#
+# sample Byteman script to inject logs in test-snippets/jvm-thread-tool/jvm-thread-tool-server
+#
+
+
+# set default execute mode to compile
+COMPILE
+
+
+###########################
+RULE ThreadToolRestController.getFlameGraph
+CLASS ^fr.an.jvm.thread.tool.server.ThreadToolRestController
+METHOD getFlameGraph
+IF TRUE
+DO System.out.println("### RULE ThreadToolRestController.getFlameGraph: getFlameGraph this:" + $0)
+ENDRULE
+
+
+###########################
+RULE ThreadToolRestController.getFlameGraph AT LINE
+CLASS ^fr.an.jvm.thread.tool.server.ThreadToolRestController
+METHOD getFlameGraph
+AT LINE 18
+IF TRUE
+DO System.out.println("### RULE ThreadToolRestController.getFlameGraph AT LINE: getFlameGraph")
+ENDRULE
+
+
+###########################
+RULE ThreadToolRestController.getFlameGraph WRITE lastFlameGraph
+CLASS ^fr.an.jvm.thread.tool.server.ThreadToolRestController
+METHOD getFlameGraph
+AT WRITE lastFlameGraph
+IF TRUE
+DO System.out.println("### RULE ThreadToolRestController.getFlameGraph WRITE lastFlameGraph: getFlameGraph lastFlameGraph:")
+ENDRULE
+
+
+###########################
+RULE ThreadToolRestController.getFlameGraph READ lastFlameGraph
+CLASS ^fr.an.jvm.thread.tool.server.ThreadToolRestController
+METHOD getFlameGraph
+AT READ lastFlameGraph
+IF TRUE
+DO System.out.println("### RULE ThreadToolRestController.getFlameGraph READ lastFlameGraph: getFlameGraph lastFlameGraph:")
+ENDRULE
+
+
+###########################
+RULE ThreadToolRestController.getFlameGraph AT EXIT
+CLASS ^fr.an.jvm.thread.tool.server.ThreadToolRestController
+METHOD getFlameGraph
+AT EXIT
+IF TRUE
+DO System.out.println("### RULE ThreadToolRestController.getFlameGraph AT EXIT: getFlameGraph res:" + $!)
+ENDRULE
+
+###########################
+RULE ThreadToolRestController.getFlameGraph AT EXIT 2
+CLASS ^fr.an.jvm.thread.tool.server.ThreadToolRestController
+METHOD getFlameGraph
+AT EXIT
+BIND res: java.lang.Object = $!
+IF TRUE
+DO System.out.println("### RULE ThreadToolRestController.getFlameGraph AT EXIT 2: getFlameGraph res:" + res)
+ENDRULE
+
+
+###########################
+RULE rule FlameGraphUtil.getDefaultFlameGraph
+CLASS fr.an.jvm.thread.tool.server.FlameGraphUtil
+METHOD getDefaultFlameGraph
+IF TRUE
+DO System.out.println("### RULE FlameGraphUtil: getDefaultFlameGraph")
+ENDRULE
+
+
+###########################
+RULE ThreadToolRestController.getFlameGraph AFTER INVOKE 
+CLASS ^fr.an.jvm.thread.tool.server.ThreadToolRestController
+METHOD getFlameGraph
+# does not work ????
+# AFTER INVOKE fr.an.jvm.thread.tool.server.ThreadToolStatefullService.getFlameGraph
+AFTER INVOKE getFlameGraph
+BIND res = $!
+IF TRUE
+DO System.out.println("### RULE ThreadToolRestController.getFlameGraph AFTER INVOKE  res:" + res)
+
+ENDRULE
+
+
+
+###########################
+RULE ThreadToolStatefullService.getFlameGraph AFTER INVOKE 
+CLASS ^fr.an.jvm.thread.tool.server.ThreadToolStatefullService
+METHOD getFlameGraph
+AFTER INVOKE fr.an.jvm.thread.tool.server.FlameGraphUtil.getDefaultFlameGraph
+BIND res = $!
+IF TRUE
+DO System.out.println("### RULE ThreadToolStatefullService.getFlameGraph AFTER INVOKE getDefaultFlameGraph res:" + res)
+
+ENDRULE
+
+
