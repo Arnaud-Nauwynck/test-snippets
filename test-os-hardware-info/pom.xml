@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>fr.an.tests</groupId>
+  <artifactId>test-oshi</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  
+  <properties>
+  	<!-- 
+  	 <oshi-core.version>5.6.0</oshi-core.version>
+  	 -->
+  	<oshi-core.version>4.0.0-SNAPSHOT</oshi-core.version>
+  </properties>
+  
+  	<dependencies>
+		<dependency>
+			<groupId>com.github.oshi</groupId>
+			<artifactId>oshi-core</artifactId>
+			<version>${oshi-core.version}</version>
+		</dependency>
+	</dependencies>
+		
+</project>
