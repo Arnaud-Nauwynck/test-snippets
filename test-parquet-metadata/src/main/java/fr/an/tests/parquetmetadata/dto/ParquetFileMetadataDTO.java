@@ -2,9 +2,12 @@ package fr.an.tests.parquetmetadata.dto;
 
 import java.util.List;
 
+import lombok.Data;
+
 /**
  * Description for file metadata
  */
+@Data
 public class ParquetFileMetadataDTO {
 
   /** Version of this file **/
@@ -53,7 +56,7 @@ public class ParquetFileMetadataDTO {
    * with plaintext footer. Files with encrypted footer store algorithm id
    * in FileCryptoMetaData structure.
    */
-  EncryptionAlgorithmDTO encryption_algorithm;
+  ParquetEncryptionAlgorithmDTO encryption_algorithm;
 
   /** 
    * Retrieval metadata of key used for signing the footer. 

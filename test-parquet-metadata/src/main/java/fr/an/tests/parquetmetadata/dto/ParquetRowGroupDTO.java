@@ -2,6 +2,9 @@ package fr.an.tests.parquetmetadata.dto;
 
 import java.util.List;
 
+import lombok.Data;
+
+@Data
 public class ParquetRowGroupDTO {
 
   /** Metadata for each column chunk in this row group.

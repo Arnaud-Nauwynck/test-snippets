@@ -1,5 +1,8 @@
 package fr.an.tests.parquetmetadata.dto;
 
+import lombok.Data;
+
+@Data
 public class ParquetColumnChunkDTO {
 
 	/** File where column data is stored.  If not set, assumed to be same file as
