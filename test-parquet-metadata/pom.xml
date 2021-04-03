@@ -7,10 +7,10 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-    <properties>
+	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
 
 		<parquet.version>1.12.0</parquet.version>
 		<hadoop.version>3.2.1</hadoop.version>
@@ -33,40 +33,40 @@
 				<scope>provided</scope>
 			</dependency>
 
-		<dependency>
-			<groupId>org.apache.parquet</groupId>
-			<artifactId>parquet-common</artifactId>
-			<version>${parquet.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.parquet</groupId>
-			<artifactId>parquet-encoding</artifactId>
-			<version>${parquet.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.parquet</groupId>
-			<artifactId>parquet-column</artifactId>
-			<version>${parquet.version}</version>
-		</dependency>
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-common</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-encoding</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-column</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
 
-		<dependency>
-			<groupId>org.apache.parquet</groupId>
-			<artifactId>parquet-hadoop</artifactId>
-			<version>${parquet.version}</version>
-		</dependency>
-		
-		<dependency>
-	      	<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-client</artifactId>
-			<version>${hadoop.version}</version>
-			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-				</exclusion>
-			</exclusions>
-	    </dependency>
+			<dependency>
+				<groupId>org.apache.parquet</groupId>
+				<artifactId>parquet-hadoop</artifactId>
+				<version>${parquet.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-client</artifactId>
+				<version>${hadoop.version}</version>
+				<scope>provided</scope>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -74,5 +74,41 @@
 		<module>parquet-viewer-server</module>
 		<module>parquet-viewer-ui</module>
 	</modules>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.8.1</version>
+					<configuration>
+						<fork>true</fork>
+				        <compilerArgs>
+				            <arg>-Xlint:all</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+				            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED</arg>
+				        </compilerArgs>					
+						<annotationProcessorPaths>
+							<path>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+								<version>1.18.16</version>
+							</path>
+						</annotationProcessorPaths>
+					</configuration>
+				</plugin>
+
+			</plugins>
+		</pluginManagement>
+	</build>
 
 </project>
