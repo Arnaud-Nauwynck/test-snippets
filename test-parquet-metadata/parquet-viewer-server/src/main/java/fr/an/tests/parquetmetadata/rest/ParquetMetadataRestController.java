@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.an.tests.parquetmetadata.dto.ParquetFileMetadataDTO;
+import fr.an.tests.parquetmetadata.dto.ParquetFileInfoDTO;
 import fr.an.tests.parquetmetadata.service.ParquetMetadataService;
 
 @RestController
@@ -17,7 +17,7 @@ public class ParquetMetadataRestController {
 	public ParquetMetadataService parquetMetadataService;
 	
 	@GetMapping(path="/readFileMetadata")
-	public ParquetFileMetadataDTO readFileMetadata(
+	public ParquetFileInfoDTO readFileMetadata(
 			@RequestParam("file") String file) {
 		return parquetMetadataService.readFileMetadata(file);
 	}

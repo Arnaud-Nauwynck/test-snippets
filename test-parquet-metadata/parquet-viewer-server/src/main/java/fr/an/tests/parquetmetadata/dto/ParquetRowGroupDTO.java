@@ -32,6 +32,6 @@ public class ParquetRowGroupDTO {
   Long total_compressed_size;
   
   /** Row group ordinal in the file **/
-  Short ordinal;
+  Integer ordinal;
 
 }

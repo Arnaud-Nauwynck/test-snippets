@@ -1,11 +1,12 @@
 package fr.an.tests.parquetmetadata.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
  * statistics of a given page type and encoding
  */
-@Data
+@Data @AllArgsConstructor
 public class ParquetPageEncodingStatsDTO {
 
 	/** the page type (data/dic/...) **/

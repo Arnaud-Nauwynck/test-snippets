@@ -1,5 +1,8 @@
 package fr.an.tests.parquetmetadata.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 /**
  * LogicalType annotations to replace ConvertedType.
  *
@@ -7,44 +10,72 @@ package fr.an.tests.parquetmetadata.dto;
  * SchemaElement must also set the corresponding ConvertedType from the
  * following table.
  */
-public class ParquetLogicalType {
+public abstract class ParquetLogicalType {
 
 	// Union ....
-
-	StringType STRING; // use ConvertedType UTF8
-	MapType MAP; // use ConvertedType MAP
-	ListType LIST; // use ConvertedType LIST
-	EnumType ENUM; // use ConvertedType ENUM
-	DecimalType DECIMAL; // use ConvertedType DECIMAL
-	DateType DATE; // use ConvertedType DATE
-
-	// use ConvertedType TIME_MICROS for TIME(isAdjustedToUTC = *, unit = MICROS)
-	// use ConvertedType TIME_MILLIS for TIME(isAdjustedToUTC = *, unit = MILLIS)
-	TimeType TIME;
-
-	// use ConvertedType TIMESTAMP_MICROS for TIMESTAMP(isAdjustedToUTC = *, unit =
-	// MICROS)
-	// use ConvertedType TIMESTAMP_MILLIS for TIMESTAMP(isAdjustedToUTC = *, unit =
-	// MILLIS)
-	TimestampType TIMESTAMP;
-
-	// 9: reserved for INTERVAL
-	IntType INTEGER; // use ConvertedType INT_* or UINT_*
-	NullType UNKNOWN; // no compatible ConvertedType
-	JsonType JSON; // use ConvertedType JSON
-	BsonType BSON; // use ConvertedType BSON
-	UUIDType UUID;
+	public enum ParquetLogicalTypeEnum {
+		STRING, // use ConvertedType UTF8
+		MAP, // use ConvertedType MAP
+		LIST, // use ConvertedType LIST
+		ENUM, // use ConvertedType ENUM
+		DECIMAL, // use ConvertedType DECIMAL
+		DATE, // use ConvertedType DATE
 	
+		// use ConvertedType TIME_MICROS for TIME(isAdjustedToUTC = *, unit = MICROS)
+		// use ConvertedType TIME_MILLIS for TIME(isAdjustedToUTC = *, unit = MILLIS)
+		TIME_NANOS,
+		TIME_MICROS,
+		TIME_MILLIS,
+		
+		// use ConvertedType TIMESTAMP_MICROS for TIMESTAMP(isAdjustedToUTC = *, unit = MICROS)
+		// use ConvertedType TIMESTAMP_MILLIS for TIMESTAMP(isAdjustedToUTC = *, unit = MILLIS)
+		TIMESTAMP_NANOS,
+		TIMESTAMP_MICROS,
+		TIMESTAMP_MILLIS,
+		
+		// 9: reserved for INTERVAL
+		INTEGER, // use ConvertedType INT_* or UINT_*
+		UNKNOWN, // no compatible ConvertedType
+		JSON, // use ConvertedType JSON
+		BSON, // use ConvertedType BSON
+		UUID,
+		
+		NULL;
+	}
+	
+	public abstract ParquetLogicalTypeEnum getTypeEnum();
 	
 	// ------------------------------------------------------------------------
 	
 	/** Empty public static classs to use as logical type annotations */
-	public static class StringType {}  // allowed for BINARY, must be encoded with UTF-8
-	public static class UUIDType {}    // allowed for FIXED[16], must encoded raw UUID bytes
-	public static class MapType {}     // see LogicalTypes.md
-	public static class ListType {}    // see LogicalTypes.md
-	public static class EnumType {}    // allowed for BINARY, must be encoded with UTF-8
-	public static class DateType {}    // allowed for INT32
+	public static class StringType extends ParquetLogicalType {  // allowed for BINARY, must be encoded with UTF-8
+		public static final StringType INSTANCE = new StringType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.BSON; }
+	}
+	public static class UUIDType extends ParquetLogicalType {    // allowed for FIXED[16], must encoded raw UUID bytes
+		public static final UUIDType INSTANCE = new UUIDType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.UUID; }
+	}
+	public static class MapType extends ParquetLogicalType {     // see LogicalTypes.md
+		public static final MapType INSTANCE = new MapType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.MAP; }
+	}
+
+	public static class ListType extends ParquetLogicalType {    // see LogicalTypes.md
+		public static final ListType INSTANCE = new ListType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.LIST; }
+	}
+
+	public static class EnumType extends ParquetLogicalType {    // allowed for BINARY, must be encoded with UTF-8
+		public static final EnumType INSTANCE = new EnumType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.ENUM; }
+	}
+
+	public static class DateType extends ParquetLogicalType {    // allowed for INT32
+		public static final DateType INSTANCE = new DateType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.DATE; }
+	}
+
 
 	/**
 	 * Logical type to annotate a column that is always null.
@@ -53,7 +84,10 @@ public class ParquetLogicalType {
 	 * null and the physical type can't be determined. This annotation signals
 	 * the case where the physical type was guessed from all null values.
 	 */
-	public static class NullType {}    // allowed for any physical type, only null values stored
+	public static class NullType extends ParquetLogicalType {    // allowed for any physical type, only null values stored
+		public static final NullType INSTANCE = new NullType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.NULL; }
+	}
 
 	/**
 	 * Decimal logical type annotation
@@ -63,41 +97,82 @@ public class ParquetLogicalType {
 	 *
 	 * Allowed for physical types: INT32, INT64, FIXED, and BINARY
 	 */
-	public static class DecimalType {
-	  int scale;
-	  int precision;
+	@Data @AllArgsConstructor
+	public static class DecimalType extends ParquetLogicalType {
+//		public static final DecimalType INSTANCE = new DecimalType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.DECIMAL; }
+
+		int scale;
+		int precision;
 	}
 
 	/** Time units for logical types */
-	public static class MilliSeconds {}
-	public static class MicroSeconds {}
-	public static class NanoSeconds {}
-	public static class TimeUnit {
-		// union..
-		MilliSeconds MILLIS;
-		MicroSeconds MICROS;
-		NanoSeconds NANOS;
+	public enum ParquetTimeUnit { MILLIS, MICROS, NANOS; }
+	
+	/**
+	 * Time logical type annotation
+	 *
+	 * Allowed for physical types: INT32 (millis), INT64 (micros, nanos)
+	 */
+	@Data @AllArgsConstructor
+	public static class TimeParquetLogicalType extends ParquetLogicalType {
+		ParquetLogicalTypeEnum typeEnum;
+		boolean isAdjustedToUTC;
+		ParquetTimeUnit unit;
 	}
+
+//	public static abstract class TimeParquetLogicalType extends ParquetLogicalType {
+//		boolean isAdjustedToUTC;
+//		public abstract TimeUnit getUnit();
+//	}
+//	public static class MilliSecondsTimeParquetLogicalType extends TimeParquetLogicalType {
+//		public static final MilliSecondsTimeParquetLogicalType INSTANCE = new MilliSecondsTimeParquetLogicalType();
+//		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.TIME_MILLIS; }
+//		@Override public TimeUnit getUnit() { return TimeUnit.MILLIS; }
+//	}
+//	public static class MicroSecondsTimeParquetLogicalType extends TimeParquetLogicalType {
+//		public static final MicroSecondsTimeParquetLogicalType INSTANCE = new MicroSecondsTimeParquetLogicalType();
+//		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.TIME_MICROS; }
+//		@Override public TimeUnit getUnit() { return TimeUnit.MICROS; }
+//	}
+//	public static class NanoSecondsTimeParquetLogicalType extends TimeParquetLogicalType {
+//		public static final NanoSecondsTimeParquetLogicalType INSTANCE = new NanoSecondsTimeParquetLogicalType();
+//		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.TIME_NANOS; }
+//		@Override public TimeUnit getUnit() { return TimeUnit.NANOS; }
+//	}
 
 	/**
 	 * Timestamp logical type annotation
 	 *
 	 * Allowed for physical types: INT64
 	 */
-	public static class TimestampType {
+	@Data @AllArgsConstructor
+	public static class TimestampParquetLogicalType extends ParquetLogicalType {
+		ParquetLogicalTypeEnum typeEnum;
 		boolean isAdjustedToUTC;
-		TimeUnit unit;
+		ParquetTimeUnit unit;
 	}
 
-	/**
-	 * Time logical type annotation
-	 *
-	 * Allowed for physical types: INT32 (millis), INT64 (micros, nanos)
-	 */
-	public static class TimeType {
-	  boolean isAdjustedToUTC;
-	  TimeUnit unit;
-	}
+//	public static abstract class TimestampParquetLogicalType extends ParquetLogicalType {
+//		boolean isAdjustedToUTC;
+//		public abstract ParquetTimeUnit getUnit();
+//	}
+//
+//	public static class MillisTimestampParquetLogicalType extends TimestampParquetLogicalType {
+//		public static final MillisTimestampParquetLogicalType INSTANCE = new MillisTimestampParquetLogicalType();
+//		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.TIMESTAMP_MILLIS; }
+//		@Override public ParquetTimeUnit getUnit() { return ParquetTimeUnit.MILLIS; }
+//	}
+//	public static class MicrosTimestampParquetLogicalType extends TimestampParquetLogicalType {
+//		public static final MicrosTimestampParquetLogicalType INSTANCE = new MicrosTimestampParquetLogicalType();
+//		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.TIMESTAMP_MICROS; }
+//		@Override public ParquetTimeUnit getUnit() { return ParquetTimeUnit.MICROS; }
+//	}
+//	public static class NanosTimestampParquetLogicalType extends TimestampParquetLogicalType {
+//		public static final NanosTimestampParquetLogicalType INSTANCE = new NanosTimestampParquetLogicalType();
+//		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.TIMESTAMP_NANOS; }
+//		@Override public ParquetTimeUnit getUnit() { return ParquetTimeUnit.NANOS; }
+//	}
 
 	/**
 	 * Integer logical type annotation
@@ -106,9 +181,12 @@ public class ParquetLogicalType {
 	 *
 	 * Allowed for physical types: INT32, INT64
 	 */
-	public static class IntType {
-	  long bitWidth;
-	  boolean isSigned;
+	@Data @AllArgsConstructor
+	public static class IntType extends ParquetLogicalType {
+		// public static final IntType INSTANCE = new IntType();
+		long bitWidth;
+		boolean isSigned;
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.INTEGER; }
 	}
 
 	/**
@@ -116,7 +194,9 @@ public class ParquetLogicalType {
 	 *
 	 * Allowed for physical types: BINARY
 	 */
-	public static class JsonType {
+	public static class JsonType extends ParquetLogicalType {
+		public static final JsonType INSTANCE = new JsonType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.JSON; }
 	}
 
 	/**
@@ -124,6 +204,8 @@ public class ParquetLogicalType {
 	 *
 	 * Allowed for physical types: BINARY
 	 */
-	public static class BsonType {
+	public static class BsonType extends ParquetLogicalType {
+		public static final BsonType INSTANCE = new BsonType();
+		@Override public ParquetLogicalTypeEnum getTypeEnum() { return ParquetLogicalTypeEnum.BSON; }
 	}
 }

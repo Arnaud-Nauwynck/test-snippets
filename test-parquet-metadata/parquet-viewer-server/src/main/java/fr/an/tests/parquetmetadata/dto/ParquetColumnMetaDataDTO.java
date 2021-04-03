@@ -1,6 +1,7 @@
 package fr.an.tests.parquetmetadata.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 
@@ -34,7 +35,7 @@ public class ParquetColumnMetaDataDTO {
   long total_compressed_size;
 
   /** Optional key/value metadata **/
-  List<ParquetKeyValueDTO> key_value_metadata;
+  Map<String,String> key_value_metadata;
 
   /** Byte offset from beginning of file to first data page **/
   Long data_page_offset;

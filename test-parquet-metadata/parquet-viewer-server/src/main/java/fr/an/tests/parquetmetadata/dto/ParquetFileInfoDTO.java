@@ -1,6 +1,7 @@
 package fr.an.tests.parquetmetadata.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 
@@ -8,7 +9,7 @@ import lombok.Data;
  * Description for file metadata
  */
 @Data
-public class ParquetFileMetadataDTO {
+public class ParquetFileInfoDTO {
 
   /** Version of this file **/
   int version;
@@ -28,7 +29,7 @@ public class ParquetFileMetadataDTO {
   List<ParquetRowGroupDTO> row_groups;
 
   /** Optional key/value metadata **/
-  List<ParquetKeyValueDTO> key_value_metadata;
+  Map<String,String> key_value_metadata;
 
   /** String for application that wrote this file.  This should be in the format
    * <Application> version <App Version> (build <App Build Hash>).
