@@ -3,10 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>fr.an.tests</groupId>
-	<artifactId>test-parquet-metadata</artifactId>
+	<artifactId>parquet-viewer-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
     <properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
 
@@ -30,20 +32,6 @@
 				<version>1.18.12</version>
 				<scope>provided</scope>
 			</dependency>
-
-		</dependencies>
-	</dependencyManagement>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.apache.parquet</groupId>
@@ -79,7 +67,12 @@
 				</exclusion>
 			</exclusions>
 	    </dependency>
-    
-	</dependencies>
+		</dependencies>
+	</dependencyManagement>
+
+	<modules>
+		<module>parquet-viewer-server</module>
+		<module>parquet-viewer-ui</module>
+	</modules>
 
 </project>
