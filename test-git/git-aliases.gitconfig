@@ -1,0 +1,40 @@
+[user]
+	email = arnaud.nauwynck@gmail.com
+	name = Arnaud Nauwynck
+
+[core]
+	filemode = true
+	excludesfile = P:/.git/excludes
+	autocrlf = input
+	longpaths=true
+	fscache=true
+	symlinks=false
+
+[i18n]
+	filesencoding = utf-8
+
+[pull]
+	rebase = true
+	
+[alias]
+    st = status
+    ci = commit
+    co = checkout
+    who = shortlog -sne
+    oneline = log --pretty=oneline --abbrev-commit --graph --decorate
+    changes = diff --name-status
+    undo = git reset --soft HEAD^
+    dic = diff --cached
+    diffstat = diff --stat
+    lc = !git oneline ORIG_HEAD.. --stat --no-merges
+	lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+
+    addm = !git-ls-files -m -z | xargs -0 git-add && git status
+    addu = !git-ls-files -o --exclude-standard -z | xargs -0 git-add && git status
+    rmm = !git ls-files -d -z | xargs -0 git-rm && git status
+
+    fixup = "!f(){ git reset --soft HEAD~${1-1} && git commit --amend -C HEAD; };f"
+	ls-tree-r = ls-tree -r HEAD --name-only
+
+
