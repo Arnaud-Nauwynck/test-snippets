@@ -19,7 +19,7 @@ public class ParquetMetadataRestController {
 	@GetMapping(path="/readFileMetadata")
 	public ParquetFileInfoDTO readFileMetadata(
 			@RequestParam("file") String file) {
-		return parquetMetadataService.readFileMetadata(file);
+		return parquetMetadataService.readFileInfo(file);
 	}
 
 }

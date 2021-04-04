@@ -1,6 +1,5 @@
-@import "../node_modules/ag-grid-community/src/styles/ag-grid.scss";
-@import "../node_modules/ag-grid-community/src/styles/ag-theme-alpine/sass/ag-theme-alpine-mixin.scss";
+/* You can add global styles to this file, and also import other style files */
 
-.ag-theme-alpine {
-    @include ag-theme-alpine();
-}
+
+@import "ag-grid-community/dist/styles/ag-grid.css";
+@import "ag-grid-community/dist/styles/ag-theme-alpine.css";

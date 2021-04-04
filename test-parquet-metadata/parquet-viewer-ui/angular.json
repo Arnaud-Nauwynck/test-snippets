@@ -3,11 +3,14 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "test-aggrid": {
+    "parquet-viewer-ui": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
+        },
+        "@schematics/angular:application": {
+          "strict": true
         }
       },
       "root": "",
@@ -17,7 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/test-aggrid",
+            "outputPath": "dist/parquet-viewer-ui",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -43,7 +46,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -51,13 +53,13 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
                 }
               ]
             }
@@ -66,18 +68,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "test-aggrid:build"
+            "browserTarget": "parquet-viewer-ui:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "test-aggrid:build:production"
+              "browserTarget": "parquet-viewer-ui:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "test-aggrid:build"
+            "browserTarget": "parquet-viewer-ui:build"
           }
         },
         "test": {
@@ -114,15 +116,16 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "test-aggrid:serve"
+            "devServerTarget": "parquet-viewer-ui:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "test-aggrid:serve:production"
+              "devServerTarget": "parquet-viewer-ui:serve:production"
             }
           }
         }
       }
-    }},
-  "defaultProject": "test-aggrid"
+    }
+  },
+  "defaultProject": "parquet-viewer-ui"
 }

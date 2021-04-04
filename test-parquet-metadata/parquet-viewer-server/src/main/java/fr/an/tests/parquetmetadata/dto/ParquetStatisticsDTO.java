@@ -1,5 +1,8 @@
 package fr.an.tests.parquetmetadata.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
@@ -33,6 +36,7 @@ import lombok.NoArgsConstructor;
 	}) 
 public abstract class ParquetStatisticsDTO<T> {
 
+	@JsonIgnore // cf @JsonTypeInfo
 	public abstract String getType();
 	
 //	/**
@@ -53,7 +57,8 @@ public abstract class ParquetStatisticsDTO<T> {
 	/** count of null value in the column */
 	Long null_count;
 	
-	/** count of distinct values occurring */ // TODO not in java class?? 
+	/** count of distinct values occurring */ // TODO not in java class??
+	@JsonInclude(Include.NON_NULL)
 	Long distinct_count;
 	
 //	/**
@@ -71,14 +76,14 @@ public abstract class ParquetStatisticsDTO<T> {
 		@Override
 		public String getType() { return "Binary"; }
 		
-		public BinaryParquetStatisticsDTO(Long null_count, Long distinct_count, byte[] max_value, byte[] min_value) {
+		public BinaryParquetStatisticsDTO(Long null_count, Long distinct_count, byte[] min_value, byte[] max_value) {
 			super(null_count, distinct_count);
-			this.max_value = max_value;
 			this.min_value = min_value;
+			this.max_value = max_value;
 		}
 
-		public byte[] max_value;
 		public byte[] min_value;
+		public byte[] max_value;
 	}
 
 	// cf for Binary..
@@ -86,100 +91,100 @@ public abstract class ParquetStatisticsDTO<T> {
 	@JsonTypeName("String")
 	public static class StringParquetStatisticsDTO extends ParquetStatisticsDTO<String> {
 		
-		public StringParquetStatisticsDTO(Long null_count, Long distinct_count, String max_value, String min_value) {
+		public StringParquetStatisticsDTO(Long null_count, Long distinct_count, String min_value, String max_value) {
 			super(null_count, distinct_count);
-			this.max_value = max_value;
 			this.min_value = min_value;
+			this.max_value = max_value;
 		}
 		@Override
 		public String getType() { return "String"; }
 		
-		public String max_value;
 		public String min_value;
+		public String max_value;
 	}
 
 	@Data @NoArgsConstructor @EqualsAndHashCode(callSuper=true)
 	@JsonTypeName("Boolean")
 	public static class BooleanParquetStatisticsDTO extends ParquetStatisticsDTO<Boolean> {
 		
-		public BooleanParquetStatisticsDTO(Long null_count, Long distinct_count, boolean max_value, boolean min_value) {
+		public BooleanParquetStatisticsDTO(Long null_count, Long distinct_count, boolean min_value, boolean max_value) {
 			super(null_count, distinct_count);
-			this.max_value = max_value;
 			this.min_value = min_value;
+			this.max_value = max_value;
 		}
 
 		@Override
 		public String getType() { return "Boolean"; }
 
-		public boolean max_value;
 		public boolean min_value;
+		public boolean max_value;
 	}
 
 	@Data @NoArgsConstructor @EqualsAndHashCode(callSuper=true)
 	@JsonTypeName("Double")
 	public static class DoubleParquetStatisticsDTO extends ParquetStatisticsDTO<Double> {
 		
-		public DoubleParquetStatisticsDTO(Long null_count, Long distinct_count, double max_value, double min_value) {
+		public DoubleParquetStatisticsDTO(Long null_count, Long distinct_count, double min_value, double max_value) {
 			super(null_count, distinct_count);
-			this.max_value = max_value;
 			this.min_value = min_value;
+			this.max_value = max_value;
 		}
 		
 		@Override
 		public String getType() { return "Double"; }
 		
-		public double max_value;
 		public double min_value;
+		public double max_value;
 	}
 
 	@Data @NoArgsConstructor @EqualsAndHashCode(callSuper=true)
 	@JsonTypeName("Float")
 	public static class FloatParquetStatisticsDTO extends ParquetStatisticsDTO<Float> {
 		
-		public FloatParquetStatisticsDTO(Long null_count, Long distinct_count, float max_value, float min_value) {
+		public FloatParquetStatisticsDTO(Long null_count, Long distinct_count, float min_value, float max_value) {
 			super(null_count, distinct_count);
-			this.max_value = max_value;
 			this.min_value = min_value;
+			this.max_value = max_value;
 		}
 		
 		@Override
 		public String getType() { return "Float"; }
 		
-		public float max_value;
 		public float min_value;
+		public float max_value;
 	}
 
 	@Data @NoArgsConstructor @EqualsAndHashCode(callSuper=true)
 	@JsonTypeName("Int")
 	public static class IntParquetStatisticsDTO extends ParquetStatisticsDTO<Integer> {
 		
-		public IntParquetStatisticsDTO(Long null_count, Long distinct_count, int max_value, int min_value) {
+		public IntParquetStatisticsDTO(Long null_count, Long distinct_count, int min_value, int max_value) {
 			super(null_count, distinct_count);
-			this.max_value = max_value;
 			this.min_value = min_value;
+			this.max_value = max_value;
 		}
 		@Override
 		public String getType() { return "Int"; }
 		
-		public int max_value;
 		public int min_value;
+		public int max_value;
 	}
 	
 	@Data @NoArgsConstructor @EqualsAndHashCode(callSuper=true)
 	@JsonTypeName("Long")
 	public static class LongParquetStatisticsDTO extends ParquetStatisticsDTO<Long> {
 		
-		public LongParquetStatisticsDTO(Long null_count, Long distinct_count, long max_value, long min_value) {
+		public LongParquetStatisticsDTO(Long null_count, Long distinct_count, long min_value, long max_value) {
 			super(null_count, distinct_count);
-			this.max_value = max_value;
 			this.min_value = min_value;
+			this.max_value = max_value;
 		}
 		
 		@Override
 		public String getType() { return "Long"; }
 		
-		public long max_value;
 		public long min_value;
+		public long max_value;
 	}
 	
 }

@@ -1,8 +1,8 @@
 package fr.an.tests.parquetmetadata.service;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,14 +53,14 @@ import org.apache.parquet.schema.LogicalTypeAnnotation.TimeUnit;
 import org.apache.parquet.schema.LogicalTypeAnnotation.TimestampLogicalTypeAnnotation;
 import org.apache.parquet.schema.LogicalTypeAnnotation.UUIDLogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.schema.Type.Repetition;
 import org.springframework.stereotype.Service;
 
 import fr.an.tests.parquetmetadata.dto.ParquetColumnChunkDTO;
-import fr.an.tests.parquetmetadata.dto.ParquetColumnMetaDataDTO;
-import fr.an.tests.parquetmetadata.dto.ParquetCompressionCodec;
+import fr.an.tests.parquetmetadata.dto.ParquetColumnChunkMetaDataDTO;
 import fr.an.tests.parquetmetadata.dto.ParquetEncoding;
 import fr.an.tests.parquetmetadata.dto.ParquetFieldRepetitionType;
 import fr.an.tests.parquetmetadata.dto.ParquetFileInfoDTO;
@@ -86,16 +86,24 @@ import lombok.val;
 @Service
 public class ParquetMetadataService {
 
-	public ParquetFileInfoDTO readFileMetadata(String file) {
+	public ParquetFileInfoDTO readFileInfo(String file) {
 		ParquetFileReader fileReader = createParquetFileReader(file);
 
 		return parquetFileReaderToDTO(fileReader);
 	}
 
-	private ParquetFileReader createParquetFileReader(String file) {
+	private ParquetFileReader createParquetFileReader(String filePath) {
 		Configuration conf = new Configuration();
-		// File uri = new File(file).toURI().toURL().toString();
-		Path path = new Path(file);
+		File file = new File(filePath);
+		if (! file.exists()) {
+			String msg = "File not found '" + filePath + "'";
+			System.out.println(msg);
+			throw new RuntimeException(msg);
+		}
+		String fileAbsPath = file.getAbsolutePath();
+		String fileUrl = "file:///" + fileAbsPath;
+		
+		Path path = new Path(fileUrl);
 		InputFile intputFile;
 		try {
 			intputFile = HadoopInputFile.fromPath(path, conf);
@@ -117,7 +125,6 @@ public class ParquetMetadataService {
 		ParquetFileInfoDTO res = new ParquetFileInfoDTO();
 
 		FileMetaData fileMetaData = fileReader.getFileMetaData();
-		MessageType schema = fileMetaData.getSchema();
 		
 		fillFileMetadata(res, fileMetaData);
 		ParquetMetadata fileFooter = fileReader.getFooter();
@@ -163,17 +170,18 @@ public class ParquetMetadataService {
 		});
 	}
 
-	public ParquetSchemaElementDTO toSchemaElementDTO(String name, Type src, Integer num_children) {
+	public ParquetSchemaElementDTO toSchemaElementDTO(String name, Type type, Integer num_children) {
 		val res = new ParquetSchemaElementDTO();
 		res.setName(name);
-
+		
 		// OriginalType srcOriginalType = src.getOriginalType(); // deprecated
 
 		// type_length Not set if the current element is a non-leaf node
-		if (src instanceof GroupType) {
-			org.apache.parquet.schema.GroupType groupType = (org.apache.parquet.schema.GroupType) src;
+		if (type instanceof GroupType) {
+			org.apache.parquet.schema.GroupType groupType = (org.apache.parquet.schema.GroupType) type;
+			// should not occur..
 		} else {
-			org.apache.parquet.schema.PrimitiveType primitiveType = (org.apache.parquet.schema.PrimitiveType) src;
+			org.apache.parquet.schema.PrimitiveType primitiveType = (org.apache.parquet.schema.PrimitiveType) type;
 			PrimitiveTypeName primitiveTypeName = primitiveType.getPrimitiveTypeName();
 
 			res.setType_length(primitiveType.getTypeLength());
@@ -181,118 +189,167 @@ public class ParquetMetadataService {
 
 		}
 
-		LogicalTypeAnnotation logicalTypeAnnot = src.getLogicalTypeAnnotation();
-
-		logicalTypeAnnot.accept(new LogicalTypeAnnotationVisitor<Void>() {
-			@Override
-			public Optional<Void> visit(StringLogicalTypeAnnotation stringLogicalType) {
-				res.setLogicalType(ParquetLogicalType.StringType.INSTANCE);
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(MapLogicalTypeAnnotation mapLogicalType) {
-				res.setLogicalType(ParquetLogicalType.MapType.INSTANCE);
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(ListLogicalTypeAnnotation listLogicalType) {
-				res.setLogicalType(ParquetLogicalType.ListType.INSTANCE);
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(EnumLogicalTypeAnnotation enumLogicalType) {
-				res.setLogicalType(ParquetLogicalType.EnumType.INSTANCE);
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(DecimalLogicalTypeAnnotation decimalLogicalType) {
-				int scale = decimalLogicalType.getScale();
-				int precision = decimalLogicalType.getPrecision();
-				res.setLogicalType(new ParquetLogicalType.DecimalType(scale, precision));
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(TimeLogicalTypeAnnotation timeLogicalType) {
-				TimeUnit parquetTimeUnit = timeLogicalType.getUnit();
-				boolean isAdjustedToUTC = timeLogicalType.isAdjustedToUTC();
-				ParquetLogicalType.ParquetTimeUnit unit;
-				ParquetLogicalTypeEnum typeEnum;
-				switch(parquetTimeUnit) {
-				case NANOS: unit = ParquetTimeUnit.NANOS; typeEnum = ParquetLogicalTypeEnum.TIME_NANOS; break;
-				case MICROS: unit = ParquetTimeUnit.MICROS; typeEnum = ParquetLogicalTypeEnum.TIME_MICROS; break;
-				case MILLIS: unit = ParquetTimeUnit.MILLIS; typeEnum = ParquetLogicalTypeEnum.TIME_MILLIS; break;
-				default: unit = ParquetTimeUnit.MILLIS; typeEnum = ParquetLogicalTypeEnum.TIME_MILLIS; break;
+		LogicalTypeAnnotation logicalTypeAnnot = type.getLogicalTypeAnnotation();
+		if (logicalTypeAnnot != null) {
+			logicalTypeAnnot.accept(new LogicalTypeAnnotationVisitor<Void>() {
+				@Override
+				public Optional<Void> visit(StringLogicalTypeAnnotation stringLogicalType) {
+					res.setType(ParquetType.BYTE_ARRAY);
+					res.setLogicalType(ParquetLogicalType.StringType.INSTANCE);
+					return Optional.empty();
 				}
-				res.setLogicalType(new ParquetLogicalType.TimeParquetLogicalType(typeEnum, isAdjustedToUTC, unit));
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(TimestampLogicalTypeAnnotation timestampLogicalType) {
-				TimeUnit parquetTimeUnit = timestampLogicalType.getUnit();
-				boolean isAdjustedToUTC = timestampLogicalType.isAdjustedToUTC();
-				ParquetLogicalType.ParquetTimeUnit unit;
-				ParquetLogicalTypeEnum typeEnum;
-				switch(parquetTimeUnit) {
-				case NANOS: unit = ParquetTimeUnit.NANOS; typeEnum = ParquetLogicalTypeEnum.TIMESTAMP_NANOS; break;
-				case MICROS: unit = ParquetTimeUnit.MICROS; typeEnum = ParquetLogicalTypeEnum.TIMESTAMP_MICROS; break;
-				case MILLIS: unit = ParquetTimeUnit.MILLIS; typeEnum = ParquetLogicalTypeEnum.TIMESTAMP_MILLIS; break;
-				default: unit = ParquetTimeUnit.MILLIS; typeEnum = ParquetLogicalTypeEnum.TIMESTAMP_MILLIS; break;
+	
+				@Override
+				public Optional<Void> visit(MapLogicalTypeAnnotation mapLogicalType) {
+					// res.setType(null);
+					res.setLogicalType(ParquetLogicalType.MapType.INSTANCE);
+					return Optional.empty();
 				}
-				res.setLogicalType(new ParquetLogicalType.TimestampParquetLogicalType(typeEnum, isAdjustedToUTC, unit));
-				return Optional.empty();
+	
+				@Override
+				public Optional<Void> visit(ListLogicalTypeAnnotation listLogicalType) {
+					// res.setType(null);
+					res.setLogicalType(ParquetLogicalType.ListType.INSTANCE);
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(EnumLogicalTypeAnnotation enumLogicalType) {
+					res.setType(ParquetType.INT32); // TOCHECK
+					res.setLogicalType(ParquetLogicalType.EnumType.INSTANCE);
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(DecimalLogicalTypeAnnotation decimalLogicalType) {
+					int scale = decimalLogicalType.getScale();
+					int precision = decimalLogicalType.getPrecision();
+					res.setType(ParquetType.FIXED_LEN_BYTE_ARRAY); //  : ParquetType.DOUBLE); // TOCHECK
+					res.setLogicalType(new ParquetLogicalType.DecimalType(scale, precision));
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(TimeLogicalTypeAnnotation timeLogicalType) {
+					TimeUnit parquetTimeUnit = timeLogicalType.getUnit();
+					boolean isAdjustedToUTC = timeLogicalType.isAdjustedToUTC();
+					ParquetLogicalType.ParquetTimeUnit unit;
+					ParquetLogicalTypeEnum typeEnum;
+					switch(parquetTimeUnit) {
+					case NANOS: unit = ParquetTimeUnit.NANOS; typeEnum = ParquetLogicalTypeEnum.TIME_NANOS; break;
+					case MICROS: unit = ParquetTimeUnit.MICROS; typeEnum = ParquetLogicalTypeEnum.TIME_MICROS; break;
+					case MILLIS: unit = ParquetTimeUnit.MILLIS; typeEnum = ParquetLogicalTypeEnum.TIME_MILLIS; break;
+					default: unit = ParquetTimeUnit.MILLIS; typeEnum = ParquetLogicalTypeEnum.TIME_MILLIS; break;
+					}
+					res.setType(ParquetType.INT64); // TOCHECK
+					res.setLogicalType(new ParquetLogicalType.TimeParquetLogicalType(typeEnum, isAdjustedToUTC, unit));
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(TimestampLogicalTypeAnnotation timestampLogicalType) {
+					TimeUnit parquetTimeUnit = timestampLogicalType.getUnit();
+					boolean isAdjustedToUTC = timestampLogicalType.isAdjustedToUTC();
+					ParquetLogicalType.ParquetTimeUnit unit;
+					ParquetLogicalTypeEnum typeEnum;
+					switch(parquetTimeUnit) {
+					case NANOS: unit = ParquetTimeUnit.NANOS; typeEnum = ParquetLogicalTypeEnum.TIMESTAMP_NANOS; break;
+					case MICROS: unit = ParquetTimeUnit.MICROS; typeEnum = ParquetLogicalTypeEnum.TIMESTAMP_MICROS; break;
+					case MILLIS: unit = ParquetTimeUnit.MILLIS; typeEnum = ParquetLogicalTypeEnum.TIMESTAMP_MILLIS; break;
+					default: unit = ParquetTimeUnit.MILLIS; typeEnum = ParquetLogicalTypeEnum.TIMESTAMP_MILLIS; break;
+					}
+					res.setType(ParquetType.INT64); // TOCHECK
+					res.setLogicalType(new ParquetLogicalType.TimestampParquetLogicalType(typeEnum, isAdjustedToUTC, unit));
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(IntLogicalTypeAnnotation intLogicalType) {
+					int bitWidth = intLogicalType.getBitWidth();
+					boolean isSigned = intLogicalType.isSigned();
+					res.setType(ParquetType.INT32);
+					res.setLogicalType(new ParquetLogicalType.IntType(bitWidth, isSigned));
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(JsonLogicalTypeAnnotation jsonLogicalType) {
+					res.setType(ParquetType.BYTE_ARRAY);
+					res.setLogicalType(new ParquetLogicalType.JsonType());
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(BsonLogicalTypeAnnotation bsonLogicalType) {
+					res.setType(ParquetType.BYTE_ARRAY);
+					res.setLogicalType(new ParquetLogicalType.BsonType());
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(UUIDLogicalTypeAnnotation uuidLogicalType) {
+					res.setType(ParquetType.FIXED_LEN_BYTE_ARRAY);
+					res.setLogicalType(new ParquetLogicalType.UUIDType());
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(IntervalLogicalTypeAnnotation intervalLogicalType) {
+					res.setType(ParquetType.FIXED_LEN_BYTE_ARRAY);
+					// TODO res.setLogicalType(new ParquetLogicalType.IntervalLogicalType());
+					return Optional.empty();
+				}
+	
+				@Override
+				public Optional<Void> visit(MapKeyValueTypeAnnotation mapKeyValueLogicalType) {
+					res.setType(ParquetType.BYTE_ARRAY);
+					res.setLogicalType(new ParquetLogicalType.MapType()); // TODO MapType.INSTANCE != MapKeyValue ?
+					return Optional.empty();
+				}
+	
+			});
+		} else {
+			// no logicalTypeAnnotation... primitive?
+			if (type.isPrimitive()) {
+				PrimitiveType primitive = type.asPrimitiveType();
+				PrimitiveTypeName primitiveTypeName = primitive.getPrimitiveTypeName();
+				switch(primitiveTypeName) {
+				case BINARY: 
+					res.setType(ParquetType.BYTE_ARRAY);
+					break;
+				case BOOLEAN: 
+					res.setType(ParquetType.BOOLEAN);
+					break;
+				case DOUBLE: 
+					res.setType(ParquetType.DOUBLE);
+					break;
+				case FLOAT: 
+					res.setType(ParquetType.FLOAT);
+					break;
+				case INT32: 
+					res.setType(ParquetType.INT32);
+					break;
+				case INT64: 
+					res.setType(ParquetType.INT64);
+					break;
+				case INT96: 
+					res.setType(ParquetType.INT96);
+					break;
+				case FIXED_LEN_BYTE_ARRAY: 
+					res.setType(ParquetType.FIXED_LEN_BYTE_ARRAY);
+					break;
+				}
+				
+			} else {
+				// should not occur?
 			}
+			
+		}
 
-			@Override
-			public Optional<Void> visit(IntLogicalTypeAnnotation intLogicalType) {
-				int bitWidth = intLogicalType.getBitWidth();
-				boolean isSigned = intLogicalType.isSigned();
-				res.setLogicalType(new ParquetLogicalType.IntType(bitWidth, isSigned));
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(JsonLogicalTypeAnnotation jsonLogicalType) {
-				res.setLogicalType(new ParquetLogicalType.JsonType());
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(BsonLogicalTypeAnnotation bsonLogicalType) {
-				res.setLogicalType(new ParquetLogicalType.BsonType());
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(UUIDLogicalTypeAnnotation uuidLogicalType) {
-				res.setLogicalType(new ParquetLogicalType.UUIDType());
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(IntervalLogicalTypeAnnotation intervalLogicalType) {
-				// TODO res.setLogicalType(new ParquetLogicalType.IntervalLogicalType());
-				return Optional.empty();
-			}
-
-			@Override
-			public Optional<Void> visit(MapKeyValueTypeAnnotation mapKeyValueLogicalType) {
-				res.setLogicalType(new ParquetLogicalType.MapType()); // TODO MapType.INSTANCE != MapKeyValue ?
-				return Optional.empty();
-			}
-
-		});
-
-
-		Repetition repetition = src.getRepetition();
+		Repetition repetition = type.getRepetition();
 		res.setRepetition_type(repetition != null ? ParquetFieldRepetitionType.valueOf(repetition.name()) : null);
 
-		org.apache.parquet.schema.Type.ID fieldId = src.getId();
+		org.apache.parquet.schema.Type.ID fieldId = type.getId();
 		res.setField_id(fieldId != null? fieldId.intValue() : null);
 		
 		res.setNum_children(num_children);
@@ -343,9 +400,10 @@ public class ParquetMetadataService {
 
 	private ParquetColumnChunkDTO toColumnChunkDTO(
 			ColumnChunkMetaData src,
-			Type type) {
+			Type column) {
 		ParquetColumnChunkDTO res = new ParquetColumnChunkDTO();
 		
+		res.setColName(column.getName());
 		res.setFile_path(null);
 
 		/** Byte offset in file_path to the ColumnMetaData **/
@@ -355,7 +413,7 @@ public class ParquetMetadataService {
 		 * file_path/file_offset.  Having it here has it replicated in the file
 		 * metadata.
 		 **/
-		ParquetColumnMetaDataDTO meta_data = toColumnChunkMetadataDTO(src, type);
+		ParquetColumnChunkMetaDataDTO meta_data = toColumnChunkMetadataDTO(src, column);
 		res.setMeta_data(meta_data);
 		
 		IndexReference offsetIndexRef = src.getOffsetIndexReference();
@@ -384,8 +442,8 @@ public class ParquetMetadataService {
 		return res;
 	}
 
-	private ParquetColumnMetaDataDTO toColumnChunkMetadataDTO(ColumnChunkMetaData src, Type type) {
-		ParquetColumnMetaDataDTO res = new ParquetColumnMetaDataDTO();
+	private ParquetColumnChunkMetaDataDTO toColumnChunkMetadataDTO(ColumnChunkMetaData src, Type type) {
+		ParquetColumnChunkMetaDataDTO res = new ParquetColumnChunkMetaDataDTO();
 		
 		EncodingStats srcEncodingStats = src.getEncodingStats();
 		// ColumnChunkProperties srcProperties = codec, path, type, encoding ...
@@ -398,15 +456,6 @@ public class ParquetMetadataService {
 		IndexReference srcOffsetIndexReference = src.getOffsetIndexReference();
 
 		long srcBloomFilterOffset = src.getBloomFilterOffset();
-
-
-		res.setType(ParquetType.valueOf(srcPrimitiveType.name()));
-		
-		res.setEncodings(map(srcEncodings, e -> ParquetEncoding.valueOf(e.name())));
-
-		res.setPath_in_schema(new ArrayList<>(Arrays.asList(srcPath.toArray())));
-
-		res.setCodec(ParquetCompressionCodec.valueOf(srcCodec.name()));
 
 		/** Number of values in this column **/
 		long num_values;
@@ -430,11 +479,13 @@ public class ParquetMetadataService {
 		ParquetStatisticsDTO<?> statistics = toStatisticsDTO(src.getStatistics(), srcPrimitiveType, type);
 		res.setStatistics(statistics);
 		
-		res.setEncoding_stats(toEncodingStatsDTO(src.getEncodingStats()));
+		if (srcEncodingStats != null) {
+			res.setEncoding_stats(toEncodingStatsDTO(srcEncodingStats));
+		}
 		
 		res.setBloom_filter_offset(srcBloomFilterOffset);
 
-		return null;
+		return res;
 	}
 
 

@@ -2,18 +2,37 @@
 
 <div class="content" role="main">
 
-	<input type="text"
-		[(ngModel)]="makeCrit" (input)="reevalFilterChange()">
-	
-	<label>filter rows not containing makeCrit: {{makeCrit}}</label>
+<!-- 
+	<span>
+		<label>columnName</label>
+		<input type="text"
+			[(ngModel)]="columnName" (input)="reevalFilterChange()">
+		
+	</span>
+	<br>
+ -->
 
+	<span>RowGroups</span>
+	
     <ag-grid-angular
-        style="width: 1000px; height: 200px;"
-        class="ag-theme-balham"
-		(gridReady)="onGridReady($event)"
-        [rowData]="rowData"
-        [columnDefs]="columnDefs"
-        [gridOptions]="gridOptions"
+    	#rowGroupGrid
+        class="ag-theme-alpine"
+        style="width: 100%; height: 400px;"
+		(gridReady)="onRowGroupGridReady($event)"
+        [columnDefs]="rowGroupColumnDefs"
+        [gridOptions]="rowGroupGridOptions"
+		[frameworkComponents]="frameworkComponents"
+        >
+    </ag-grid-angular>
+
+	<span>Column Chunks</span>
+    <ag-grid-angular
+    	#columnChunkGrid
+        class="ag-theme-alpine"
+        style="width: 100%; height: 400px;"
+		(gridReady)="onColumnChunkGridReady($event)"
+        [columnDefs]="columnChunkColumnDefs"
+        [gridOptions]="columnChunkGridOptions"
 		[frameworkComponents]="frameworkComponents"
         >
     </ag-grid-angular>

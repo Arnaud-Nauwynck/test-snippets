@@ -58,6 +58,14 @@
 	</dependencies>
 
 	<profiles>
+		<!-- 
+		to generate:
+		
+		rm -rf ../parquet-viewer-ui/src/app/ext/*; rm -rf target/generated-typescript-angular7; mvn -Pswagger-gen swagger-codegen:generate; cp -rf target/generated-typescript-angular7/* ../parquet-viewer-ui/src/app/ext/ 
+		
+		
+		
+		 -->
 		<profile>
 			<id>swagger-gen</id>
 			<build>
@@ -68,6 +76,11 @@
 						<version>${swagger-codegen.version}</version>
 						<configuration>
 							<inputSpec>http://localhost:8080/v2/api-docs</inputSpec>
+							<language>typescript-angular</language>
+							<output>${basedir}/target/generated-typescript-angular7</output>
+							<configOptions>
+								<ngVersion>7.2.12</ngVersion>
+							</configOptions>
 						</configuration>
 						<executions>
 							<execution>
@@ -76,13 +89,6 @@
 								<goals>
 									<goal>generate</goal>
 								</goals>
-								<configuration>
-									<language>typescript-angular</language>
-									<output>${basedir}/target/generated-typescript-angular7</output>
-									<configOptions>
-										<ngVersion>7.2.12</ngVersion>
-									</configOptions>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>

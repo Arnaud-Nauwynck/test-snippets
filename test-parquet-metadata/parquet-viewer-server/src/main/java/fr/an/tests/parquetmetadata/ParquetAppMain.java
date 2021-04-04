@@ -7,7 +7,12 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import fr.an.tests.parquetmetadata.dto.ParquetFileInfoDTO;
 import fr.an.tests.parquetmetadata.service.ParquetMetadataService;
+import lombok.val;
 
 
 @SpringBootApplication
@@ -20,10 +25,13 @@ public class ParquetAppMain {
 	@Bean
 	public CommandLineRunner commandLineRunner(ParquetMetadataService service) {
 		return args -> {
-			File f = new File("src/test/data/datapage_v2.snappy.parquet");
-			String absPath = f.getAbsolutePath();
-			String fileUrl = "file:///" + absPath;
-			service.readFileMetadata(fileUrl);
+			String file = "src/test/data/datapage_v2.snappy.parquet";
+			ParquetFileInfoDTO fileInfo = service.readFileInfo(file);
+			val om = new ObjectMapper();
+			om.configure(SerializationFeature.INDENT_OUTPUT, true);
+			// om.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+			String json = om.writeValueAsString(fileInfo);
+			System.out.println("sample parquet file info: \n" + json);
 		};
 	}
 }

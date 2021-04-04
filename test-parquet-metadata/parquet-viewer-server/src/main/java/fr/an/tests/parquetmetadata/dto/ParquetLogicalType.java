@@ -13,6 +13,7 @@ import lombok.Data;
 public abstract class ParquetLogicalType {
 
 	// Union ....
+	// cf also ParquetConvertedType  (+ "NULL" for always null column, "UUID", ... )
 	public enum ParquetLogicalTypeEnum {
 		STRING, // use ConvertedType UTF8
 		MAP, // use ConvertedType MAP

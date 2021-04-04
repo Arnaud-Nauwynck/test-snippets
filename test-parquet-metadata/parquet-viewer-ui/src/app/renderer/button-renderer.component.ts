@@ -11,10 +11,10 @@ import { ICellRendererParams, IAfterGuiAttachedParams } from 'ag-grid-community'
 })
 export class ButtonRendererComponent implements ICellRendererAngularComp {
 
-  params;
-  label: string;
+  params: any;
+  label!: string;
 
-  agInit(params): void {
+  agInit(params: any): void {
     this.params = params;
     this.label = this.params.label || null;
   }
@@ -23,7 +23,7 @@ export class ButtonRendererComponent implements ICellRendererAngularComp {
     return true;
   }
 
-  onClick($event) {
+  onClick($event: any) {
     if (this.params.onClick instanceof Function) {
       // put anything into params u want pass into parents component
       const clickParams = {
@@ -33,7 +33,6 @@ export class ButtonRendererComponent implements ICellRendererAngularComp {
         // ...something
       }
       this.params.onClick(clickParams);
-
     }
   }
 }
