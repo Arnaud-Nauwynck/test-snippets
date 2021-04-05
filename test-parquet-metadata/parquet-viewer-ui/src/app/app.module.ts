@@ -3,6 +3,9 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
+
 import { AgGridModule } from 'ag-grid-angular';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -26,10 +29,11 @@ let apiConfiguration = new Configuration({
 	HttpClientModule,
     AppRoutingModule,
     FormsModule, ReactiveFormsModule,
+ 	NgbModule,
     AgGridModule.withComponents([
 		ButtonRendererComponent
 	]),
-	ApiModule.forRoot(() => apiConfiguration)
+	ApiModule.forRoot(() => apiConfiguration),
   ],
   providers: [
   	ButtonRendererComponent

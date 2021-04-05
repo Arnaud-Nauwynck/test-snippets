@@ -16,7 +16,7 @@ import { ParquetStatisticsDTOobject } from './parquetStatisticsDTOobject';
 export interface ParquetColumnChunkMetaDataDTO { 
     bloomFilterOffset?: number;
     dataPageOffset?: number;
-    dictionaryPageOffset?: number;
+    dicPageOffset?: number;
     encodingStats?: Array<ParquetPageEncodingStatsDTO>;
     indexPageOffset?: number;
     keyValueMetadata?: { [key: string]: string; };

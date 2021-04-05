@@ -2,6 +2,15 @@
 
 <div class="content" role="main">
 
+<ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0">
+  
+  <ngb-panel title="Input">
+  	<ng-template ngbPanelContent>
+	</ng-template>
+  </ngb-panel>
+  
+  <ngb-panel title="Schema">
+  	<ng-template ngbPanelContent>
 <!-- 
 	<span>
 		<label>columnName</label>
@@ -11,31 +20,66 @@
 	</span>
 	<br>
  -->
+		<ag-grid-angular
+		    	#schemaColGrid
+		        class="ag-theme-alpine"
+		        style="width: 100%; height: 400px;"
+				(gridReady)="onSchemaColGridReady($event)"
+		        [columnDefs]="schemaColColumnDefs"
+		        [gridOptions]="schemaColGridOptions"
+				[frameworkComponents]="frameworkComponents"
+		        >
+		</ag-grid-angular>
+	</ng-template>
+  </ngb-panel>
 
-	<span>RowGroups</span>
-	
-    <ag-grid-angular
-    	#rowGroupGrid
-        class="ag-theme-alpine"
-        style="width: 100%; height: 400px;"
-		(gridReady)="onRowGroupGridReady($event)"
-        [columnDefs]="rowGroupColumnDefs"
-        [gridOptions]="rowGroupGridOptions"
-		[frameworkComponents]="frameworkComponents"
-        >
-    </ag-grid-angular>
+  <ngb-panel title="Partition Dirs">
+  	<ng-template ngbPanelContent>
+	</ng-template>
+  </ngb-panel>
 
-	<span>Column Chunks</span>
-    <ag-grid-angular
-    	#columnChunkGrid
-        class="ag-theme-alpine"
-        style="width: 100%; height: 400px;"
-		(gridReady)="onColumnChunkGridReady($event)"
-        [columnDefs]="columnChunkColumnDefs"
-        [gridOptions]="columnChunkGridOptions"
-		[frameworkComponents]="frameworkComponents"
-        >
-    </ag-grid-angular>
+  <ngb-panel title="Files">
+  	<ng-template ngbPanelContent>
+	</ng-template>
+  </ngb-panel>
+
+  <ngb-panel title="RowGroups">
+  	<ng-template ngbPanelContent>
+	    <ag-grid-angular
+	    	#rowGroupGrid
+	        class="ag-theme-alpine"
+	        style="width: 100%; height: 400px;"
+			(gridReady)="onRowGroupGridReady($event)"
+	        [columnDefs]="rowGroupColumnDefs"
+	        [gridOptions]="rowGroupGridOptions"
+			[frameworkComponents]="frameworkComponents"
+	        >
+	    </ag-grid-angular>
+	</ng-template>
+  </ngb-panel>
+
+  <ngb-panel title="Chunks">
+  	<ng-template ngbPanelContent>
+  
+	    <ag-grid-angular
+	    	#columnChunkGrid
+	        class="ag-theme-alpine"
+	        style="width: 100%; height: 400px;"
+			(gridReady)="onColumnChunkGridReady($event)"
+	        [columnDefs]="columnChunkColumnDefs"
+	        [gridOptions]="columnChunkGridOptions"
+			[frameworkComponents]="frameworkComponents"
+	        >
+	    </ag-grid-angular>
+	<!-- 
+	        [rowData]="colChunks"
+	 -->
+	</ng-template>
+  </ngb-panel>
+
+</ngb-accordion>
+  
+
 
 	
 </div>

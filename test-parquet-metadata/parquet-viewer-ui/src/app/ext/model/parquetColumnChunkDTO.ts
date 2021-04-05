@@ -14,11 +14,11 @@ import { ParquetColumnCryptoMetaDataDTO } from './parquetColumnCryptoMetaDataDTO
 
 
 export interface ParquetColumnChunkDTO { 
-	colName: string;
-    columnIndexLength?: number;
-    columnIndexOffset?: number;
+    colIndexLength?: number;
+    colIndexOffset?: number;
+    colName?: string;
     cryptoMetadata?: ParquetColumnCryptoMetaDataDTO;
-    encryptedColumnMetadata?: string;
+    encryptedColMetadata?: string;
     fileOffset?: number;
     filePath?: string;
     metaData?: ParquetColumnChunkMetaDataDTO;

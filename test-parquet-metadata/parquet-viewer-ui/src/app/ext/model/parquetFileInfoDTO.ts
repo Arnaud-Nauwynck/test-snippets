@@ -16,13 +16,13 @@ import { ParquetSchemaElementDTO } from './parquetSchemaElementDTO';
 
 
 export interface ParquetFileInfoDTO { 
-    columnOrders?: Array<ParquetColumnOrderDTO>;
+    colOrders?: Array<ParquetColumnOrderDTO>;
     createdBy?: string;
     encryptionAlgorithm?: ParquetEncryptionAlgorithmDTO;
     footerSigningKeyMetadata?: string;
     keyValueMetadata?: { [key: string]: string; };
     numRows?: number;
-    row_groups: Array<ParquetRowGroupDTO>;
-    schema: Array<ParquetSchemaElementDTO>;
+    rowGroups?: Array<ParquetRowGroupDTO>;
+    schema?: Array<ParquetSchemaElementDTO>;
     version?: number;
 }

@@ -13,5 +13,5 @@ import { TypeDefinedOrder } from './typeDefinedOrder';
 
 
 export interface ParquetColumnOrderDTO { 
-    typeORDER?: TypeDefinedOrder;
+    typeorder?: TypeDefinedOrder;
 }

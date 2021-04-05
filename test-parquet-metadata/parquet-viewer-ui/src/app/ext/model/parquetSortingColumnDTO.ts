@@ -12,7 +12,7 @@
 
 
 export interface ParquetSortingColumnDTO { 
-    columnIdx?: number;
+    colIdx?: number;
     descending?: boolean;
     nullsFirst?: boolean;
 }

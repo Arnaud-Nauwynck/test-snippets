@@ -14,6 +14,6 @@ import { ParquetAesGcmV1 } from './parquetAesGcmV1';
 
 
 export interface ParquetEncryptionAlgorithmDTO { 
-    aesGCMCTRV1?: ParquetAesGcmCtrV1;
-    aesGCMV1?: ParquetAesGcmV1;
+    aesgcmctrv1?: ParquetAesGcmCtrV1;
+    aesgcmv1?: ParquetAesGcmV1;
 }

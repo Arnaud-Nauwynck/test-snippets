@@ -14,11 +14,11 @@ import { ParquetSortingColumnDTO } from './parquetSortingColumnDTO';
 
 
 export interface ParquetRowGroupDTO { 
-    columns?: Array<ParquetColumnChunkDTO>;
+    colChunks?: Array<ParquetColumnChunkDTO>;
     fileOffset?: number;
     numRows?: number;
     ordinal?: number;
-    sortingColumns?: Array<ParquetSortingColumnDTO>;
+    sortingCols?: Array<ParquetSortingColumnDTO>;
     totalByteSize?: number;
     totalCompressedSize?: number;
 }

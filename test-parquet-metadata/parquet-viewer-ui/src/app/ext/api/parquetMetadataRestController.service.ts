@@ -19,6 +19,7 @@ import { CustomHttpUrlEncodingCodec }                        from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 import { ParquetFileInfoDTO } from '../model/parquetFileInfoDTO';
+import { ScanDirFileMetadatasResultDTO } from '../model/scanDirFileMetadatasResultDTO';
 
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
@@ -93,6 +94,53 @@ export class ParquetMetadataRestControllerService {
         ];
 
         return this.httpClient.get<ParquetFileInfoDTO>(`${this.basePath}/api/parquet-metadata/readFileMetadata`,
+            {
+                params: queryParameters,
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * scanDirFileMetadata
+     * 
+     * @param baseDir baseDir
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public scanDirFileMetadataUsingGET(baseDir: string, observe?: 'body', reportProgress?: boolean): Observable<ScanDirFileMetadatasResultDTO>;
+    public scanDirFileMetadataUsingGET(baseDir: string, observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<ScanDirFileMetadatasResultDTO>>;
+    public scanDirFileMetadataUsingGET(baseDir: string, observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<ScanDirFileMetadatasResultDTO>>;
+    public scanDirFileMetadataUsingGET(baseDir: string, observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        if (baseDir === null || baseDir === undefined) {
+            throw new Error('Required parameter baseDir was null or undefined when calling scanDirFileMetadataUsingGET.');
+        }
+
+        let queryParameters = new HttpParams({encoder: new CustomHttpUrlEncodingCodec()});
+        if (baseDir !== undefined && baseDir !== null) {
+            queryParameters = queryParameters.set('baseDir', <any>baseDir);
+        }
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            '*/*'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.get<ScanDirFileMetadatasResultDTO>(`${this.basePath}/api/parquet-metadata/scanDirFileMetadata`,
             {
                 params: queryParameters,
                 withCredentials: this.configuration.withCredentials,
