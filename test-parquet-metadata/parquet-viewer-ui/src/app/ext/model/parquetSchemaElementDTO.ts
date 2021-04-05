@@ -16,12 +16,12 @@ export interface ParquetSchemaElementDTO {
     convertedType?: ParquetSchemaElementDTO.ConvertedTypeEnum;
     fieldId?: number;
     logicalType?: ParquetLogicalType;
-    name?: string;
+    name: string;
     numChildren?: number;
     precision?: number;
     repetitionType?: ParquetSchemaElementDTO.RepetitionTypeEnum;
     scale?: number;
-    type?: ParquetSchemaElementDTO.TypeEnum;
+    type: ParquetSchemaElementDTO.TypeEnum;
     typeLength?: number;
 }
 export namespace ParquetSchemaElementDTO {

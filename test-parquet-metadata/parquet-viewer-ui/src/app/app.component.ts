@@ -10,7 +10,8 @@ import { ParquetFileInfoDTO, ParquetSchemaElementDTO,
 	ParquetRowGroupDTO,
 	ParquetColumnChunkDTO,
 	ParquetColumnChunkMetaDataDTO,
-	ParquetStatisticsDTOobject
+	ParquetStatisticsDTOobject,
+	ScanDirFileMetadatasResultDTO, PartitionAndFileDataInfoDTO, PartitionScanStatisticsDTO,
 	} from './ext/model/models'; 
 
 interface SchemaColRow {
@@ -18,17 +19,29 @@ interface SchemaColRow {
 	selected: boolean;
 }
 
+interface FileRow {
+	partitions: string;
+	fileName?: string;
+	f: ParquetFileInfoDTO;
+}
+
 interface RowGroupRow {
+	partitions: string;
+	fileName?: string;
 	f: ParquetFileInfoDTO;
 	rg: ParquetRowGroupDTO;
 }
 
 interface ColumnChunkRow {
+	partitions: string;
+	fileName?: string;
 	f: ParquetFileInfoDTO;
 	col: ParquetSchemaElementDTO;
 	rg: ParquetRowGroupDTO;
 	chunk: ParquetColumnChunkDTO;
 }
+
+
 
 @Component({
   selector: 'app-root',
@@ -38,10 +51,16 @@ interface ColumnChunkRow {
 export class AppComponent implements OnInit, AfterViewInit {
 	title = 'ParquetViewer';
 
+	inputFile: string = ''; // 'src/test/'
+	inputBaseDir: string = '';
+
 	columnName: string = '';
 
 	@ViewChild('schemaColGrid')
     schemaColGrid!: AgGridAngular;
+
+	@ViewChild('fileGrid')
+    fileGrid!: AgGridAngular;
 
 	@ViewChild('rowGroupGrid')
     rowGroupGrid!: AgGridAngular;
@@ -51,9 +70,14 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 	schemaCols: SchemaColRow[] = [];
 	fileInfo: ParquetFileInfoDTO = { schema:[], rowGroups: []};
+	files: FileRow[] = [];
 	rowGroups: RowGroupRow[] = [];
 	colChunks: ColumnChunkRow[] = [];
 	
+    partFileInfos: PartitionAndFileDataInfoDTO[] = [];
+    partitionScanStatistics: PartitionScanStatisticsDTO[] = [];
+
+
 	UNKNOWN_COL: ParquetSchemaElementDTO = {name:'UNKNOWN', type:'BYTE_ARRAY'};
 	
 	// ---------------------------------------------------------------------------------------------------
@@ -63,43 +87,143 @@ export class AppComponent implements OnInit, AfterViewInit {
 	}
 
 	ngOnInit() {
-		console.log('ngOnInit')
+		// console.log('ngOnInit')
 	}
 
     ngAfterViewInit(): void {
-		console.log('ngAfterViewInit')
-		setTimeout(() => {
-			this.loadFileData();
-			}, 500);
+		// setTimeout(() => this.onClickLoadSample(), 500);
 	}
 	
-	loadFileData() {
+	// --------------------------------------------------------------------------------------------
+	
+	onClickLoadSampleFile(): void {
 		let file = 'src/test/data/datapage_V2.snappy.parquet';
+		if (!this.inputFile) {
+			this.inputFile = file;
+		}
+		this.loadFileData(file);
+	}
+
+	onClickScanSampleDir(): void {
+		let dir = 'src/test/data/table1';
+		if (!this.inputBaseDir) {
+			this.inputBaseDir = dir;
+		}
+		this.scanDirFileMetadata(dir);
+	}
+
+	onClickLoadInputFile(): void {
+		if (!this.inputFile) {
+			return;
+		}
+		this.loadFileData(this.inputFile);
+	}
+
+	onClickScanBaseDir(): void {
+		if (!this.inputBaseDir) {
+			return;
+		}
+		this.scanDirFileMetadata(this.inputBaseDir);
+	}
+
+	loadFileData(file: string) {
 		this.apiService.readFileMetadataUsingGET(file).subscribe(data => {
 			console.log('load data', data);
 			this.fileInfo = data;
-			this.schemaCols = data.schema.map(col => { return { col, selected: true }; });
-			this.rowGroups = this.toRowGroupRows(data, data.rowGroups);
-			this.colChunks = this.toColumnChunks(data, data.rowGroups);
-			console.log("colChunks", this.colChunks);
+			if (data.schema) {
+				this.schemaCols = data.schema.map(col => { return { col, selected: true }; });
+			} else {
+				this.schemaCols = [];
+			}
+			if (data.rowGroups) {
+				this.files = [ {partitions:'', fileName: file, f: data } ];
+				this.rowGroups = this.toRowGroupRows(file, data, data.rowGroups);
+				this.colChunks = this.toColumnChunks(file, data, data.rowGroups);
+			} else {
+				this.rowGroups = [];
+				this.colChunks = [];
+			}
+
+			if (this.fileGrid.api) {
+				this.fileGrid.api.setRowData(this.files);
+			}
+			if (this.rowGroupGrid.api) {
+				this.rowGroupGrid.api.setRowData(this.rowGroups);
+			}
+			if (this.columnChunkGrid.api) {
+				this.columnChunkGrid.api.setRowData(this.colChunks);
+			}
+
 			
-/*			this.rowGroupGrid.api.setRowData(this.rowGroups);
-			// this.rowGroupGrid.api.sizeColumnsToFit();
-			this.rowGroupGrid.api.redrawRows();
-			
-			this.columnChunkGrid.api.setRowData(this.colChunks);
-			// this.columnChunkGrid.api.sizeColumnsToFit();
-			this.columnChunkGrid.api.redrawRows();
-*/		}, err => {
+		}, err => {
 			console.log('Failed to load data', err);
 		})
 	}
 
-	toRowGroupRows(f: ParquetFileInfoDTO, rowGroups: ParquetRowGroupDTO[]): RowGroupRow[] {
-		return rowGroups.map(rg => { return { f, rg }; });	
+	scanDirFileMetadata(baseDir: string) {
+		this.apiService.scanDirFileMetadataUsingGET(baseDir).subscribe((data: ScanDirFileMetadatasResultDTO) => {
+			console.log('scanDirFileMetadataUsingGET =>', data);
+			
+			if (data.schema) {
+				this.schemaCols = data.schema.map(col => { return { col, selected: true }; });
+			} else {
+				this.schemaCols = [];
+			}
+			this.partFileInfos = data.partFileInfos!;
+			this.partitionScanStatistics = data.partitionScanStatistics!;
+
+			let colByName = new Map<string,ParquetSchemaElementDTO>();
+			data.schema!.forEach(c => {
+				colByName.set(c.name, c);
+			});
+			
+			if (data.partFileInfos) {
+				let files: FileRow[] = [];
+				let rowGroups: RowGroupRow[] = [];
+				let colChunks: ColumnChunkRow[] = [];
+				data.partFileInfos.forEach(partFile => {
+					let partitions = partFile.partitionValues!.reduce((a,b)=>a+'/'+b, '');
+					let fileName = partFile.fileName; 
+					let f: ParquetFileInfoDTO = { schema: data.schema!, rowGroups: partFile.dataInfo!.rowGroups! };
+					let file = { partitions, fileName, f }
+					files.push(file);
+					partFile.dataInfo!.rowGroups!.forEach(rg => { 
+						rowGroups.push({ ...file, rg });						
+						rg.colChunks?.forEach(chunk => {
+							let col: ParquetSchemaElementDTO = colByName.get(chunk.colName)!;
+							colChunks.push({ ...file, col, rg, chunk });
+						})
+					})
+				})
+				this.files = files;
+				this.rowGroups = rowGroups;
+				this.colChunks = colChunks;
+			} else {
+				this.files = [];
+				this.rowGroups = [];
+				this.colChunks = [];
+			}
+
+			if (this.fileGrid.api) {
+				this.fileGrid.api.setRowData(this.files);
+			}
+			if (this.rowGroupGrid.api) {
+				this.rowGroupGrid.api.setRowData(this.rowGroups);
+			}
+			if (this.columnChunkGrid.api) {
+				this.columnChunkGrid.api.setRowData(this.colChunks);
+			}
+			
+		}, err => {
+			console.log('Failed to load data', err);
+		})
 	}
 	
-	toColumnChunks(f: ParquetFileInfoDTO, rowGroups: ParquetRowGroupDTO[]): ColumnChunkRow[] {
+	toRowGroupRows(fileName: string, f: ParquetFileInfoDTO, rowGroups: ParquetRowGroupDTO[]): RowGroupRow[] {
+		return rowGroups.map(rg => { return { partitions: '', fileName, f, rg }; });	
+	}
+	
+	toColumnChunks(fileName: string, f: ParquetFileInfoDTO, rowGroups: ParquetRowGroupDTO[]): ColumnChunkRow[] {
 		let res: ColumnChunkRow[] = [];
 		if (rowGroups) {
 			let colByName = new Map<string,ParquetSchemaElementDTO>();
@@ -109,7 +233,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 			rowGroups.forEach(rg => {
 				rg.colChunks?.forEach(chunk => {
 					let col: ParquetSchemaElementDTO = colByName.get(chunk.colName)!;
-					res.push({ f, col, rg, chunk });
+					res.push({ partitions: '', fileName, f, col, rg, chunk });
 				})
 			})
 		}
@@ -128,6 +252,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 	
 	msgs: string[] = [];
 
+	// Grid for Schema columns 
 	// ---------------------------------------------------------------------------------------------------
 	
     schemaColGridOptions: GridOptions = {
@@ -218,6 +343,54 @@ export class AppComponent implements OnInit, AfterViewInit {
 	}
 	
 	
+	// Grid for Files 
+	// ---------------------------------------------------------------------------------------------------
+	
+    fileGridOptions: GridOptions = {
+		defaultColDef: this.defaultColDef,
+	 	rowSelection: 'multiple',
+		isExternalFilterPresent: () => true,
+		doesExternalFilterPass: (params) => this.fileFilterPass(params),
+		// doesExternalFilterPass: this.doesExternalFilterPass.bind(this)
+		// doesExternalFilterPass: this.doesExternalFilterPass, // does not work when not binded to this!!
+    };
+
+	
+    fileColumnDefs: ColDef[] = [
+        {headerName: 'Parts', field: 'partitions', width: 150,
+			checkboxSelection: true,
+		},
+        {headerName: 'FileName', field: 'fileName', width: 90},
+//		{headerName: 'rowGroups.count',
+//			valueGetter: p => {
+//				let r = <RowGroupRow> p.data;
+//				return r.rg.colChunks?.length;
+//			}
+//		},
+//		{headerName: 'chunks.count',
+//			valueGetter: p => {
+//				let r = <RowGroupRow> p.data;
+//				return r.rg.colChunks?.length;
+//			}
+//		},
+    ];
+
+	onFileGridReady(params: any) {
+		// console.log('onFileGridReady')
+		this.fileGrid.api.setRowData(this.files);
+    }
+
+	fileFilterPass(params: RowNode): boolean {
+		let d = params.data;
+
+		return true;
+	}
+	
+	fileReevalFilterChange() {
+		this.fileGrid.api.onFilterChanged();		
+	}
+	
+	// Grid for RowGroup
 	// ---------------------------------------------------------------------------------------------------
 	
     rowGroupGridOptions: GridOptions = {
@@ -231,9 +404,11 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 	
     rowGroupColumnDefs: ColDef[] = [
-        {headerName: 'ordinal', field: 'rg.ordinal', width: 100,
+        {headerName: 'Parts', field: 'partitions', width: 150,
 			checkboxSelection: true,
 		},
+        {headerName: 'FileName', field: 'fileName', width: 90},
+        {headerName: 'RowGroup', field: 'rg.ordinal', width: 100},
         {headerName: 'numRows', field: 'rg.numRows', width: 100 },
         {headerName: 'totalByteSize', field: 'rg.totalByteSize', width: 100 },
         {headerName: 'totalCompressedSize', field: 'rg.totalCompressedSize', width: 100 },
@@ -244,30 +419,11 @@ export class AppComponent implements OnInit, AfterViewInit {
 				return r.rg.colChunks?.length;
 			}
 		},
-
-        {field:'button',
-		  cellRenderer: 'buttonRenderer',
-	      cellRendererParams: {
-	        onClick: (clickParams: any) => this.onBtnClick1(clickParams),
-	        label: 'Click 1'
-	      }
-        },
-
-        {field:'button',
-		  cellRendererFramework: ButtonRendererComponent,
-	      cellRendererParams: {
-	        onClick: (clickParams: any) => this.onBtnClick1(clickParams),
-	        label: 'Click 2'
-	      }
-        }
-        
     ];
 
 	onRowGroupGridReady(params: any) {
 		// console.log('onRowGroupGridReady')
 		this.rowGroupGrid.api.setRowData(this.rowGroups);
-		// this.rowGroupGrid.api.sizeColumnsToFit();
-		// this.rowGroupGrid.api.redrawRows();
     }
 
 	onBtnClick1(clickParams: any) {
@@ -289,9 +445,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 	reevalFilterChange() {
 		this.rowGroupGrid.api.onFilterChanged();		
 	}
-	
+
+	// Grid for ColumnChunk
 	// ---------------------------------------------------------------------------------------------------
-	
 	
 	columnChunkGridOptions: GridOptions = {
 		defaultColDef: this.defaultColDef,
@@ -315,10 +471,12 @@ export class AppComponent implements OnInit, AfterViewInit {
 	}
 	
     columnChunkColumnDefs: ColDef[] = [
-        {headerName: 'RG#', field: 'rg.ordinal', width: 90,
+        {headerName: 'Parts', field: 'partitions', width: 150,
 			checkboxSelection: true,
 		},
-        {headerName: 'col.name', field: 'col.name', width: 120 },
+        {headerName: 'fileName', field: 'fileName', width: 90},
+        {headerName: 'RG#', field: 'rg.ordinal', width: 90},
+        {headerName: 'Col', field: 'col.name', width: 120 },
  
         {headerName: 'col.type', field: 'col.type', width: 100,
 			cellRenderer: p => {

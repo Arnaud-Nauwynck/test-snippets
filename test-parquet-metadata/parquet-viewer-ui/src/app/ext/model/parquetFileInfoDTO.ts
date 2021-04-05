@@ -23,6 +23,6 @@ export interface ParquetFileInfoDTO {
     keyValueMetadata?: { [key: string]: string; };
     numRows?: number;
     rowGroups?: Array<ParquetRowGroupDTO>;
-    schema?: Array<ParquetSchemaElementDTO>;
+    schema: Array<ParquetSchemaElementDTO>;
     version?: number;
 }

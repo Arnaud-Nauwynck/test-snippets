@@ -6,6 +6,35 @@
   
   <ngb-panel title="Input">
   	<ng-template ngbPanelContent>
+  	
+  		<div class="container-fluid">
+  			<div class="row">
+				<label class="col-md-3">file</label>
+				<input class="col-md-9" type="text"
+					[(ngModel)]="inputFile">
+  			</div>
+  			<div class="row">
+				<button type="button" class="col-md-2 btn btn-primary" (click)="onClickLoadInputFile()">Load file</button>
+  			</div>
+
+  			<div class="row">
+				<label class="col-md-3">scan dir</label>
+				<input class="col-md-9" type="text"
+					[(ngModel)]="inputBaseDir">
+  			</div>
+  			<div class="row">
+				<button type="button" class="col-md-2 btn btn-primary" (click)="onClickScanBaseDir()">Scan dir files</button>
+  			</div>
+
+  			<div class="row">
+				<button type="button" class="col-md-2 btn btn-primary" (click)="onClickLoadSampleFile()">Load sample file</button>
+  			</div>
+  			<div class="row">
+				<button type="button" class="col-md-2 btn btn-primary" (click)="onClickScanSampleDir()">Scan sample dir</button>
+  			</div>
+
+  		</div>
+  	
 	</ng-template>
   </ngb-panel>
   
@@ -40,6 +69,16 @@
 
   <ngb-panel title="Files">
   	<ng-template ngbPanelContent>
+  		<ag-grid-angular
+	    	#fileGrid
+	        class="ag-theme-alpine"
+	        style="width: 100%; height: 400px;"
+			(gridReady)="onFileGridReady($event)"
+	        [columnDefs]="fileColumnDefs"
+	        [gridOptions]="fileGridOptions"
+			[frameworkComponents]="frameworkComponents"
+	        >
+	    </ag-grid-angular>
 	</ng-template>
   </ngb-panel>
 
