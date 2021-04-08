@@ -1,0 +1,96 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>fr.an.tests</groupId>
+	<artifactId>test-springshell</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<properties>
+		<java.version>1.8</java.version>
+
+		<springshell.version>3.0.0.BUILD-SNAPSHOT</springshell.version>
+		<jline.version>3.19.0</jline.version>
+
+	</properties>
+
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-dependencies</artifactId>
+	            <version>2.4.3</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+			</dependency>
+			
+			<dependency>
+	            <groupId>org.projectlombok</groupId>
+	            <artifactId>lombok</artifactId>
+	            <version>1.18.12</version>
+	            <scope>provided</scope>
+	        </dependency>
+			
+		</dependencies>
+	</dependencyManagement>
+	
+	
+	<dependencies>
+		<dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        
+		<dependency>
+		    <groupId>org.springframework.shell</groupId>
+		    <artifactId>spring-shell-starter</artifactId>
+		    <version>${springshell.version}</version>
+		    <exclusions>
+		    	<exclusion>
+		    		<groupId>org.jline</groupId>
+		    		<artifactId>jline-terminal-jna</artifactId>
+		    	</exclusion>
+		    </exclusions>
+		</dependency>
+		
+		<dependency>
+	        <groupId>org.jline</groupId>
+		    <artifactId>jline-terminal-jansi</artifactId>
+	        <version>${jline.version}</version>
+    	</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.7.0</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>2.4.3</version>
+				<configuration>
+				</configuration>
+				<executions>
+					<execution>
+						<id>repackage</id>
+						<phase>package</phase>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

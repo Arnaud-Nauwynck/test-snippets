@@ -133,21 +133,21 @@ public class App  {
 		try {
 			VolumeGetResponse volume = volumeApi.getVolume();
 			System.out.println("volume => " + volume);
-			int targetVol = Math.min(30, volume.getTargetVolume());
-			volumeApi.setVolume(targetVol);
+			int prevVolume = volume.getTargetVolume();
+			volumeApi.setVolume(prevVolume + 1);
+			volumeApi.setVolume(prevVolume);
 		} catch (SoundTouchApiException e) {
 			e.printStackTrace();
 		}
 			
-		
 		// "nowPlaying" api 
 		NowPlayingApi nowPlayingApi = api.getNowPlayingApi();
 		try {
 			NowPlayingResponse nowPlaying = nowPlayingApi.nowPlaying();
 			System.out.println("nowPlaying => " + nowPlaying);
 		} catch (SoundTouchApiException e) {
-			System.err.println("Failed to GET nowPlaying");
-			e.printStackTrace();
+			System.err.println("Failed to GET nowPlaying: " + e.getMessage());
+			// e.printStackTrace();
 		}
 		
 		// "bassCapabilities" api
@@ -269,6 +269,7 @@ public class App  {
 			
 			System.out.println("power off !");
 			keyApi.power();
+			Thread.sleep(3000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

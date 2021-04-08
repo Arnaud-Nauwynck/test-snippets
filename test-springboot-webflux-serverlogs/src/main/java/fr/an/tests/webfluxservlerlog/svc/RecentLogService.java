@@ -31,6 +31,7 @@ public class RecentLogService {
 
 	private ReplayProcessor<ServerSentEvent<LogEventDTO>> replayProcessor = ReplayProcessor
 			.<ServerSentEvent<LogEventDTO>>create(1000);
+//	private Many<ServerSentEvent<LogEventDTO>> replayProcessor = Sinks.many().replay().limit(1000);
 
 	@PostConstruct
 	public void init() {
