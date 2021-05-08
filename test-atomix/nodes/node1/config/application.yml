@@ -1,0 +1,19 @@
+
+app:
+  atomix:
+    memberId: node1
+    hostname: localhost
+    port: 8051
+    bootstrapNodes:
+      - memberId: node1
+        hostname: localhost
+        port: 8051
+      - memberId: node2
+        hostname: localhost
+        port: 8052
+      - memberId: node3
+        hostname: localhost
+        port: 8053
+
+server:
+  port: 8081
