@@ -1,0 +1,285 @@
+{
+  "openapi": "3.0.1",
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/api/v1/foo/putFoo": {
+      "put": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "putFoo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FooRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FooResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/postFoo": {
+      "post": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "postFoo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FooRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FooResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/other/v1/foo/getFoo": {
+      "get": {
+        "tags": [
+          "foo-other-controller"
+        ],
+        "operationId": "getFoo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FooResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/getText": {
+      "get": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "getText",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "plain/text": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/getJsonText": {
+      "get": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "getJsonText",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/getJsonCharArray": {
+      "get": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "getJsonCharArray",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/getFoos": {
+      "get": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "getFoos",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FooResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/getFoo": {
+      "get": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "getFoo_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FooResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/getFooSlow": {
+      "get": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "getFooSlow",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FooResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/getFooFailed5xx": {
+      "get": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "getFoo5xx",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FooResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foo/getFoo401": {
+      "get": {
+        "tags": [
+          "foo-rest-controller"
+        ],
+        "operationId": "getFoo4xx",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FooResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FooRequest": {
+        "type": "object",
+        "properties": {
+          "strValue": {
+            "type": "string"
+          },
+          "intValue": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "FooResponse": {
+        "type": "object",
+        "properties": {
+          "strValue": {
+            "type": "string"
+          },
+          "intValue": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    }
+  }
+}
