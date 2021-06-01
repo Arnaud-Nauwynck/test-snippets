@@ -1,0 +1,10 @@
+
+server:
+  port: 8093
+
+spring:
+  application:
+    name: test-graphql-springboot-annotations-server
+
+test-graphql-server:
+    

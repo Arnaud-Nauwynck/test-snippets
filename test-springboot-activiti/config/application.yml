@@ -1,0 +1,16 @@
+
+server:
+  port: 8081
+
+logging:
+  level:
+    root: INFO
+
+spring:
+
+#  security:
+#    user:
+#      name: admin
+#      password: admin
+#      roles: USER,ADMIN
+#

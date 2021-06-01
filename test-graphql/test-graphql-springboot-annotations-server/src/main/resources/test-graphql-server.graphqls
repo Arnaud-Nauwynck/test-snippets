@@ -1,0 +1,20 @@
+
+type Query {
+    aById(id: Int!): Srv2A
+    a: [Srv2A]
+}
+
+
+type Srv2A {
+	id: Int!
+	srv2Name: String!
+	
+	bs: [Srv2B]
+}
+
+type Srv2B {
+	id: Int!
+	srv2Name: String!
+
+	a: Srv2A
+}

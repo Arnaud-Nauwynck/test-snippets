@@ -15,9 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import fr.an.tests.springbootswagger.dto.EnumStatus;
 import fr.an.tests.springbootswagger.dto.FooRequest;
 import fr.an.tests.springbootswagger.dto.FooResponse;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -38,27 +43,39 @@ public class FooRestController {
 	private ObjectMapper objectMapper;
 	
 	@GetMapping("/getFoo")
+	@Operation(
+			method = "get Foo",
+			operationId = "get-foo",
+			summary = "get detailed of Foo",
+			description = "get detailed of a Foo entity"
+//			responses = {
+//					@ApiResponse()
+//			}
+			)
+	@ApiResponses({
+		@ApiResponse(responseCode = "407", description = "bad input for foo blabla")
+	})
 	public FooResponse getFoo() {
 		log.info("getFoo()");
-		return new FooResponse("hello", 123);
+		return new FooResponse("hello", 123, EnumStatus.OK);
 	}
 
 	@GetMapping("/getFoos")
 	public List<FooResponse> getFoos() {
 		log.info("getFoos()");
-		return Arrays.asList(new FooResponse("hello", 123), new FooResponse("world", 234));
+		return Arrays.asList(new FooResponse("hello", 123, EnumStatus.OK), new FooResponse("world", 234, EnumStatus.OK));
 	}
 
 	@PostMapping("/postFoo")
 	public FooResponse postFoo(@RequestBody FooRequest req) {
 		log.info("postFoo()");
-		return new FooResponse(req.strValue, req.intValue);
+		return new FooResponse(req.strValue, req.intValue, EnumStatus.OK);
 	}
 
 	@PutMapping("/putFoo")
 	public FooResponse putFoo(@RequestBody FooRequest req) {
 		log.info("putFoo()");
-		return new FooResponse(req.strValue, req.intValue);
+		return new FooResponse(req.strValue, req.intValue, EnumStatus.OK);
 	}
 
 	@GetMapping(path = "/getText", produces = "plain/text")

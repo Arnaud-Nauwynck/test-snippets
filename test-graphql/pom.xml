@@ -13,9 +13,21 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 
-		<graphql-java.version>5.2.4</graphql-java.version>
-		<graphql-springboot.version>5.0.3</graphql-springboot.version>
-		<graphql-nadel>2018-11-13T03-33-03-354f9ec</graphql-nadel>	
+		<graphql-java.version>16.1</graphql-java.version>
+		<!-- 
+		      230521-nf-execution .. fail override final equals()
+		       -->
+			  
+		<graphql-springboot.version>2.0-loc</graphql-springboot.version>
+		<!-- 
+		2021-03-29T16-31-33-ae4bd96
+		 -->
+		 
+		<graphql-java-annotations.version>8.3</graphql-java-annotations.version>
+		
+		<graphql-nadel>2018-11-13T03-33-03-354f9ec</graphql-nadel>
+		
+			
 		<io-springfox-swagger.version>2.9.2</io-springfox-swagger.version>
 	</properties>
 
@@ -47,12 +59,20 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
- 				<version>2.2.0.M3</version>
+ 				<version>2.5.0</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			
-			
+			<dependency>
+	            <groupId>org.projectlombok</groupId>
+	            <artifactId>lombok</artifactId>
+	            <version>1.18.8</version>
+	            <scope>provided</scope>
+	        </dependency>
+
+
+<!-- deprecated .. cf graphql-java-spring-boot-starter-webmvc
 			<dependency>
 				<groupId>com.graphql-java</groupId>
 				<artifactId>graphql-spring-boot-starter</artifactId>	
@@ -63,7 +83,46 @@
 				<artifactId>graphiql-spring-boot-starter</artifactId>	
 				<version>5.0.2</version>	
 			</dependency>
+ -->
+			<dependency>
+				<groupId>com.graphql-java</groupId>
+				<artifactId>graphiql-spring-boot-starter</artifactId>
+				<version>5.0.2</version>	
+			</dependency>
 			
+			
+			<dependency>
+			  <groupId>com.graphql-java</groupId>
+			  <artifactId>graphql-java-spring-boot-starter-webmvc</artifactId>
+			  <version>${graphql-springboot.version}</version>
+			</dependency>
+			<dependency>
+			  <groupId>com.graphql-java</groupId>
+			  <artifactId>graphql-java-spring-boot-starter-webflux</artifactId>
+			  <version>${graphql-springboot.version}</version>
+			</dependency>
+
+
+			<dependency>
+		      <groupId>com.graphql-java</groupId>
+		      <artifactId>graphql-java</artifactId>
+			  <version>${graphql-java.version}</version>
+		    </dependency>
+
+<!-- deprecated? cf io.github.graphql-java:graphql-java-annotations
+			<dependency>
+			  <groupId>com.graphql-java</groupId>
+			  <artifactId>graphql-java-annotations</artifactId>
+			  <version>3.0.3</version>
+			</dependency>
+ -->		    
+
+			<dependency>
+			    <groupId>io.github.graphql-java</groupId>
+			    <artifactId>graphql-java-annotations</artifactId>
+			    <version>${graphql-java-annotations.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>com.graphql-java</groupId>
 				<artifactId>graphql-java-tools</artifactId>	
@@ -73,7 +132,7 @@
 			<dependency>
 			  <groupId>com.graphql-java</groupId>
 			  <artifactId>nadel</artifactId>
-			  <version>2019-05-20T03-11-41-2a6e566</version>
+			  <version>2021-03-26T09-09-21-fabd441</version>
 			</dependency>
 
 			<dependency>
@@ -88,6 +147,7 @@
 			    <version>4.5.8</version>
 			</dependency>
 
+			<!-- deprecated .. cf OpenApi 3 -->
 			<dependency>
 			    <groupId>io.springfox</groupId>
 			    <artifactId>springfox-swagger2</artifactId>
@@ -106,11 +166,14 @@
 	<modules>
 		<module>test-graphql-springboot-server</module>
 		<module>test-graphql-springboot-server2</module>
+		<module>test-graphql-springboot-annotations-server</module>
+		<module>test-graphql-springboot-annotations-server4</module>
 		<module>test-rest-server</module>
+		
 		<module>test-graphql-stitch-nadel</module>
 
 <!-- 
-		<module>test-graphql-braid-stitch-server</module>
+		<module>test-graphql-braid-server</module>
  -->
 		<module>test-json-server</module>
 		<module>swagger-to-graphql</module>
