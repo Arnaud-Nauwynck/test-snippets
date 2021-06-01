@@ -1,4 +1,11 @@
 
+.h1 Activiti
+
+Activiti is a fork of jBPM
+... notice also: Flowable is a fork of Activiti, see https://flowable.com/open-source/docs/bpmn/ch02-GettingStarted/
+... notice also: Camunda is a fork of Activiti, see https://camunda.com/
+
+
 Step 1:
 edit the process workflow:
 
