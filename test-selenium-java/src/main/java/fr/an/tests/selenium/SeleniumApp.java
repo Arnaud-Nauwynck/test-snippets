@@ -1,19 +1,19 @@
 package fr.an.tests.selenium;
 
 
+import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated;
+
+import java.io.File;
+import java.time.Duration;
+import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated;
-
-import java.io.File;
-import java.time.Duration;
-import java.util.List;
 
 public class SeleniumApp {
 	static {
@@ -59,21 +59,16 @@ public class SeleniumApp {
 	}
 
 	private void testSncfPage() {
-		WebElement departurePlace = driver.findElement(By.id("departure-place"));
-		departurePlace.sendKeys("Paris (Toutes gares)");
-		sleep(1000);
-		departurePlace.sendKeys("\t"); // auto complete first choice
-		sleep(1000);
+		SncfSearchPage sncfSearchPage = new SncfSearchPage(driver);
 		
-		WebElement arrivalPlace = driver.findElement(By.id("arrival-place"));
-		arrivalPlace.sendKeys("Lyon (Toutes gares)");
-		sleep(1000);
-		arrivalPlace.sendKeys("\t"); // auto complete first choice
-		sleep(1000);
+		sncfSearchPage.enterDeparture("Paris (Toutes gares)");
+		
+		sncfSearchPage.enterArrival("Lyon (Toutes gares)");
+		
+		SncfResultPage searchResultPage = sncfSearchPage.clickSearch();
+		
 				
-		WebElement searchButton = driver.findElement(By.className("miv-tab-btn-search"));
-		searchButton.click();
-		sleep(1000);
+		
 		
 //		WebElement firstResult = driver.findElement(By.cssSelector(
 //				"#app > div > div.container.container-no-padding-tiny > section > div:nth-child(3) > ul > li > a > h3"));
@@ -93,7 +88,7 @@ public class SeleniumApp {
 		System.out.println(firstAttrContent);
 	}
 
-	private void sleep(long millis) {
+	public static void sleep(long millis) {
 		try {
 			Thread.sleep(millis);
 		} catch (InterruptedException e) {
@@ -101,3 +96,49 @@ public class SeleniumApp {
 	}
 }
 
+
+class SncfSearchPage {
+	private final WebDriver driver;
+	
+	public SncfSearchPage(WebDriver driver) {
+		this.driver = driver;
+	}
+
+
+	public void enterDeparture(String text) {
+		WebElement departurePlace = driver.findElement(By.id("departure-place"));
+		departurePlace.sendKeys();
+		SeleniumApp.sleep(1000);
+
+		departurePlace.sendKeys("\t"); // auto complete first choice
+		SeleniumApp.sleep(1000);
+	}
+	
+
+	public void enterArrival(String text) {
+		WebElement arrivalPlace = driver.findElement(By.id("arrival-place"));
+		arrivalPlace.sendKeys(text);
+		SeleniumApp.sleep(1000);
+		
+		arrivalPlace.sendKeys("\t"); // auto complete first choice
+		SeleniumApp.sleep(1000);
+	}
+
+	public SncfResultPage clickSearch() {
+		WebElement searchButton = driver.findElement(By.className("miv-tab-btn-search"));
+		searchButton.click();
+		SeleniumApp.sleep(1000);
+		return new SncfResultPage(driver);
+	}
+	
+}
+
+
+class SncfResultPage {
+	
+	private final WebDriver driver;
+	
+	public SncfResultPage(WebDriver driver) {
+		this.driver = driver;
+	}
+}
