@@ -3,12 +3,15 @@ package fr.an.tests.selenium;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import static org.openqa.selenium.support.ui.ExpectedConditions.presenceOfElementLocated;
+
+import java.io.File;
 import java.time.Duration;
 import java.util.List;
 
@@ -77,7 +80,9 @@ public class SeleniumApp {
 //		firstResult.click();
 //		sleep(1000);
 		
-		
+		WebElement mainContentElt = driver.findElement(By.id("main-content"));
+		File screenshotAs = mainContentElt.getScreenshotAs(OutputType.FILE);
+		System.out.println("saved screenshot to File: " + screenshotAs);
 	}
 
 	private void testGoogle() {
