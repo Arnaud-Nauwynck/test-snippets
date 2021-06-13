@@ -1,0 +1,73 @@
+import javax.annotation.Generated;
+import io.fabric8.kubernetes.api.model.APIGroup;
+import io.fabric8.kubernetes.api.model.APIGroupList;
+import io.fabric8.kubernetes.api.model.BaseKubernetesList;
+import io.fabric8.kubernetes.api.model.CreateOptions;
+import io.fabric8.kubernetes.api.model.DeleteOptions;
+import io.fabric8.kubernetes.api.model.GetOptions;
+import io.fabric8.kubernetes.api.model.ListOptions;
+import io.fabric8.kubernetes.api.model.ObjectMeta;
+import io.fabric8.kubernetes.api.model.Patch;
+import io.fabric8.kubernetes.api.model.PatchOptions;
+import io.fabric8.kubernetes.api.model.RootPaths;
+import io.fabric8.kubernetes.api.model.Status;
+import io.fabric8.kubernetes.api.model.TypeMeta;
+import io.fabric8.kubernetes.api.model.UpdateOptions;
+import io.fabric8.kubernetes.api.model.authentication.TokenReview;
+import io.fabric8.kubernetes.api.model.version.Info;
+
+@Generated("jsonschema2pojo")
+public class KubeSchema {
+
+    public APIGroup aPIGroup;
+    public APIGroupList aPIGroupList;
+    public BaseKubernetesList baseKubernetesList;
+    public CreateOptions createOptions;
+    public DeleteOptions deleteOptions;
+    public GetOptions getOptions;
+    public Info info;
+    public io.fabric8.kubernetes.api.model.authorization.v1.LocalSubjectAccessReview k8sLocalSubjectAccessReview;
+    public io.fabric8.kubernetes.api.model.authorization.v1.SubjectAccessReview k8sSubjectAccessReview;
+    public ListOptions listOptions;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1beta1.MutatingWebhookConfiguration mutatingWebhookConfiguration;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1beta1.MutatingWebhookConfigurationList mutatingWebhookConfigurationList;
+    public ObjectMeta objectMeta;
+    public Patch patch;
+    public PatchOptions patchOptions;
+    public Quantity quantity;
+    public RootPaths rootPaths;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1beta1.Rule rule;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1beta1.RuleWithOperations ruleWithOperations;
+    public io.fabric8.kubernetes.api.model.authorization.v1.SelfSubjectAccessReview selfSubjectAccessReview;
+    public io.fabric8.kubernetes.api.model.authorization.v1.SelfSubjectRulesReview selfSubjectRulesReview;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1beta1.ServiceReference serviceReference;
+    public Status status;
+    public String time;
+    public TokenReview tokenReview;
+    public TypeMeta typeMeta;
+    public UpdateOptions updateOptions;
+    public io.fabric8.kubernetes.api.model.admission.v1.AdmissionRequest v1AdmissionRequest;
+    public io.fabric8.kubernetes.api.model.admission.v1.AdmissionResponse v1AdmissionResponse;
+    public io.fabric8.kubernetes.api.model.admission.v1.AdmissionReview v1AdmissionReview;
+    public io.fabric8.kubernetes.api.model.admission.v1beta1.AdmissionRequest v1Beta1AdmissionRequest;
+    public io.fabric8.kubernetes.api.model.admission.v1beta1.AdmissionResponse v1Beta1AdmissionResponse;
+    public io.fabric8.kubernetes.api.model.admission.v1beta1.AdmissionReview v1Beta1AdmissionReview;
+    public java.lang.String v1Beta1Operation;
+    public java.lang.String v1Beta1PatchType;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1.MutatingWebhookConfiguration v1MutatingWebhookConfiguration;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1.MutatingWebhookConfigurationList v1MutatingWebhookConfigurationList;
+    public java.lang.String v1Operation;
+    public java.lang.String v1PatchType;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1.Rule v1Rule;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1.RuleWithOperations v1RuleWithOperations;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1.ServiceReference v1ServiceReference;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1.ValidatingWebhookConfiguration v1ValidatingWebhookConfiguration;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1.ValidatingWebhookConfigurationList v1ValidatingWebhookConfigurationList;
+    public io.fabric8.kubernetes.api.model.authorization.v1beta1.LocalSubjectAccessReview v1beta1K8sLocalSubjectAccessReview;
+    public io.fabric8.kubernetes.api.model.authorization.v1beta1.SubjectAccessReview v1beta1K8sSubjectAccessReview;
+    public io.fabric8.kubernetes.api.model.authorization.v1beta1.SelfSubjectAccessReview v1beta1SelfSubjectAccessReview;
+    public io.fabric8.kubernetes.api.model.authorization.v1beta1.SelfSubjectRulesReview v1beta1SelfSubjectRulesReview;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1beta1.ValidatingWebhookConfiguration validatingWebhookConfiguration;
+    public io.fabric8.kubernetes.api.model.admissionregistration.v1beta1.ValidatingWebhookConfigurationList validatingWebhookConfigurationList;
+
+}
