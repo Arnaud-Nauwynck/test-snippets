@@ -16,9 +16,9 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		
- 		<dependency>
+		<dependency>
 			<groupId>com.graphql-java</groupId>
-			<artifactId>graphql-spring-boot-starter</artifactId>	
+			<artifactId>graphql-java-spring-boot-starter-webmvc</artifactId>	
 		</dependency>
 		<dependency>
      		<groupId>com.atlassian.braid</groupId>

@@ -67,8 +67,6 @@ public class SeleniumApp {
 		
 		SncfResultPage searchResultPage = sncfSearchPage.clickSearch();
 		
-				
-		
 		
 //		WebElement firstResult = driver.findElement(By.cssSelector(
 //				"#app > div > div.container.container-no-padding-tiny > section > div:nth-child(3) > ul > li > a > h3"));
@@ -107,7 +105,7 @@ class SncfSearchPage {
 
 	public void enterDeparture(String text) {
 		WebElement departurePlace = driver.findElement(By.id("departure-place"));
-		departurePlace.sendKeys();
+		departurePlace.sendKeys(text);
 		SeleniumApp.sleep(1000);
 
 		departurePlace.sendKeys("\t"); // auto complete first choice

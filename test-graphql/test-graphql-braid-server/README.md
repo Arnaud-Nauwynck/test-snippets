@@ -1,4 +1,8 @@
 
+Braid is deprecated ?
+cf atlasssian nadel project instead ..
+
+
 http://localhost:8090/graphiql
 
 sample graphql queries:
