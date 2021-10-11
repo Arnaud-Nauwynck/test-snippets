@@ -313,7 +313,7 @@
 <!-- 
  -->
 	<div>
-		<input id="input1" 
+		<input #input1 
 		[(ngModel)]="inputText" 
 		(blur)="onInputBlur()"
 		(focus)="onInputFocus()"
@@ -337,11 +337,11 @@
 		<ul>
 			<li *ngFor="let cmdMatch of candidateCommandMatchs">
 				{{cmdMatch.command.verb}}  
-				<span *ngIf="cmdMatch.currVerbAutoCompletion"> ...{{cmdMatch.currVerbAutoCompletion}}</span>
+				<span *ngIf="cmdMatch.currAutoCompletion"> ...{{cmdMatch.currAutoCompletion}}</span>
 			</li>
 		</ul>
-		<div *ngIf="currVerbAutoCompletion">
-			...{{currVerbAutoCompletion}}
+		<div *ngIf="currAutoCompletion">
+			...{{currAutoCompletion}}
 		</div>
 	</div>
 	

@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 
 class VerbAlternative {
 	public readonly synonyms: Set<string>;
@@ -48,6 +48,18 @@ class CommandInfo {
 		public args: string[]) {
 		this.verbs = verb.split(' ').map(x => new VerbAlternative(x, null));
 	}
+	
+	remainVerbsText(from: number): string {
+		let verbCount = this.verbs.length;
+		if (from >= verbCount) {
+			return '';
+		}
+		var res = this.verbs[from].text;
+		for (var i = from+1; i < this.verbs.length; i++) {
+			res += ' ' + this.verbs[i].text;
+		}
+		return res;
+	}
 }
 
 
@@ -91,7 +103,8 @@ class ParsedLine {
 class TextCommandMatch {
 	constructor(public command: CommandInfo,
 		public currVerbIndex: number,
-		public currVerbAutoCompletion: string|null,
+		public currVerbAutoCompletion: string|null, // deprecated
+		public currAutoCompletion: string|null,
 		public complete: boolean
 	) {
 	}	
@@ -99,13 +112,16 @@ class TextCommandMatch {
 	static matchCommand(command: CommandInfo, parsedLine: ParsedLine): TextCommandMatch|null {
 		let textVerbsCount = parsedLine.verbs.length;
 		let commandVerbsCount = command.verbs.length;
+		if (textVerbsCount > commandVerbsCount) {
+			return null;
+		}
 		let maybeIncomplete = parsedLine.args.size == 0 && ! parsedLine.line.endsWith(' ');
 		var i = 0;
 		var currVerbAutoCompletion: string|null = null;
 		for(; i < textVerbsCount; i++) {
 			let textVerb = parsedLine.verbs[i];
 			let commandVerb = command.verbs[i];
-			let maybeLastIncomplete = maybeIncomplete && (i == commandVerbsCount-1);
+			let maybeLastIncomplete = maybeIncomplete && (i == textVerbsCount-1);
 			if (!maybeLastIncomplete) {
 				if (! commandVerb.match(textVerb)) {
 					return null;
@@ -119,22 +135,54 @@ class TextCommandMatch {
 				currVerbAutoCompletion = VerbAlternative.mergeCommonPrefixOf(currVerbAutoCompletion, complete);
 			}
 		}
+		var currAutocompletion = (null !== currVerbAutoCompletion)? currVerbAutoCompletion : '';
+		if (i < command.verbs.length) {
+			if (currAutocompletion.length !== 0) {
+				currAutocompletion += ' ';
+			}
+ 			currAutocompletion += command.remainVerbsText(i);
+		}
+
 		let complete = (i == command.verbs.length && 
 			(null === currVerbAutoCompletion || '' === currVerbAutoCompletion)); // TOCHECK
-		return new TextCommandMatch(command, i, currVerbAutoCompletion, complete);
+		return new TextCommandMatch(command, i, currVerbAutoCompletion, currAutocompletion, complete);
 	}
 
+// deprecated
 	static commonVerbAutoCompletionOf(matches: TextCommandMatch[]): string|null {
 		var res: string|null = null;
 		if (matches && matches.length!==0) {
-			matches.forEach(match => {
-				if (match.currVerbAutoCompletion) {
-					res = VerbAlternative.mergeCommonPrefixOf(res, match.currVerbAutoCompletion);
+			for(var i = 0; i < matches.length; i++) {
+				let match = matches[i];
+				if (null === match.currVerbAutoCompletion) {
+					return '';
 				}
-			});
+				if (match.currVerbAutoCompletion.length === 0) {
+					return '';
+				}
+				res = VerbAlternative.mergeCommonPrefixOf(res, match.currVerbAutoCompletion);
+			}
 		}
 		return res;
 	}
+
+	static commonAutoCompletionOf(matches: TextCommandMatch[]): string|null {
+		var res: string|null = null;
+		if (matches && matches.length !== 0) {
+			for(var i = 0; i < matches.length; i++) {
+				let match = matches[i];
+				if (null === match.currAutoCompletion) {
+					return '';	
+				}
+				if (match.currAutoCompletion.length === 0) {
+					return '';
+				}
+				res = VerbAlternative.mergeCommonPrefixOf(res, match.currAutoCompletion);
+			}
+		}
+		return res;
+	}
+
 }
 
 
@@ -145,7 +193,8 @@ class TextCommandMatch {
 })
 export class AppComponent {
 
-  // @ViewChild('input1') input1;
+	@ViewChild('input1', {static: true}) input1!: ElementRef;
+
 
   title = 'test-angular-completion';
 	verboseLog = false;
@@ -162,7 +211,12 @@ export class AppComponent {
 	];	
 	candidateCommandMatchs: TextCommandMatch[] = [];
 	currVerbAutoCompletion: string|null = null;
+	currAutoCompletion: string|null = null;
 	commandMatch: TextCommandMatch|null = null;
+
+	constructor(input1: ElementRef){
+    	this.input1 = input1;
+	}
 
 
 	onInputBlur() {
@@ -177,22 +231,49 @@ export class AppComponent {
 	}
 	onInputKeyUp(event: any) {
 		if (this.verboseLog) console.log('onInputKeyUp ', event)	
+		// TODO if <ctrl>+' ' => apply autocompletion proposal
 
+		let input1 = <HTMLInputElement> this.input1.nativeElement;
+		let currText = <string> input1.value;
+		let currTextLen = currText.length;
+
+		// do not propose autocompletion if caret is not at end of input
+		let selectStart = input1.selectionStart;
+		let selectEnd = input1.selectionEnd;
+		if (selectStart !== selectEnd || selectStart !== currTextLen) {
+			return;
+		}	
+		
+		if (this.inputText !== currText) {
+			// console.log('onKeyUp, detected this.inputText !== currText:', [this.inputText,  currText]);			
+		}
+		
 		// compute candidate command for autocompletions	
-		let parsedLine = ParsedLine.parse(this.inputText);
+		let parsedLine = ParsedLine.parse(currText);
 		this.candidateCommandMatchs = this.listCandidateCommandMatchs(parsedLine);
 		if (this.candidateCommandMatchs.length === 0) {
 			this.commandMatch = null;
-			this.currVerbAutoCompletion = null;
+			this.currVerbAutoCompletion = null; // deprecated
+			this.currAutoCompletion = null;
 			// TODO unselect previous chars
 		} else if (this.candidateCommandMatchs.length === 1) {
 			// select all remaining chars
 			this.commandMatch = this.candidateCommandMatchs[0];
-			this.currVerbAutoCompletion = null;
+			this.currVerbAutoCompletion = this.commandMatch.currVerbAutoCompletion; // deprecated
+			this.currAutoCompletion = this.commandMatch.currAutoCompletion;
 		} else { // > 1
 			// find common auto completion chars
 			this.commandMatch = null;
-			this.currVerbAutoCompletion = TextCommandMatch.commonVerbAutoCompletionOf(this.candidateCommandMatchs);
+			this.currVerbAutoCompletion = TextCommandMatch.commonVerbAutoCompletionOf(this.candidateCommandMatchs); // deprecated
+			this.currAutoCompletion = TextCommandMatch.commonAutoCompletionOf(this.candidateCommandMatchs);
+		}
+		
+		if (null != this.currAutoCompletion && '' !== this.currAutoCompletion) {
+			if (currText.endsWith(this.currAutoCompletion)) {
+				return;
+			}
+			console.log('currText:"' + currText + '" len' + currTextLen + " selectStart:" + selectStart + '  => insert "' + this.currAutoCompletion + '"');
+			input1.setRangeText(this.currAutoCompletion, currTextLen, currTextLen, 'select');
 		}
 		
 	}
