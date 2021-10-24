@@ -1,5 +1,7 @@
 package fr.an.tests.hadoopfsinstrumented;
 
+import static java.lang.System.nanoTime;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -12,7 +14,6 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.BlockStoragePolicySpi;
-import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.CreateFlag;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -24,7 +25,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsServerDefaults;
 import org.apache.hadoop.fs.FsStatus;
 import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.Options.ChecksumOpt;
 import org.apache.hadoop.fs.ParentNotDirectoryException;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
@@ -44,6 +44,11 @@ import org.apache.hadoop.security.token.DelegationTokenIssuer;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Progressable;
 
+import fr.an.tests.hadoopfsinstrumented.stats.InstrumentedFSInputStreamStats;
+import fr.an.tests.hadoopfsinstrumented.stats.InstrumentedFSOutputStreamStats;
+import fr.an.tests.hadoopfsinstrumented.stats.InstrumentedFSPathStats;
+import lombok.Getter;
+
 /**
  * 
  *
@@ -51,7 +56,15 @@ import org.apache.hadoop.util.Progressable;
 public class InstrumentedHadoopFileSystem extends FileSystem {
 
 	private Configuration conf;
+
 	private FileSystem delegate;
+	
+	@Getter
+	private Statistics delegateStatistics;
+	
+	private InstrumentedFSInputStreamStats inputEntryStats = new InstrumentedFSInputStreamStats();
+	private InstrumentedFSOutputStreamStats outputEntryStats = new InstrumentedFSOutputStreamStats();
+	private InstrumentedFSPathStats fsPathStats = new InstrumentedFSPathStats();
 	
 	// --------------------------------------------------------------------------------------------
 
@@ -79,6 +92,7 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 
 	@Override
 	public void initialize(URI name, Configuration conf) throws IOException {
+		super.initialize(name, conf);
 		String scheme = name.getScheme();
 		String fsName = scheme; // "fs1"; // TODO
 		String underlingFsURIText = conf.get("fs." + fsName + ".underlingFsURI");
@@ -88,10 +102,19 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 		} catch (URISyntaxException ex) {
 			throw new RuntimeException("Failed", ex);
 		}
-		delegate = FileSystem.get(underlyingFsURI, conf);
+		this.delegate = FileSystem.get(underlyingFsURI, conf);
 		// already done?
 		// delegate.setConf(conf);
 		// delegate.initialize(name, conf);
+		
+		this.statistics = super.statistics;
+		
+		@SuppressWarnings("deprecation")
+		Statistics delegateStat = FileSystem.getStatistics(delegate.getScheme(), delegate.getClass());
+		if (delegateStat == null) {
+			delegateStat = statistics;
+		}
+		this.delegateStatistics = delegateStat;
 	}
 
 	@Override
@@ -99,9 +122,146 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 		delegate.close();
 	}
 
+	// ------------------------------------------------------------------------
+
+	public Statistics getGlobalStatistics() {
+		return statistics;
+	}
+	
+	public Statistics getHadoopEntryStatistics(Path f) {
+		// TOCHANGE
+		return statistics;
+	}
+
+	protected InstrumentedFSInputStreamStats inputEntryStatsFor(Path path) {
+		// TODO
+		return inputEntryStats;
+	}
+
+	protected InstrumentedFSOutputStreamStats outputEntryStatsFor(Path path) {
+		// TODO 
+		return outputEntryStats;
+	}
+	
+	protected InstrumentedFSPathStats pathStatsFor(Path path) {
+		// TODO 
+		return fsPathStats;
+	}
+
+	// implements/overrides method wrapping delegate FsDataInputStream -> InstrumentedFSDataInputStream
+	// ------------------------------------------------------------------------
+	
+	@Override
+	public FSDataInputStream open(Path f, int bufferSize) throws IOException {
+		long startNanos = nanoTime();
+		FSDataInputStream delegateRes = delegate.open(f, bufferSize);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.openStats.increment(nanos);
+		
+		// Statistics entryStatistics = getHadoopEntryStatistics(f);
+		InstrumentedFSInputStreamStats inputEntryStats = inputEntryStatsFor(f);
+		return new InstrumentedFSDataInputStream(delegateRes, f, inputEntryStats);
+	}
+
+	private Path pathForHandle(PathHandle fd) {
+		Path path = new Path("/dummyPathForHandle"); // TODO
+		return path;
+	}
+
+//	@Override
+//	public FSDataInputStream open(PathHandle fd) throws IOException {
+//		return open(fd, getConf().getInt(IO_FILE_BUFFER_SIZE_KEY,
+//		        IO_FILE_BUFFER_SIZE_DEFAULT));		
+//	}
+
+	@Override
+	public FSDataInputStream open(PathHandle fd, int bufferSize) throws IOException {
+		long startNanos = nanoTime();
+		FSDataInputStream delegateRes = delegate.open(fd, bufferSize);
+		long nanos = nanoTime() - startNanos;
+		Path path = pathForHandle(fd);
+		InstrumentedFSPathStats stats = pathStatsFor(path);
+		stats.openStats.increment(nanos);
+
+		InstrumentedFSInputStreamStats inputEntryStats = inputEntryStatsFor(path);
+		return new InstrumentedFSDataInputStream(delegateRes, path, inputEntryStats); 
+	}
+
+	// implements/overrides method wrapping delegate FsDataOutputStream -> InstrumentedFSDataOutputStream
+	// ------------------------------------------------------------------------
+	
+	@Override
+	public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize,
+			short replication, long blockSize, Progressable progress) throws IOException {
+		long startNanos = nanoTime();
+		FSDataOutputStream delegateRes = delegate.create(f, permission, overwrite, bufferSize, replication, blockSize, progress);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.createStats.increment(nanos);
+		
+		Statistics entryStatistics = getHadoopEntryStatistics(f);
+		InstrumentedFSOutputStreamStats outputEntryStats = outputEntryStatsFor(f);
+		return new InstrumentedFSDataOutputStream(delegateRes, entryStatistics, f, outputEntryStats);		
+	}
+
+	
+	@Override
+	public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) throws IOException {
+		long startNanos = nanoTime();
+		FSDataOutputStream delegateRes = delegate.append(f, bufferSize, progress);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.appendStats.increment(nanos);
+
+		Statistics entryStatistics = getHadoopEntryStatistics(f);
+		InstrumentedFSOutputStreamStats outputEntryStats = outputEntryStatsFor(f);
+		return new InstrumentedFSDataOutputStream(delegateRes, entryStatistics, f, outputEntryStats);
+	}
+
+	// implements/overrides method wrapping delegate FSDataOutputStreamBuilder -> InstrumentedFSDataOutputStreamBuilder ( -> InstrumentedFSDataOutputStream) 
+	// ------------------------------------------------------------------------
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public FSDataOutputStreamBuilder createFile(Path path) {
+		return createInstrumentedFsDataOutputStreamBuilder(path).create().overwrite(true);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public FSDataOutputStreamBuilder appendFile(Path path) {
+		return createInstrumentedFsDataOutputStreamBuilder(path).append();
+	}
+
+	protected InstrumentedFSDataOutputStreamBuilder createInstrumentedFsDataOutputStreamBuilder(Path path) {
+		long startNanos = nanoTime();
+		FSDataOutputStreamBuilder<?,?> delegateRes = delegate.createFile(path);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(path);
+		stats.createStats.increment(nanos);
+		
+		InstrumentedFSOutputStreamStats outputEntryStats = outputEntryStatsFor(path);
+		return new InstrumentedFSDataOutputStreamBuilder(this, path, delegateRes, outputEntryStats);
+	}
+
+	@Override
+	public FSDataOutputStream createNonRecursive(Path f, FsPermission permission, EnumSet<CreateFlag> flags,
+			int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
+		long startNanos = nanoTime();
+		FSDataOutputStream delegateRes = delegate.createNonRecursive(f, permission, flags, bufferSize, replication, blockSize, progress);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.createNonRecursiveStats.increment(nanos);
+
+		Statistics entryStatistics = getHadoopEntryStatistics(f);
+		InstrumentedFSOutputStreamStats outputEntryStats = outputEntryStatsFor(f);
+		return new InstrumentedFSDataOutputStream(delegateRes, entryStatistics, f, outputEntryStats);		
+	}
+
+
 	// implement abstract method of org.apache.hadoop.fs.FileSystem
 	// --------------------------------------------------------------------------------------------
-
 	
 	@Override
 	public URI getUri() {
@@ -119,45 +279,53 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 	}
 
 	@Override
-	public FSDataInputStream open(Path f, int bufferSize) throws IOException {
-		return delegate.open(f, bufferSize);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, FsPermission permission, boolean overwrite, int bufferSize,
-			short replication, long blockSize, Progressable progress) throws IOException {
-		return delegate.create(f, permission, overwrite, bufferSize, replication, blockSize, progress);
-	}
-
-	@Override
-	public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) throws IOException {
-		return delegate.append(f, bufferSize, progress);
-	}
-
-
-	@Override
 	public boolean rename(Path src, Path dst) throws IOException {
-		return delegate.rename(src, dst);
+		long startNanos = nanoTime();
+		boolean res = delegate.rename(src, dst);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(dst);
+		stats.renameStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public boolean mkdirs(Path f, FsPermission permission) throws IOException {
-		return delegate.mkdirs(f, permission);
+		long startNanos = nanoTime();
+		boolean res = delegate.mkdirs(f, permission);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.renameStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public boolean delete(Path f, boolean recursive) throws IOException {
-		return delegate.delete(f, recursive);
+		long startNanos = nanoTime();
+		boolean res = delegate.delete(f, recursive);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.deleteStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public FileStatus[] listStatus(Path f) throws FileNotFoundException, IOException {
-		return delegate.listStatus(f);
+		long startNanos = nanoTime();
+		FileStatus[] res = delegate.listStatus(f);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.listStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public FileStatus getFileStatus(Path f) throws IOException {
-		return delegate.getFileStatus(f);
+		long startNanos = nanoTime();
+		FileStatus res = delegate.getFileStatus(f);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.queryFileStatusStats.increment(nanos);
+		return res;
 	}
 
 	// override default implementation of org.apache.hadoop.fs.FileSystem
@@ -166,11 +334,6 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 	// @Override // ?? bug in eclipse compiler
 	public Token<?>[] addDelegationTokens(String renewer, Credentials credentials) throws IOException {
 		return delegate.addDelegationTokens(renewer, credentials);
-	}
-
-	@Override
-	public String toString() {
-		return "InstrumentedFS[" + delegate.toString() + "]";
 	}
 
 	@Override
@@ -196,7 +359,11 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 
 	@Override
 	public Token<?> getDelegationToken(String renewer) throws IOException {
-		return delegate.getDelegationToken(renewer);
+		long startNanos = nanoTime();
+		Token<?> res = delegate.getDelegationToken(renewer);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.delegationTokenStats.increment(nanos);
+		return res;
 	}
 
 	@Override
@@ -235,117 +402,118 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 		return delegate.resolvePath(p);
 	}
 
-	@Override
-	public FSDataInputStream open(Path f) throws IOException {
-		return delegate.open(f);
-	}
-
-	@Override
-	public FSDataInputStream open(PathHandle fd) throws IOException {
-		return delegate.open(fd);
-	}
-
-	@Override
-	public FSDataInputStream open(PathHandle fd, int bufferSize) throws IOException {
-		return delegate.open(fd, bufferSize);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f) throws IOException {
-		return delegate.create(f);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, boolean overwrite) throws IOException {
-		return delegate.create(f, overwrite);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, Progressable progress) throws IOException {
-		return delegate.create(f, progress);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, short replication) throws IOException {
-		return delegate.create(f, replication);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, short replication, Progressable progress) throws IOException {
-		return delegate.create(f, replication, progress);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, boolean overwrite, int bufferSize) throws IOException {
-		return delegate.create(f, overwrite, bufferSize);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, boolean overwrite, int bufferSize, Progressable progress)
-			throws IOException {
-		return delegate.create(f, overwrite, bufferSize, progress);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, boolean overwrite, int bufferSize, short replication, long blockSize)
-			throws IOException {
-		return delegate.create(f, overwrite, bufferSize, replication, blockSize);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, boolean overwrite, int bufferSize, short replication, long blockSize,
-			Progressable progress) throws IOException {
-		return delegate.create(f, overwrite, bufferSize, replication, blockSize, progress);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, FsPermission permission, EnumSet<CreateFlag> flags, int bufferSize,
-			short replication, long blockSize, Progressable progress) throws IOException {
-		return delegate.create(f, permission, flags, bufferSize, replication, blockSize, progress);
-	}
-
-	@Override
-	public FSDataOutputStream create(Path f, FsPermission permission, EnumSet<CreateFlag> flags, int bufferSize,
-			short replication, long blockSize, Progressable progress, ChecksumOpt checksumOpt) throws IOException {
-		return delegate.create(f, permission, flags, bufferSize, replication, blockSize, progress, checksumOpt);
-	}
-
-	@Override
-	public FSDataOutputStream createNonRecursive(Path f, boolean overwrite, int bufferSize, short replication,
-			long blockSize, Progressable progress) throws IOException {
-		return delegate.createNonRecursive(f, overwrite, bufferSize, replication, blockSize, progress);
-	}
-
-	@Override
-	public FSDataOutputStream createNonRecursive(Path f, FsPermission permission, boolean overwrite, int bufferSize,
-			short replication, long blockSize, Progressable progress) throws IOException {
-		return delegate.createNonRecursive(f, permission, overwrite, bufferSize, replication, blockSize, progress);
-	}
-
-	@Override
-	public FSDataOutputStream createNonRecursive(Path f, FsPermission permission, EnumSet<CreateFlag> flags,
-			int bufferSize, short replication, long blockSize, Progressable progress) throws IOException {
-		return delegate.createNonRecursive(f, permission, flags, bufferSize, replication, blockSize, progress);
-	}
+//	@Override
+//	public FSDataInputStream open(Path f) throws IOException {
+//		long startNanos = nanoTime();
+//		// return open(f, getConf().getInt(IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT));
+//		FSDataInputStream res = super.open(f); 
+//		long nanos = nanoTime() - startNanos;
+//		InstrumentedFSPathStats stats = pathStatsFor(f);
+//		stats.openStats.increment(nanos);
+//		return res;
+//	}
+//	  
+//	@Override
+//	public FSDataOutputStream create(Path f) throws IOException {
+//		// return create(f, true);
+//		return super.create(f);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, boolean overwrite) throws IOException {
+//		// return create(f, overwrite, getConf().getInt(IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT), getDefaultReplication(f), getDefaultBlockSize(f));
+//		return super.create(f, overwrite);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, Progressable progress) throws IOException {
+//		// return create(f, true, getConf().getInt(IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT), getDefaultReplication(f), getDefaultBlockSize(f), progress);
+//		return super.create(f, progress);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, short replication) throws IOException {
+//		// return create(f, true, getConf().getInt(IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT), replication, getDefaultBlockSize(f));
+//		return super.create(f, replication);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, short replication, Progressable progress) throws IOException {
+//		// return create(f, true, getConf().getInt(IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT), replication, getDefaultBlockSize(f), progress);
+//		return super.create(f, replication, progress);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, boolean overwrite, int bufferSize) throws IOException {
+//		// return create(f, overwrite, bufferSize, getDefaultReplication(f), getDefaultBlockSize(f));
+//		return super.create(f, overwrite, bufferSize);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, boolean overwrite, int bufferSize, Progressable progress) throws IOException {
+//		// return create(f, overwrite, bufferSize, getDefaultReplication(f), getDefaultBlockSize(f), progress);
+//		return super.create(f, overwrite, bufferSize, progress);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, boolean overwrite, int bufferSize, short replication, long blockSize) throws IOException {
+//		return super.create(f, overwrite, bufferSize, replication, blockSize);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, boolean overwrite, int bufferSize, short replication, long blockSize,
+//			Progressable progress) throws IOException {
+//		return super.create(f, overwrite, bufferSize, replication, blockSize, progress);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, FsPermission permission, EnumSet<CreateFlag> flags, int bufferSize,
+//			short replication, long blockSize, Progressable progress) throws IOException {
+//		return super.create(f, permission, flags, bufferSize, replication, blockSize, progress);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream create(Path f, 
+//			FsPermission permission, EnumSet<CreateFlag> flags, int bufferSize,
+//			short replication, long blockSize, Progressable progress, ChecksumOpt checksumOpt) throws IOException {
+//		return super.create(f, permission, flags, bufferSize, replication, blockSize, progress, checksumOpt);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream createNonRecursive(Path f, 
+//			boolean overwrite, int bufferSize, short replication,
+//			long blockSize, Progressable progress) throws IOException {
+//		return super.createNonRecursive(f, overwrite, bufferSize, replication, blockSize, progress);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream createNonRecursive(Path f, FsPermission permission, boolean overwrite, int bufferSize,
+//			short replication, long blockSize, Progressable progress) throws IOException {
+//		return super.createNonRecursive(f, permission, overwrite, bufferSize, replication, blockSize, progress);
+//	}
 
 	@Override
 	public boolean createNewFile(Path f) throws IOException {
 		return delegate.createNewFile(f);
 	}
 
-	@Override
-	public FSDataOutputStream append(Path f) throws IOException {
-		return delegate.append(f);
-	}
-
-	@Override
-	public FSDataOutputStream append(Path f, int bufferSize) throws IOException {
-		return delegate.append(f, bufferSize);
-	}
+//	@Override
+//	public FSDataOutputStream append(Path f) throws IOException {
+//		return append(f, getConf().getInt(IO_FILE_BUFFER_SIZE_KEY, IO_FILE_BUFFER_SIZE_DEFAULT), null);
+//	}
+//
+//	@Override
+//	public FSDataOutputStream append(Path f, int bufferSize) throws IOException {
+//		return append(f, bufferSize, null);
+//	}
 
 	@Override
 	public void concat(Path trg, Path[] psrcs) throws IOException {
+		long startNanos = nanoTime();
 		delegate.concat(trg, psrcs);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(trg);
+		stats.concatStats.increment(nanos);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -361,14 +529,19 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 
 	@Override
 	public boolean truncate(Path f, long newLength) throws IOException {
-		return delegate.truncate(f, newLength);
+		long startNanos = nanoTime();
+		boolean res = delegate.truncate(f, newLength);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.truncateStats.increment(nanos);
+		return res;
 	}
 
-	@SuppressWarnings("deprecation")
-	@Override
-	public boolean delete(Path f) throws IOException {
-		return delegate.delete(f);
-	}
+//	@SuppressWarnings("deprecation")
+//	@Override
+//	public boolean delete(Path f) throws IOException {
+//		return delete(f, true);
+//	}
 
 	@Override
 	public boolean deleteOnExit(Path f) throws IOException {
@@ -380,32 +553,38 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 		return delegate.cancelDeleteOnExit(f);
 	}
 
-	@Override
-	public boolean exists(Path f) throws IOException {
-		return delegate.exists(f);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public boolean isDirectory(Path f) throws IOException {
-		return delegate.isDirectory(f);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public boolean isFile(Path f) throws IOException {
-		return delegate.isFile(f);
-	}
-
-	@Override
-	public long getLength(Path f) throws IOException {
-		return delegate.getLength(f);
-	}
-
-	@Override
-	public ContentSummary getContentSummary(Path f) throws IOException {
-		return delegate.getContentSummary(f);
-	}
+//	@Override
+//	public boolean exists(Path f) throws IOException {
+//		// => getFileStatus
+//		return delegate.exists(f);
+//	}
+//
+//	@SuppressWarnings("deprecation")
+//	@Override
+//	public boolean isDirectory(Path f) throws IOException {
+//		// => getFileStatus
+//		return delegate.isDirectory(f);
+//	}
+//
+//	@SuppressWarnings("deprecation")
+//	@Override
+//	public boolean isFile(Path f) throws IOException {
+//		// => getFileStatus
+//		return delegate.isFile(f);
+//	}
+//
+//	@SuppressWarnings("deprecation")
+//	@Override
+//	public long getLength(Path f) throws IOException {
+//		// => getFileStatus
+//		return delegate.getLength(f);
+//	}
+//
+//	@Override
+//	public ContentSummary getContentSummary(Path f) throws IOException {
+//		// => getFileStatus
+//		return delegate.getContentSummary(f);
+//	}
 
 	@Override
 	public QuotaUsage getQuotaUsage(Path f) throws IOException {
@@ -419,43 +598,76 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 
 	@Override
 	public FileStatus[] listStatus(Path f, PathFilter filter) throws FileNotFoundException, IOException {
-		return delegate.listStatus(f, filter);
+		long startNanos = nanoTime();
+		// => listStatus(results, f, filter);
+		FileStatus[] res = delegate.listStatus(f, filter);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(f);
+		stats.listStatusFilterStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public FileStatus[] listStatus(Path[] files) throws FileNotFoundException, IOException {
-		return delegate.listStatus(files);
+		long startNanos = nanoTime();
+		FileStatus[] res = delegate.listStatus(files);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.listStatusMultiStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public FileStatus[] listStatus(Path[] files, PathFilter filter) throws FileNotFoundException, IOException {
-		return delegate.listStatus(files, filter);
+		long startNanos = nanoTime();
+		FileStatus[] res = delegate.listStatus(files, filter);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.listStatusFilterMultiStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public FileStatus[] globStatus(Path pathPattern) throws IOException {
-		return delegate.globStatus(pathPattern);
+		long startNanos = nanoTime();
+		FileStatus[] res = delegate.globStatus(pathPattern);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.globStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public FileStatus[] globStatus(Path pathPattern, PathFilter filter) throws IOException {
-		return delegate.globStatus(pathPattern, filter);
+		long startNanos = nanoTime();
+		FileStatus[] res = delegate.globStatus(pathPattern, filter);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.globFilterStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public RemoteIterator<LocatedFileStatus> listLocatedStatus(Path f) throws FileNotFoundException, IOException {
-		return delegate.listLocatedStatus(f);
+		long startNanos = nanoTime();
+		RemoteIterator<LocatedFileStatus> res = delegate.listLocatedStatus(f);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.listLocatedStatusStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public RemoteIterator<FileStatus> listStatusIterator(Path p) throws FileNotFoundException, IOException {
-		return delegate.listStatusIterator(p);
+		long startNanos = nanoTime();
+		RemoteIterator<FileStatus> res = delegate.listStatusIterator(p);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.listStatusIteratorStats.increment(nanos);
+		return res;
 	}
 
 	@Override
-	public RemoteIterator<LocatedFileStatus> listFiles(Path f, boolean recursive)
-			throws FileNotFoundException, IOException {
-		return delegate.listFiles(f, recursive);
+	public RemoteIterator<LocatedFileStatus> listFiles(Path f, boolean recursive) throws FileNotFoundException, IOException {
+		long startNanos = nanoTime();
+		RemoteIterator<LocatedFileStatus> res = delegate.listFiles(f, recursive);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.listLocatedFilesStats.increment(nanos);
+		return res;
 	}
 
 	@Override
@@ -596,12 +808,20 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 
 	@Override
 	public FileChecksum getFileChecksum(Path f) throws IOException {
-		return delegate.getFileChecksum(f);
+		long startNanos = nanoTime();
+		FileChecksum res = delegate.getFileChecksum(f);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.getFileChecksumStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public FileChecksum getFileChecksum(Path f, long length) throws IOException {
-		return delegate.getFileChecksum(f, length);
+		long startNanos = nanoTime();
+		FileChecksum res = delegate.getFileChecksum(f, length);
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.getFileChecksumLenStats.increment(nanos);
+		return res;
 	}
 
 	@Override
@@ -616,12 +836,21 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 
 	@Override
 	public FsStatus getStatus() throws IOException {
-		return delegate.getStatus();
+		long startNanos = nanoTime();
+		FsStatus res = delegate.getStatus();
+		long nanos = nanoTime() - startNanos;
+		fsPathStats.getStatusStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public FsStatus getStatus(Path p) throws IOException {
-		return delegate.getStatus(p);
+		long startNanos = nanoTime();
+		FsStatus res = delegate.getStatus(p);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(p);
+		stats.getStatusStats.increment(nanos);
+		return res;
 	}
 
 	@Override
@@ -754,16 +983,13 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 		return delegate.getStorageStatistics();
 	}
 
-	@SuppressWarnings("rawtypes")
+	// override java.lang.Object
+	// ------------------------------------------------------------------------
+	
 	@Override
-	public FSDataOutputStreamBuilder createFile(Path path) {
-		return delegate.createFile(path);
+	public String toString() {
+		return "InstrumentedFS{" + delegate.toString() + "}";
 	}
 
-	@SuppressWarnings("rawtypes")
-	@Override
-	public FSDataOutputStreamBuilder appendFile(Path path) {
-		return delegate.appendFile(path);
-	}
 
 }

@@ -1,5 +1,7 @@
 package fr.an.tests.hadoopfsinstrumented;
 
+import static java.lang.System.nanoTime;
+
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,18 +9,32 @@ import java.nio.ByteBuffer;
 import java.util.EnumSet;
 
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.ReadOption;
+import org.apache.hadoop.fs.statistics.IOStatistics;
 import org.apache.hadoop.io.ByteBufferPool;
+
+import fr.an.tests.hadoopfsinstrumented.stats.InstrumentedFSInputStreamStats;
+import lombok.Getter;
+import lombok.val;
 
 public class InstrumentedFSDataInputStream extends FSDataInputStream {
 
+	@Getter
+	private final Path path;
+	
 	private final FSDataInputStream delegate;
 
+	@Getter
+	private final InstrumentedFSInputStreamStats stats;
+	
 	// --------------------------------------------------------------------------------------------
 
-	public InstrumentedFSDataInputStream(InputStream in, FSDataInputStream delegate) {
-		super(in);
+	public InstrumentedFSDataInputStream(FSDataInputStream delegate, Path path, InstrumentedFSInputStreamStats stats) {
+		super(delegate);
 		this.delegate = delegate;
+		this.path = path;
+		this.stats = stats;
 	}
 
 	@Override
@@ -36,7 +52,10 @@ public class InstrumentedFSDataInputStream extends FSDataInputStream {
 
 	@Override
 	public void seek(long desired) throws IOException {
+		long startNanos = nanoTime();
 		delegate.seek(desired);
+		long nanos = nanoTime() - startNanos;
+		stats.seekStats.increment(nanos);
 	}
 
 	@Override
@@ -46,27 +65,45 @@ public class InstrumentedFSDataInputStream extends FSDataInputStream {
 
 	@Override
 	public int read(long position, byte[] buffer, int offset, int length) throws IOException {
-		return delegate.read(position, buffer, offset, length);
+		long startNanos = nanoTime();
+		int res = delegate.read(position, buffer, offset, length);
+		long nanos = nanoTime() - startNanos;
+		stats.readBytesStats.increment(nanos, res);
+		return res;
 	}
 	
 	@Override
 	public void readFully(long position, byte[] buffer, int offset, int length) throws IOException {
+		long startNanos = nanoTime();
 		delegate.readFully(position, buffer, offset, length);
+		long nanos = nanoTime() - startNanos;
+		stats.readBytesStats.increment(nanos, length);
 	}
 
 	@Override
 	public void readFully(long position, byte[] buffer) throws IOException {
+		long startNanos = nanoTime();
 		delegate.readFully(position, buffer);
+		long nanos = nanoTime() - startNanos;
+		stats.readBytesStats.increment(nanos, buffer.length);
 	}
 
 	@Override
 	public boolean seekToNewSource(long targetPos) throws IOException {
-		return delegate.seekToNewSource(targetPos);
+		long startNanos = nanoTime();
+		val res = delegate.seekToNewSource(targetPos);
+		long nanos = nanoTime() - startNanos;
+		stats.seekStats.increment(nanos);
+		return res;
 	}
 
 	@Override
 	public int read(ByteBuffer buf) throws IOException {
-		return delegate.read(buf);
+		long startNanos = nanoTime();
+		int res = delegate.read(buf);
+		long nanos = nanoTime() - startNanos;
+		stats.readBytesStats.increment(nanos, res);
+		return res;
 	}
 
 	@Override
@@ -85,9 +122,13 @@ public class InstrumentedFSDataInputStream extends FSDataInputStream {
 	}
 
 	@Override
-	public ByteBuffer read(ByteBufferPool bufferPool, int maxLength, EnumSet<ReadOption> opts)
-			throws IOException, UnsupportedOperationException {
-		return delegate.read(bufferPool, maxLength, opts);
+	public ByteBuffer read(ByteBufferPool bufferPool, int maxLength, EnumSet<ReadOption> opts) throws IOException, UnsupportedOperationException {
+		long startNanos = nanoTime();
+		val res = delegate.read(bufferPool, maxLength, opts);
+		long nanos = nanoTime() - startNanos;
+		val bufferPos = res.position(); // TOCHECK
+		stats.readBytesStats.increment(nanos, bufferPos);
+		return res;
 	}
 
 	@Override
@@ -105,18 +146,45 @@ public class InstrumentedFSDataInputStream extends FSDataInputStream {
 		return delegate.hasCapability(capability);
 	}
 
+	@Override
+	public int read(long position, ByteBuffer buf) throws IOException {
+		long startNanos = nanoTime();
+		int res = delegate.read(position, buf);
+		long nanos = nanoTime() - startNanos;
+		stats.readBytesStats.increment(nanos, res);
+		return res;
+	}
+
+	@Override
+	public void readFully(long position, ByteBuffer buf) throws IOException {
+		delegate.readFully(position, buf);
+	}
+
+	@Override
+	public IOStatistics getIOStatistics() {
+		return delegate.getIOStatistics();
+	}
+
 
 	// override from java.io.InputStream
 	// --------------------------------------------------------------------------------------------
 
 	@Override
 	public int read() throws IOException {
-		return delegate.read();
+		long startNanos = nanoTime();
+		int res = delegate.read();
+		long nanos = nanoTime() - startNanos;
+		stats.readBytesStats.increment(nanos, 1);
+		return res;
 	}
 
 	@Override
 	public long skip(long n) throws IOException {
-		return delegate.skip(n);
+		long startNanos = nanoTime();
+		long res = delegate.skip(n);
+		long nanos = nanoTime() - startNanos;
+		stats.skipBytesStats.increment(nanos, n);
+		return res;
 	}
 
 	@Override
@@ -131,7 +199,10 @@ public class InstrumentedFSDataInputStream extends FSDataInputStream {
 
 	@Override
 	public void reset() throws IOException {
+		long startNanos = nanoTime();
 		delegate.reset();
+		long nanos = nanoTime() - startNanos;
+		stats.resetStats.increment(nanos);
 	}
 
 	@Override
@@ -154,7 +225,7 @@ public class InstrumentedFSDataInputStream extends FSDataInputStream {
 
 	@Override
 	public String toString() {
-		return delegate.toString();
+		return "InstrumentedFSDataInputStream{" + delegate.toString() + "}";
 	}
 
 }
