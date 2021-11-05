@@ -5,16 +5,16 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import fr.an.tests.reverseyarn.dto.ApplicationAttemptId;
-import fr.an.tests.reverseyarn.dto.ApplicationAttemptReport;
-import fr.an.tests.reverseyarn.dto.ApplicationId;
-import fr.an.tests.reverseyarn.dto.ApplicationReport;
-import fr.an.tests.reverseyarn.dto.ApplicationsRequestScope;
-import fr.an.tests.reverseyarn.dto.ContainerId;
-import fr.an.tests.reverseyarn.dto.ContainerReport;
-import fr.an.tests.reverseyarn.dto.LongRange;
-import fr.an.tests.reverseyarn.dto.Token;
-import fr.an.tests.reverseyarn.dto.YarnApplicationState;
+import fr.an.tests.reverseyarn.dto.app.ApplicationAttemptId;
+import fr.an.tests.reverseyarn.dto.app.ApplicationAttemptReport;
+import fr.an.tests.reverseyarn.dto.app.ApplicationId;
+import fr.an.tests.reverseyarn.dto.app.ApplicationReport;
+import fr.an.tests.reverseyarn.dto.app.ApplicationsRequestScope;
+import fr.an.tests.reverseyarn.dto.app.ContainerId;
+import fr.an.tests.reverseyarn.dto.app.ContainerReport;
+import fr.an.tests.reverseyarn.dto.app.LongRange;
+import fr.an.tests.reverseyarn.dto.app.Token;
+import fr.an.tests.reverseyarn.dto.app.YarnApplicationState;
 
 /**
  * <p>

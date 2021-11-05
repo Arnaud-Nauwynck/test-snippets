@@ -6,18 +6,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import fr.an.tests.reverseyarn.dto.ApplicationId;
-import fr.an.tests.reverseyarn.dto.ApplicationSubmissionContext;
-import fr.an.tests.reverseyarn.dto.NodeId;
-import fr.an.tests.reverseyarn.dto.NodeLabel;
-import fr.an.tests.reverseyarn.dto.NodeReport;
-import fr.an.tests.reverseyarn.dto.NodeState;
-import fr.an.tests.reverseyarn.dto.QueueInfo;
-import fr.an.tests.reverseyarn.dto.QueueUserACLInfo;
-import fr.an.tests.reverseyarn.dto.ReservationDefinition;
-import fr.an.tests.reverseyarn.dto.ReservationId;
-import fr.an.tests.reverseyarn.dto.Resource;
-import fr.an.tests.reverseyarn.dto.YarnClusterMetrics;
+import fr.an.tests.reverseyarn.dto.app.ApplicationId;
+import fr.an.tests.reverseyarn.dto.app.ApplicationSubmissionContext;
+import fr.an.tests.reverseyarn.dto.app.NodeId;
+import fr.an.tests.reverseyarn.dto.app.NodeLabel;
+import fr.an.tests.reverseyarn.dto.app.NodeReport;
+import fr.an.tests.reverseyarn.dto.app.NodeState;
+import fr.an.tests.reverseyarn.dto.app.QueueInfo;
+import fr.an.tests.reverseyarn.dto.app.QueueUserACLInfo;
+import fr.an.tests.reverseyarn.dto.app.ReservationDefinition;
+import fr.an.tests.reverseyarn.dto.app.ReservationId;
+import fr.an.tests.reverseyarn.dto.app.Resource;
+import fr.an.tests.reverseyarn.dto.app.YarnClusterMetrics;
 import lombok.Data;
 
 public interface ApplicationClientProtocol extends ApplicationBaseProtocol {
