@@ -62,8 +62,11 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 	@Getter
 	private Statistics delegateStatistics;
 	
+	@Getter
 	private InstrumentedFSInputStreamStats inputEntryStats = new InstrumentedFSInputStreamStats();
+	@Getter
 	private InstrumentedFSOutputStreamStats outputEntryStats = new InstrumentedFSOutputStreamStats();
+	@Getter
 	private InstrumentedFSPathStats fsPathStats = new InstrumentedFSPathStats();
 	
 	// --------------------------------------------------------------------------------------------
@@ -94,7 +97,7 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 	public void initialize(URI name, Configuration conf) throws IOException {
 		super.initialize(name, conf);
 		String scheme = name.getScheme();
-		String fsName = scheme; // "fs1"; // TODO
+		String fsName = scheme;
 		String underlingFsURIText = conf.get("fs." + fsName + ".underlingFsURI");
 		URI underlyingFsURI;
 		try {

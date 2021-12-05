@@ -92,6 +92,12 @@
 			
 			
 			<dependency>
+				<groupId>com.graphql-java</groupId>
+				<artifactId>graphql-spring-boot-starter</artifactId>	
+			  	<version>${graphql-springboot.version}</version>
+			</dependency>
+			
+			<dependency>
 			  <groupId>com.graphql-java</groupId>
 			  <artifactId>graphql-java-spring-boot-starter-webmvc</artifactId>
 			  <version>${graphql-springboot.version}</version>
