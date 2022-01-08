@@ -61,8 +61,11 @@ public class Flipbook2PdfMain {
 
     private void checkOrDownloadBook(File baseOutputDir, String bookTitle, String orderDetail) throws Exception {
         File bookOutputDir = new File(baseOutputDir, bookTitle);
-        if (! bookOutputDir.exists()) {
-            bookOutputDir.mkdirs();
+        File outputFile = new File(baseOutputDir, bookTitle + ".pdf");
+        if (! outputFile.exists()) {
+        	if (! bookOutputDir.exists()) {
+        		bookOutputDir.mkdirs();
+        	}
             downloadBook(baseOutputDir, bookOutputDir, bookTitle, orderDetail);
         } else {
             log.info("dir for book '" + bookTitle + " already exist => skip");
