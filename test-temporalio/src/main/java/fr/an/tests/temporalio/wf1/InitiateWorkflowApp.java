@@ -20,7 +20,7 @@ public class InitiateWorkflowApp {
         // WorkflowStubs enable calls to methods as if the Workflow object is local, but actually perform an RPC.
         MyWorkflow1 workflow = client.newWorkflowStub(MyWorkflow1.class, options);
         // Synchronously execute the Workflow and wait for the response.
-        String greeting = workflow.getGreeting("World");
+        String greeting = workflow.runHelloThenGoodBye("World");
         System.out.println(greeting);
         
     }

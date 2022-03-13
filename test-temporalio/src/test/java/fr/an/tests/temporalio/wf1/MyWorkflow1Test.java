@@ -14,6 +14,7 @@ import fr.an.tests.temporalio.wf1.api.MySimpleActivity;
 import fr.an.tests.temporalio.wf1.api.MyWorkflow1;
 import fr.an.tests.temporalio.wf1.impl.MySimpleActivityImpl;
 import fr.an.tests.temporalio.wf1.impl.MyWorkflow1Impl;
+import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowRule;
 
@@ -30,32 +31,41 @@ public class MyWorkflow1Test {
     public void testGetGreeting() {
         testWorkflowRule.getWorker().registerActivitiesImplementations(new MySimpleActivityImpl());
         testWorkflowRule.getTestEnvironment().start();
+        try {
+	        WorkflowClient workflowClient = testWorkflowRule.getWorkflowClient();
+	
+	        WorkflowOptions wfOptions = WorkflowOptions.newBuilder() //
+	        		.setTaskQueue(testWorkflowRule.getTaskQueue()) //
+	        		.build();
+			MyWorkflow1 workflow = workflowClient.newWorkflowStub(MyWorkflow1.class, wfOptions);
+	        String greeting = workflow.runHelloThenGoodBye("John");
+	
+	        assertEquals("Hello John", greeting);
 
-        MyWorkflow1 workflow = testWorkflowRule
-                        .getWorkflowClient()
-                        .newWorkflowStub(
-                                MyWorkflow1.class,
-                                WorkflowOptions.newBuilder().setTaskQueue(testWorkflowRule.getTaskQueue()).build());
-        String greeting = workflow.getGreeting("John");
-        assertEquals("Hello John", greeting);
-        testWorkflowRule.getTestEnvironment().shutdown();
+        } finally {
+        	testWorkflowRule.getTestEnvironment().shutdown();
+        }
     }
 
     @Test
     public void testMockedGetGreeting() {
     	MySimpleActivity formatActivities = mock(MySimpleActivity.class, withSettings().withoutAnnotations());
-        when(formatActivities.composeGreeting(anyString())).thenReturn("Hello World!");
+        when(formatActivities.sayHello(anyString())).thenReturn("Hello World!");
+        
         testWorkflowRule.getWorker().registerActivitiesImplementations(formatActivities);
         testWorkflowRule.getTestEnvironment().start();
-
-        MyWorkflow1 workflow =
-                testWorkflowRule
-                        .getWorkflowClient()
-                        .newWorkflowStub(
-                                MyWorkflow1.class,
-                                WorkflowOptions.newBuilder().setTaskQueue(testWorkflowRule.getTaskQueue()).build());
-        String greeting = workflow.getGreeting("World");
-        assertEquals("Hello World!", greeting);
-        testWorkflowRule.getTestEnvironment().shutdown();
+        try {
+	        WorkflowClient workflowClient = testWorkflowRule.getWorkflowClient();
+	
+	        WorkflowOptions workflowOptions = WorkflowOptions.newBuilder() //
+	        		.setTaskQueue(testWorkflowRule.getTaskQueue()) //
+	        		.build();
+			MyWorkflow1 workflow = workflowClient.newWorkflowStub(MyWorkflow1.class, workflowOptions);
+	        String greeting = workflow.runHelloThenGoodBye("World");
+	        
+	        assertEquals("Hello World!", greeting);
+        } finally {
+        	testWorkflowRule.getTestEnvironment().shutdown();
+        }
     }
 }

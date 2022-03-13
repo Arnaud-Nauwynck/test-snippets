@@ -7,7 +7,10 @@ import io.temporal.activity.ActivityMethod;
 public interface MySimpleActivity {
 
     @ActivityMethod
-    String composeGreeting(String name);
+    String sayHello(String name);
+
+    @ActivityMethod
+    String sayGoodBye(String name, String helloMsg);
 
 }
 

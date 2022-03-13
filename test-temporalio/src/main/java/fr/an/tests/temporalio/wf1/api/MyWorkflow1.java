@@ -7,6 +7,6 @@ import io.temporal.workflow.WorkflowMethod;
 public interface MyWorkflow1 {
 
     @WorkflowMethod
-    String getGreeting(String name);
+    String runHelloThenGoodBye(String name);
 
 }
