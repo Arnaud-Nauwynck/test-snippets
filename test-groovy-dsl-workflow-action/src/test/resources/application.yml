@@ -1,0 +1,34 @@
+
+app:
+  prop1: value1
+  workflows:
+    - type: parallel
+      name: p1
+      branchItems:
+        - branchName: branch0
+          item:
+            type: sequence
+            items: 
+              - type: simple1
+                name: p1_branch0_item0
+                param: "param1"
+              - type: simple2
+                name: p1_branch0_item1
+                intParam: 1
+        - branchName: branch1
+          item:
+            type: sequence
+            items: 
+              - type: simple1
+                name: p1_branch1_item0
+                param: "param2"
+              - type: simple2
+                name: p1_branch1_item1
+                intParam: 2
+        - branchName: branch2
+          item:
+            type: simple2
+            name: p1_branch2
+            intParam: 3
+          
+      
