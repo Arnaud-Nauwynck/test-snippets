@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,24 +16,41 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import fr.an.hadoop.fs.dirserver.api.converter.HadoopFsDTOConverter;
 import fr.an.hadoop.fs.dirserver.dto.FileStatusDTO;
+import fr.an.hadoop.fs.dirserver.dto.MountedDirDTO;
 import fr.an.hadoop.fs.dirserver.dto.NotifyCreateDTO;
 import fr.an.hadoop.fs.dirserver.dto.NotifyDeleteDTO;
 import fr.an.hadoop.fs.dirserver.dto.NotifyRenameDTO;
-import fr.an.hadoop.fs.dirserver.service.HadoopDirService;
+import fr.an.hadoop.fs.dirserver.service.DirService;
 
 @RequestMapping(path="/api/fs")
 public class DirServerRestController {
 
 	@Autowired
-	private HadoopDirService delegate;
+	private DirService delegate;
 	
-	@GetMapping("/getFileStatus/{path}")
-	public FileStatusDTO getFileStatus(
-			@PathVariable("path") String path) {
-		Path hadoopPath = new Path(path);
-		FileStatus tmpres = delegate.getFileStatus(hadoopPath);
-		return HadoopFsDTOConverter.toFileStatusDTO(tmpres);
+	@GetMapping("/dir-mounts")
+	public List<MountedDirDTO> getMountedDirs() {
+		return delegate.getMountedDirs();
 	}
+
+	@PutMapping("/dir-mount")
+	public MountedDirDTO addMountedDir(@RequestBody MountedDirDTO req) {
+		return delegate.addMountedDir(req);
+	}
+
+	@DeleteMapping("/dir-mount/{name}")
+	public MountedDirDTO removeDirMount(@PathVariable("name") String name) {
+		return delegate.removeMountedDir(name);
+	}
+
+	
+	
+//	@GetMapping("/getFileStatus/{path}")
+//	public FileStatusDTO getFileStatus(
+//			@PathVariable("path") String path) {
+//		val res = delegate.getFileStatus(path);
+//		return res;
+//	}
 
 	@GetMapping("/listStatus/{path}")
 	public FileStatusDTO[] listStatus(
@@ -53,13 +71,13 @@ public class DirServerRestController {
 		return HadoopFsDTOConverter.toFileStatusesDTO(tmpres);
 	}
 
-	@GetMapping("/globStatus/{pathPattern}")
-	public FileStatusDTO[] globStatus(
-			@PathVariable("pathPattern") String pathPattern) {
-		Path hadoopPathPattern = new Path(pathPattern);
-		FileStatus[] tmpres = delegate.globStatus(hadoopPathPattern);
-		return HadoopFsDTOConverter.toFileStatusesDTO(tmpres);
-	}
+//	@GetMapping("/globStatus/{pathPattern}")
+//	public FileStatusDTO[] globStatus(
+//			@PathVariable("pathPattern") String pathPattern) {
+//		Path hadoopPathPattern = new Path(pathPattern);
+//		FileStatus[] tmpres = delegate.globStatus(hadoopPathPattern);
+//		return HadoopFsDTOConverter.toFileStatusesDTO(tmpres);
+//	}
 	
 	@PutMapping("/notify-create")
 	public void notifyCreate(
