@@ -28,7 +28,7 @@ public class JavaNIOFileToNodeScanner {
 		}
 		// tocheck root != parent
 		DirNode parentNode = parentNodeBuilder.build();
-		return parentNode._friend_getSortedChildArray()[0];
+		return parentNode.getSortedChildNodes()[0];
 	}
 	
 	

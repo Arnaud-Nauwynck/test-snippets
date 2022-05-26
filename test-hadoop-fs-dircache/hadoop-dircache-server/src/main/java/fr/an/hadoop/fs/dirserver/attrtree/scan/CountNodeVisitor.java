@@ -20,7 +20,7 @@ public class CountNodeVisitor extends NodeVisitor {
 	@Override
 	public void caseDir(DirNode node) {
 		countDir++;
-		val childLs = node._friend_getSortedChildArray();
+		val childLs = node.getSortedChildNodes();
 		if (childLs != null && childLs.length != 0) {
 			for(val child: childLs) {
 				child.accept(this);

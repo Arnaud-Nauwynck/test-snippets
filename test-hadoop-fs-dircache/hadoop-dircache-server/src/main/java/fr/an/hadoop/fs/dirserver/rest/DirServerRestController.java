@@ -28,6 +28,8 @@ public class DirServerRestController {
 	@Autowired
 	private DirService delegate;
 	
+	// ------------------------------------------------------------------------
+	
 	@GetMapping("/dir-mounts")
 	public List<MountedDirDTO> getMountedDirs() {
 		return delegate.getMountedDirs();
@@ -39,72 +41,65 @@ public class DirServerRestController {
 	}
 
 	@DeleteMapping("/dir-mount/{name}")
-	public MountedDirDTO removeDirMount(@PathVariable("name") String name) {
+	public MountedDirDTO removeMountedDir(@PathVariable("name") String name) {
 		return delegate.removeMountedDir(name);
 	}
 
 	
 	
-//	@GetMapping("/getFileStatus/{path}")
-//	public FileStatusDTO getFileStatus(
+//	@GetMapping("/getNode/{path}")
+//	public NodeDTO getNode(
 //			@PathVariable("path") String path) {
 //		val res = delegate.getFileStatus(path);
 //		return res;
 //	}
-
-	@GetMapping("/listStatus/{path}")
-	public FileStatusDTO[] listStatus(
-			@PathVariable("path") String path) {
-		Path hadoopPath = new Path(path);
-		FileStatus[] tmpres = delegate.listStatus(hadoopPath);
-		return HadoopFsDTOConverter.toFileStatusesDTO(tmpres);
-	}
-	
-	@PutMapping("/query-listStatuses")
-	public FileStatusDTO[] listStatuses(
-			@RequestBody List<String> req) {
-		List<Path> pathes = new ArrayList<Path>();
-		for(String path: req) {
-			pathes.add(new Path(path));
-		}
-		List<FileStatus> tmpres = delegate.listStatus(pathes);
-		return HadoopFsDTOConverter.toFileStatusesDTO(tmpres);
-	}
-
-//	@GetMapping("/globStatus/{pathPattern}")
-//	public FileStatusDTO[] globStatus(
-//			@PathVariable("pathPattern") String pathPattern) {
-//		Path hadoopPathPattern = new Path(pathPattern);
-//		FileStatus[] tmpres = delegate.globStatus(hadoopPathPattern);
+//
+//	@GetMapping("/listStatus/{path}")
+//	public FileStatusDTO[] listStatus(
+//			@PathVariable("path") String path) {
+//		Path hadoopPath = new Path(path);
+//		FileStatus[] tmpres = delegate.listStatus(hadoopPath);
 //		return HadoopFsDTOConverter.toFileStatusesDTO(tmpres);
 //	}
-	
-	@PutMapping("/notify-create")
-	public void notifyCreate(
-			@RequestBody NotifyCreateDTO req) {
-		Path hadoopPath = new Path(req.getPath());
-		FsPermission permission = FsPermission.createImmutable(req.getPerm());
-		boolean overwrite = req.isOverwrite();
-		int bufferSize = req.getBufferSize();
-		short block_replication = req.getRepl();
-		long blockSize = req.getBlock();
-		delegate.notifyCreate(hadoopPath, permission, overwrite, bufferSize, block_replication, blockSize);
-	}
-
-	@PutMapping("/notify-rename")
-	public void notifyCreate(
-			@RequestBody NotifyRenameDTO req) {
-		Path hadoopSrcPath = new Path(req.getSrc());
-		Path hadoopDstPath = new Path(req.getDst());
-		delegate.notifyRename(hadoopSrcPath, hadoopDstPath);
-	}
-
-	@PutMapping("/notify-delete")
-	public void notifyDelete(
-			@RequestBody NotifyDeleteDTO req) {
-		Path hadoopPath = new Path(req.getPath());
-		boolean recursive = req.isRecursive();
-		delegate.notifyDelete(hadoopPath, recursive);
-	}
+//	
+//	@PutMapping("/query-listStatuses")
+//	public FileStatusDTO[] listStatuses(
+//			@RequestBody List<String> req) {
+//		List<Path> pathes = new ArrayList<Path>();
+//		for(String path: req) {
+//			pathes.add(new Path(path));
+//		}
+//		List<FileStatus> tmpres = delegate.listStatus(pathes);
+//		return HadoopFsDTOConverter.toFileStatusesDTO(tmpres);
+//	}
+//
+//
+//	@PutMapping("/notify-create")
+//	public void notifyCreate(
+//			@RequestBody NotifyCreateDTO req) {
+//		Path hadoopPath = new Path(req.getPath());
+//		FsPermission permission = FsPermission.createImmutable(req.getPerm());
+//		boolean overwrite = req.isOverwrite();
+//		int bufferSize = req.getBufferSize();
+//		short block_replication = req.getRepl();
+//		long blockSize = req.getBlock();
+//		delegate.notifyCreate(hadoopPath, permission, overwrite, bufferSize, block_replication, blockSize);
+//	}
+//
+//	@PutMapping("/notify-rename")
+//	public void notifyCreate(
+//			@RequestBody NotifyRenameDTO req) {
+//		Path hadoopSrcPath = new Path(req.getSrc());
+//		Path hadoopDstPath = new Path(req.getDst());
+//		delegate.notifyRename(hadoopSrcPath, hadoopDstPath);
+//	}
+//
+//	@PutMapping("/notify-delete")
+//	public void notifyDelete(
+//			@RequestBody NotifyDeleteDTO req) {
+//		Path hadoopPath = new Path(req.getPath());
+//		boolean recursive = req.isRecursive();
+//		delegate.notifyDelete(hadoopPath, recursive);
+//	}
 
 }

@@ -7,9 +7,11 @@ import java.io.OutputStream;
 import java.io.UTFDataFormatException;
 
 /**
- * copy of DataOutputStream, but changed: - field "written": long instead of int
- * - init "written" in constructor for open in append mode - removed
- * synchronized
+ * copy of DataOutputStream, with changed: 
+ * 
+ * - field "written": long instead of int
+ * - init "written" in constructor for open in append mode 
+ * - removed synchronized
  */
 public final class DataOutputStreamImpl extends FilterOutputStream implements DataOutput {
 

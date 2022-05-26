@@ -2,16 +2,14 @@ package fr.an.hadoop.fs.dirserver.attrtree.encoder;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 
-import fr.an.hadoop.fs.dirserver.attrtree.AttrInfo;
-import fr.an.hadoop.fs.dirserver.attrtree.AttrInfoRegistry;
 import fr.an.hadoop.fs.dirserver.attrtree.DirNode;
 import fr.an.hadoop.fs.dirserver.attrtree.FileNode;
 import fr.an.hadoop.fs.dirserver.attrtree.Node;
 import fr.an.hadoop.fs.dirserver.attrtree.Node.NodeType;
 import fr.an.hadoop.fs.dirserver.attrtree.NodeAttr;
+import fr.an.hadoop.fs.dirserver.attrtree.attrinfo.AttrInfo;
+import fr.an.hadoop.fs.dirserver.attrtree.attrinfo.AttrInfoIndexes;
 import fr.an.hadoop.fs.dirserver.util.DataOutputStreamImpl;
 import fr.an.hadoop.fs.dirserver.util.StringUtils;
 import lombok.val;
@@ -21,19 +19,16 @@ import lombok.val;
  */
 public class NodeTreeFileWriter {
 
-	public final AttrInfoRegistry attrRegistry;
+	public final AttrInfoIndexes attrIndexes;
 
 	private DataOutputStreamImpl out;
 	
 	private String currPath = "";
-
-	private int currAttrIndexCount = 0;
-	private Map<String,Integer> currAttrIndexes = new HashMap<>();
 	
 	// ------------------------------------------------------------------------
 	
-	public NodeTreeFileWriter(AttrInfoRegistry attrRegistry, OutputStream outStream, long lastLength) {
-		this.attrRegistry = attrRegistry;
+	public NodeTreeFileWriter(AttrInfoIndexes attrIndexes, OutputStream outStream, long lastLength) {
+		this.attrIndexes = attrIndexes;
 		this.out = new DataOutputStreamImpl(outStream, lastLength);
 	}
 
@@ -41,14 +36,17 @@ public class NodeTreeFileWriter {
 		out.flush();
 	}
 	
-	
+	public long getFilePos() {
+		return out.size();
+	}
+
 	// ------------------------------------------------------------------------
 
 	public void writeRecursiveNode(String path, Node node) throws IOException {
 		writeNode(path, node);
 		
 		if (node.nodeType() == NodeType.DIR) {
-			Node[] childArray = ((DirNode) node)._friend_getSortedChildArray();
+			Node[] childArray = ((DirNode) node).getSortedChildNodes();
 			if (childArray == null || childArray.length == 0) {
 				return;
 			}
@@ -86,7 +84,6 @@ public class NodeTreeFileWriter {
 		out.writeByte(attrs.length); // assume length < 256 (128?)
 		for(val attr: attrs) {
 			writeAttrIndex(attr.attrInfo);
-			@SuppressWarnings("unchecked")
 			AttrDataEncoder<Object> attrDataEncoder = attr.attrInfo.attrDataEncoder;
 			attrDataEncoder.writeData(out, attr);
 		}
@@ -94,15 +91,12 @@ public class NodeTreeFileWriter {
 		switch(nodeType) {
 		case DIR: {
 			// write list of (incremental) child names
-			Node[] childArray = ((DirNode) node)._friend_getSortedChildArray();
-			if (childArray == null) {
-				childArray = DirNode.EMPTY_CHILD; // should not occur
-			}
-			out.write(childArray.length);
+			String[] childNames = ((DirNode) node).getSortedChildNames();
+			out.writeInt(childNames.length);
 			String currChild = "";
-			for(val child: childArray) {
-				writeIncrString(child.name, currChild);
-				currChild = child.name;
+			for(val childName: childNames) {
+				writeIncrString(childName, currChild);
+				currChild = childName;
 			}
 		} break;
 		case FILE: {
@@ -115,28 +109,14 @@ public class NodeTreeFileWriter {
 	}
 
 	protected void writeAttrIndex(AttrInfo<?> attrInfo) throws IOException {
-		val attrIndex = getOrRegisterAttrIndex(attrInfo);
-		out.write(attrIndex);
-		if (attrIndex < 0) {
-			out.writeUTF(attrInfo.name);
-		}
+		val index = attrIndexes.attrToIndex(attrInfo);
+		out.writeByte(index);
 	}
 
-	/** return index, or (-index) if newly registered */
-	protected int getOrRegisterAttrIndex(AttrInfo<?> attrInfo) {
-		val name = attrInfo.name;
-		val found = currAttrIndexes.get(name);
-		if (found != null) {
-			return found;
-		}
-		val index = ++currAttrIndexCount;
-		currAttrIndexes.put(name, index);
-		return -index;
-	}
 	
 	protected void writeIncrString(String value, String prev) throws IOException {
 		int commonLen = StringUtils.commonLen(value, prev);
-		int removeLen = value.length() - commonLen;
+		int removeLen = prev.length() - commonLen;
 		out.writeShort(removeLen);
 		String addStr = value.substring(commonLen, value.length());
 		out.writeUTF(addStr);

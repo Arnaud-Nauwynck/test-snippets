@@ -12,19 +12,18 @@ public abstract class Node {
 		FILE,
 		DIR,
 	};
-	
+
 	public static final NodeAttr[] EMPTY_ATTRS = new NodeAttr[0];
 
+	// Node parent; // implicit..
+	
 	public final String name;
 
-//	private int fileId;
-//	private int fileOffset;
-//	
-//	private int lruCount;
-//	private int lruAmortizedCount;
-//
-//	private long lastQueryTimestamp;
-//	private long lastModifTimestamp;
+	private int lruCount;
+	private int lruAmortizedCount;
+
+	private long lastQueryTimestamp;
+	private long lastModifTimestamp;
 	
 	@Getter
 	protected long creationTime;

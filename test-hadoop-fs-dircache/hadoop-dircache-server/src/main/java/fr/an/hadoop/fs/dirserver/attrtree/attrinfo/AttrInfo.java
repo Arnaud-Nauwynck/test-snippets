@@ -1,4 +1,4 @@
-package fr.an.hadoop.fs.dirserver.attrtree;
+package fr.an.hadoop.fs.dirserver.attrtree.attrinfo;
 
 import fr.an.hadoop.fs.dirserver.attrtree.encoder.AttrDataEncoder;
 
