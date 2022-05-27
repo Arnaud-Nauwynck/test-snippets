@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,28 @@ public class FileBlobStorage extends BlobStorage {
 		log.info("mkdirs " + displayName + " '" + filePath + "'");
 		val file = toFile(filePath);
 		file.mkdirs();
+	}
+
+	@Override
+	public OutputStream openWrite(String filePath, boolean append) {
+		log.info("open write " + ((append)? " append" : "") + " to " + displayName + " file '" + filePath + "'");
+		val file = toFile(filePath);
+		try {
+			return new FileOutputStream(file, append);
+		} catch(IOException ex) {
+			throw new RuntimeException("Failed to open write to file '" + filePath + "'", ex);
+		}
+	}
+
+	@Override
+	public InputStream openRead(String filePath) {
+		log.info("open read from " + displayName + " file '" + filePath + "'");
+		val file = toFile(filePath);
+		try {
+			return new FileInputStream(file);
+		} catch(IOException ex) {
+			throw new RuntimeException("Failed to open read from file '" + filePath + "'", ex);
+		}
 	}
 
 	@Override

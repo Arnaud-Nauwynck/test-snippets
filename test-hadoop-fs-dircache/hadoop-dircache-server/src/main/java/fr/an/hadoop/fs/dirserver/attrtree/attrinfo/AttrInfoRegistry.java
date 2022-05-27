@@ -3,6 +3,8 @@ package fr.an.hadoop.fs.dirserver.attrtree.attrinfo;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
+
 import lombok.val;
 
 public class AttrInfoRegistry {
@@ -27,6 +29,10 @@ public class AttrInfoRegistry {
 			throw new IllegalArgumentException("attr not found by name '" + name + "'");
 		}
 		return res;
+	}
+
+	public ImmutableMap<String,AttrInfo<Object>> getAttrs() {
+		return ImmutableMap.copyOf(attrs);
 	}
 
 }

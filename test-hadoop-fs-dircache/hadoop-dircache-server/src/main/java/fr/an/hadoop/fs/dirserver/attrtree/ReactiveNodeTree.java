@@ -1,5 +1,6 @@
 package fr.an.hadoop.fs.dirserver.attrtree;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -8,10 +9,15 @@ import java.util.Random;
 
 import com.google.common.collect.ImmutableMap;
 
+import fr.an.hadoop.fs.dirserver.attrtree.attrinfo.AttrInfo;
+import fr.an.hadoop.fs.dirserver.attrtree.attrinfo.AttrInfoIndexes;
+import fr.an.hadoop.fs.dirserver.attrtree.attrinfo.AttrInfoRegistry;
 import fr.an.hadoop.fs.dirserver.attrtree.cache.CachedNodeDataLoader;
 import fr.an.hadoop.fs.dirserver.attrtree.impl.MemCacheEvictNodeVisitor;
 import fr.an.hadoop.fs.dirserver.attrtree.impl.ResolvedNodePath;
 import fr.an.hadoop.fs.dirserver.dto.MountedDirDTO;
+import fr.an.hadoop.fs.dirserver.dto.NodeTreeConfDTO;
+import fr.an.hadoop.fs.dirserver.dto.NodeTreeConfDTO.NodeTreeMountDirConfDTO;
 import fr.an.hadoop.fs.dirserver.dto.TreePathSubscriptionId;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsData;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsDataProvider;
@@ -20,15 +26,22 @@ import fr.an.hadoop.fs.dirserver.spi.storage.BlobStorage;
 import fr.an.hadoop.fs.dirserver.util.LsUtils;
 import lombok.AllArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 
  */
+@Slf4j
 public class ReactiveNodeTree {
+
+	private static final String CONST_treeConfFile = "tree-conf.json";
 
 	private final DirNode rootNode;
 
 	private final BlobStorage blobStorage;
+
+	private final AttrInfoRegistry attrInfoRegistry;
+	private final AttrInfoIndexes attrInfoIndexes;
 	
 	private final CachedNodeDataLoader cachedNodeDataLoader;
 
@@ -78,11 +91,46 @@ public class ReactiveNodeTree {
 	
 	// ------------------------------------------------------------------------
 	
-	public ReactiveNodeTree(DirNode rootNode, BlobStorage blobStorage) {
+	public ReactiveNodeTree(DirNode rootNode, BlobStorage blobStorage,
+			AttrInfoRegistry attrInfoRegistry
+			) {
 		this.rootNode = rootNode;
 		this.blobStorage = blobStorage;
+		this.attrInfoRegistry = attrInfoRegistry;
 		
 		this.cachedNodeDataLoader = null; // TODO
+
+		if (blobStorage.exists(CONST_treeConfFile)) {
+			val conf = blobStorage.readFileJson(CONST_treeConfFile, NodeTreeConfDTO.class);
+
+			// init mounts
+			for(val mount: conf.mounts) {
+				doAddMount(mount.mountName, mount.baseUrl);
+			}
+			
+			// init attr indexes
+			List<String> indexedAttrNames = conf.indexedAttrNames;
+			List<AttrInfo<Object>> attrs = new ArrayList<>();
+			val remainAttrs = new LinkedHashMap<String,AttrInfo<Object>>(attrInfoRegistry.getAttrs());
+			for(val name: indexedAttrNames) {
+				val attr = remainAttrs.remove(name);
+				if (attr == null) {
+					log.error("Attr not found '" + name + "' !");
+					continue;
+				}
+				attrs.add(attr);
+			}
+			if (! remainAttrs.isEmpty()) {
+				attrs.addAll(remainAttrs.values()); // unecessary?
+			}
+			attrInfoIndexes = new AttrInfoIndexes(attrs);
+		} else {
+			// init mounts
+			log.info(CONST_treeConfFile + " file not found => empty mounts!");
+			// init attr indexes
+			List<AttrInfo<Object>> attrs = new ArrayList<>(attrInfoRegistry.getAttrs().values());
+			attrInfoIndexes = new AttrInfoIndexes(attrs);
+		}
 	}
 
 	// ------------------------------------------------------------------------
@@ -98,19 +146,23 @@ public class ReactiveNodeTree {
 			if (found != null) {
 				throw new IllegalArgumentException("mounted dir already found '" + name + "'");
 			}
-			String baseMountUrl = req.baseMountUrl;
-			NodeFsDataProvider fsDataProvider = nodeFsDataProviderFactory.create(baseMountUrl);
-			MountedDir mountDir = new MountedDir(name, baseMountUrl, fsDataProvider);
-
-			this.mountedDirs = ImmutableMap.<String,MountedDir>builder()
-					.putAll(mountedDirs).put(name, mountDir)
-					.build();
+			MountedDir mountDir = doAddMount(name, req.baseMountUrl);
 			// TODO notify?
 
 			saveNodeTreeConf();
 			
 			return mountDir.toDTO();
 		}
+	}
+
+	private MountedDir doAddMount(String name, String baseMountUrl) {
+		NodeFsDataProvider fsDataProvider = nodeFsDataProviderFactory.create(baseMountUrl);
+		MountedDir mountDir = new MountedDir(name, baseMountUrl, fsDataProvider);
+
+		this.mountedDirs = ImmutableMap.<String,MountedDir>builder()
+				.putAll(mountedDirs).put(name, mountDir)
+				.build();
+		return mountDir;
 	}
 
 	public MountedDirDTO removeMountedDir(String name) {
@@ -132,7 +184,14 @@ public class ReactiveNodeTree {
 
 
 	private void saveNodeTreeConf() {
+		NodeTreeConfDTO conf;
+		synchronized (lock) {
+			val mounts = LsUtils.map(mountedDirs.values(), x -> new NodeTreeMountDirConfDTO(x.name, x.baseMountUrl));
+			val attrNames = LsUtils.map(attrInfoIndexes.getIndex2Attr(), x -> x.name);
+			conf = new NodeTreeConfDTO(mounts, attrNames);
+		}
 		
+		blobStorage.writeFileJson(CONST_treeConfFile, conf);
 	}
 
 	
@@ -234,4 +293,5 @@ public class ReactiveNodeTree {
 		val visitor = new MemCacheEvictNodeVisitor(minLevelEvictDir, minLevelEvictFile, untilFreedMemSize);
 		rootNode.accept(visitor);
 	}
+
 }

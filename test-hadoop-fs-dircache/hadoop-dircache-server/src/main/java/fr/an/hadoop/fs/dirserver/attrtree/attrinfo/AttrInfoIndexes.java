@@ -33,4 +33,9 @@ public class AttrInfoIndexes {
 		return indexToAttr(index);
 	}
 
+	public ImmutableList<AttrInfo<Object>> getIndex2Attr() {
+		return index2Attr;
+	}
+	
+	
 }
