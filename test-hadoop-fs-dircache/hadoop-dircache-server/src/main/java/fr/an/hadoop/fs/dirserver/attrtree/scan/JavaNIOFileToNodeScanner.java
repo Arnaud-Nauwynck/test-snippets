@@ -16,7 +16,9 @@ import fr.an.hadoop.fs.dirserver.attrtree.FileNode;
 import fr.an.hadoop.fs.dirserver.attrtree.Node;
 import fr.an.hadoop.fs.dirserver.attrtree.NodeAttr;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class JavaNIOFileToNodeScanner {
 
 	public static Node scan(Path rootScanDir) {
@@ -60,11 +62,12 @@ public class JavaNIOFileToNodeScanner {
 		@Override
 		public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 			Node dirNode = this.currNodeDirNodeBuilder.build();
+
+			// pop and add dir to parent
 			int level = currNodeDirNodeBuilders.size() - 1;
 			currNodeDirNodeBuilders.remove(level);
 			val parentNode = currNodeDirNodeBuilders.get(level-1);
 			this.currNodeDirNodeBuilder = parentNode;
-			
 			parentNode.withChild(dirNode);
 			
 			return super.postVisitDirectory(dir, exc);
@@ -108,8 +111,8 @@ public class JavaNIOFileToNodeScanner {
 		
 		@Override
 		public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-			// TODO Auto-generated method stub
-			return super.visitFileFailed(file, exc);
+			log.error("Failed " + file, exc);
+			return FileVisitResult.CONTINUE;
 		}
 
 	}
