@@ -1,6 +1,5 @@
 package fr.an.hadoop.fs.dirserver.attrtree;
 
-import fr.an.hadoop.fs.dirserver.attrtree.Node.NodeType;
 import lombok.Getter;
 
 public class FileNode extends Node {

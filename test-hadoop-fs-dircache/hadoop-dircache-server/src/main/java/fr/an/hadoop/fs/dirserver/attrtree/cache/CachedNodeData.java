@@ -9,7 +9,13 @@ import lombok.AllArgsConstructor;
 public class CachedNodeData {
 
 	public final NodeFsData nodeFsData;
-	
+
+	public final int lruCount;
+	public final int lruAmortizedCount;
+
+	public final long lastQueryTimestamp;
+	public final long lastModifTimestamp;
+
 	public final ImmutableMap<String,CachedNodeData> nodeAttrs;
 	
 	

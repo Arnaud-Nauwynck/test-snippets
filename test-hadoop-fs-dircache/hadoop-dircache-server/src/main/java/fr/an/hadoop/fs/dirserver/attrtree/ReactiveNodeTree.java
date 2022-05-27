@@ -6,17 +6,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.hadoop.conf.Configuration;
-
 import com.google.common.collect.ImmutableMap;
 
 import fr.an.hadoop.fs.dirserver.attrtree.cache.CachedNodeDataLoader;
+import fr.an.hadoop.fs.dirserver.attrtree.impl.MemCacheEvictNodeVisitor;
+import fr.an.hadoop.fs.dirserver.attrtree.impl.ResolvedNodePath;
 import fr.an.hadoop.fs.dirserver.dto.MountedDirDTO;
+import fr.an.hadoop.fs.dirserver.dto.TreePathSubscriptionId;
+import fr.an.hadoop.fs.dirserver.fsdata.NodeFsData;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsDataProvider;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsDataProviderFactory;
+import fr.an.hadoop.fs.dirserver.spi.storage.BlobStorage;
 import fr.an.hadoop.fs.dirserver.util.LsUtils;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 /**
@@ -26,13 +28,13 @@ public class ReactiveNodeTree {
 
 	private final DirNode rootNode;
 
+	private final BlobStorage blobStorage;
+	
 	private final CachedNodeDataLoader cachedNodeDataLoader;
 
 	private NodeFsDataProviderFactory nodeFsDataProviderFactory = NodeFsDataProviderFactory.defaultInstance;
 
 	private final Object lock = new Object();
-	
-	private final Configuration hadoopConf;
 	
 	// @GuardedBy("lock")
 	private volatile ImmutableMap<String,MountedDir> mountedDirs = ImmutableMap.of();
@@ -62,7 +64,9 @@ public class ReactiveNodeTree {
 	private final Map<String,Map<TreePathSubscriptionId,TreePathSubscription>> pathSubscriptions = new HashMap<>();
 	
 	private static class TreePathSubscription {
+
 		private final TreePathSubscriptionId id;
+		
 		private final String path;
 		
 		public TreePathSubscription(TreePathSubscriptionId id, String path) {
@@ -74,9 +78,9 @@ public class ReactiveNodeTree {
 	
 	// ------------------------------------------------------------------------
 	
-	public ReactiveNodeTree(DirNode rootNode, Configuration hadoopConf) {
+	public ReactiveNodeTree(DirNode rootNode, BlobStorage blobStorage) {
 		this.rootNode = rootNode;
-		this.hadoopConf = hadoopConf;
+		this.blobStorage = blobStorage;
 		
 		this.cachedNodeDataLoader = null; // TODO
 	}
@@ -102,11 +106,12 @@ public class ReactiveNodeTree {
 					.putAll(mountedDirs).put(name, mountDir)
 					.build();
 			// TODO notify?
+
+			saveNodeTreeConf();
 			
 			return mountDir.toDTO();
 		}
 	}
-
 
 	public MountedDirDTO removeMountedDir(String name) {
 		synchronized (lock) {
@@ -119,9 +124,18 @@ public class ReactiveNodeTree {
 			// TODO cleanup? notify?
 			this.mountedDirs = ImmutableMap.copyOf(tmp);
 		
+			saveNodeTreeConf();
+			
 			return found.toDTO();
 		}
 	}
+
+
+	private void saveNodeTreeConf() {
+		
+	}
+
+	
 	
 	@AllArgsConstructor
 	protected static class ResolvedMountedPath {
@@ -209,7 +223,7 @@ public class ReactiveNodeTree {
 		
 	}
 
-	public void mergeUpdates(String path, Node node) {
+	public void mergeUpdateNodeFsData(String path, NodeFsData nodeFsData) {
 		
 	}
 	
@@ -219,67 +233,5 @@ public class ReactiveNodeTree {
 	public void memCacheEvictSomeNodes(int minLevelEvictDir, int minLevelEvictFile, long untilFreedMemSize) {
 		val visitor = new MemCacheEvictNodeVisitor(minLevelEvictDir, minLevelEvictFile, untilFreedMemSize);
 		rootNode.accept(visitor);
-	}
-	
-	@RequiredArgsConstructor
-	private static class MemCacheEvictNodeVisitor extends NodeVisitor {
-
-		private final int minLevelEvictDir;
-		private final int minLevelEvictFile;
-		private final long untilFreedMemSize;
-		
-		private int currLevel;
-		private long currFreedMemSize;
-		
-		@Override
-		public void caseFile(FileNode node) {
-			// do nothing!	
-		}
-		@Override
-		public void caseDir(DirNode node) {
-			int childCount = node.getChildCount();
-			if (childCount == 0) {
-				return;
-			}
-			currLevel++;
-			Object[] childNameOrNodeArray = node._friend_getSortedChildNameOrNodeArray();
-			for(int i = 0; i < childCount; i++) {
-				val childNameOrNode = childNameOrNodeArray[i];
-				if (childNameOrNode instanceof Node) {
-					Node childNode = (Node) childNameOrNode;
-					if (childNode instanceof DirNode) {
-						DirNode childDir = (DirNode) childNode;
-						
-						// *** recurse ***
-						childDir.accept(this);
-						
-						if (currLevel > minLevelEvictDir && currFreedMemSize < untilFreedMemSize) {
-							// cache evict child dir
-							childNameOrNodeArray[i] = null;
-							int estimateNodeMem = 120 + 50 * childNode._friend_getAttrs().length + 16 * childDir.getChildCount();
-							currFreedMemSize += estimateNodeMem;
-							if (currFreedMemSize > untilFreedMemSize) {
-								currLevel--;
-								return;
-							}
-						}
-					} else { // if (childNode instanceof FileNode) {
-						if (currLevel > minLevelEvictFile && currFreedMemSize < untilFreedMemSize) {
-							// cache evict child file
-							childNameOrNodeArray[i] = null;
-							int estimateNodeMem = 120 + 50 * childNode._friend_getAttrs().length;
-							currFreedMemSize += estimateNodeMem;
-							if (currFreedMemSize > untilFreedMemSize) {
-								currLevel--;
-								return;
-							}
-						}
-					}
-				} // else instanceof String.. nothing to do
-			}
-			currLevel--;
-
-		}
-		
 	}
 }
