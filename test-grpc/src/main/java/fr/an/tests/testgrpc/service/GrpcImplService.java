@@ -1,12 +1,19 @@
 package fr.an.tests.testgrpc.service;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.net.InetAddress;
 
 import fr.an.tests.testpgrpc.GreeterGrpc;
 import fr.an.tests.testpgrpc.HelloReply;
 import fr.an.tests.testpgrpc.HelloRequest;
 import io.grpc.stub.StreamObserver;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -21,8 +28,9 @@ public final class GrpcImplService extends GreeterGrpc.GreeterImplBase {
 		this.serverName = serverName;
 	}
 
+	
 	@Override
-	public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
+	public void sayHello_2(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
 		String reqName = req.getName();
 		log.info("sayHello req.name:" + reqName);
 		HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + reqName + ", from " + serverName).build();
@@ -31,7 +39,94 @@ public final class GrpcImplService extends GreeterGrpc.GreeterImplBase {
 		responseObserver.onNext(reply);
 		responseObserver.onCompleted();
 	}
-
+	@AllArgsConstructor
+	public static class FooDTO {
+		String message;
+	}
+	public interface FooService {
+		FooDTO saveHello(FooDTO src);
+	}
+	 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+	 @Retention(RetentionPolicy.RUNTIME)
+	 @Documented
+	 public @interface Autowired {
+	 }
+	 
+	@Autowired
+	FooService delegateXAService;
+	
+	@Override
+	public void sayHello(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
+		// Step 1/3:
+		// validity check, extract/convert gRPC Request to internal classes (internal DTO)  
+		long startTime = System.currentTimeMillis();
+		String reqName = req.getName();
+		log.info("sayHello name:" + reqName);
+		FooDTO inDto = new FooDTO(reqName);
+		
+		// Step 2/3:
+		// delegate to transactional service  (SOLID principle)
+		FooDTO tmpres = delegateXAService.saveHello(inDto);
+		
+		// Step 3/3:
+		// convert internal DTO to gRPC response, marshall response
+		long millis = System.currentTimeMillis() - startTime;
+		log.info(".. done sayHello, took " + millis);
+		HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + tmpres.message).build();
+		responseObserver.onNext(reply);
+		responseObserver.onCompleted();
+	}
+	
+	 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+	 @Retention(RetentionPolicy.RUNTIME)
+	 @Documented
+	 public @interface XXXProtocolMapping {
+		 String path();
+	 }
+	
+	 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+	 @Retention(RetentionPolicy.RUNTIME)
+	 @Documented
+	 public @interface XXXRequestBody {
+	 }
+	 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD, ElementType.ANNOTATION_TYPE})
+	 @Retention(RetentionPolicy.RUNTIME)
+	 @Documented
+	 public @interface XXXResponse {
+	 }
+	 
+	 interface XXXOutputResponse {
+		 XXXOutputResponse status(int status);
+		 XXXOutputResponse addHeader(String h, String v);
+		 XXXOutputResponse body(Object obj);
+	 }
+	 
+	@XXXProtocolMapping(path="/sayHello")
+	public void sayHello(
+			@XXXRequestBody HelloRequest req, 
+			@XXXResponse XXXOutputResponse out) {
+		// Step 1/3:
+		// validity check, extract/convert XXX Request to internal classes (internal DTO)  
+		long startTime = System.currentTimeMillis();
+		String reqName = req.getName();
+		log.info("sayHello name:" + reqName);
+		FooDTO inDto = new FooDTO(reqName);
+		
+		// Step 2/3:
+		// delegate to transactional service  (SOLID principle)
+		FooDTO tmpres = delegateXAService.saveHello(inDto);
+		
+		// Step 3/3:
+		// convert internal DTO to XXX response, marshall response
+		long millis = System.currentTimeMillis() - startTime;
+		log.info(".. done sayHello, took " + millis);
+		HelloReply reply = HelloReply.newBuilder().setMessage("Hello " + tmpres.message).build();
+		out.status(200).addHeader("header1", "value1").body(reply);
+	}
+	
+	
+	
+	
 	@Override
 	public void sayHelloOutStream(HelloRequest req, StreamObserver<HelloReply> responseObserver) {
 		String reqName = req.getName();

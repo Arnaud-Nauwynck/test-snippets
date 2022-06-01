@@ -26,7 +26,6 @@ public class PdfBookWriter {
             PdfWriter.getInstance(document, new BufferedOutputStream(new FileOutputStream(outputFile)));
             document.open();
             document.setPageCount(bookConfig.totalPageCount);
-            // document.setPageSize(new Rectangle(width, height));
             document.newPage();
             
             for(int page = 1; page <= bookConfig.totalPageCount; page++) {
@@ -35,7 +34,6 @@ public class PdfBookWriter {
                 byte[] imgBytes = FileUtils.readFileToByteArray(imageFile);
                 
                 Image img = Image.getInstance(imgBytes);
-                		// new Jpeg(imgBytes, width, height);
                 img.scaleToFit(PageSize.A4);
                 document.add(img);
                 

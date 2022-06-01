@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dao.TodoRepository;
+import com.example.demo.domain.TodoEntity;
+
 @RestController
 @RequestMapping("/api/v3/todo")
 @Transactional
@@ -59,26 +62,25 @@ public class V3TodoRestController {
 		return entity2Dto(entity);
 	}
 
-	// Orika,  MapStruct, ..
-	public static TodoDTO entity2Dto(TodoEntity src) {
+	public TodoDTO entity2Dto(TodoEntity src) {
 		TodoDTO res = new TodoDTO();
 		res.id = src.getId();
 		res.label = src.getLabel();
 		res.priority = src.getPriority();
-//		res.creationDate = src.creationDate;
+		// other fields... 
 		return res;
 	}
 
-	public static List<TodoDTO> entity2Dtos(Collection<TodoEntity> src) {
+	public TodoEntity dto2Entity(TodoDTO src) {
+		TodoEntity res = new TodoEntity();
+		res.setLabel(src.label);
+		res.setPriority(src.priority);
+		// other fields... 
+		return res;
+	}
+
+	public List<TodoDTO> entity2Dtos(Collection<TodoEntity> src) {
 		return src.stream().map(e -> entity2Dto(e)).collect(Collectors.toList());
 	}
 	
-	public static TodoEntity dto2Entity(TodoDTO src) {
-		TodoEntity res = new TodoEntity();
-		// res.id = src.id;
-		res.label = src.label;
-		res.priority = src.priority;
-		return res;
-	}
-
 }

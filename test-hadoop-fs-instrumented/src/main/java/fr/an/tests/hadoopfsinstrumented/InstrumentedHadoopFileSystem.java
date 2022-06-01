@@ -125,32 +125,6 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 		delegate.close();
 	}
 
-	// ------------------------------------------------------------------------
-
-	public Statistics getGlobalStatistics() {
-		return statistics;
-	}
-	
-	public Statistics getHadoopEntryStatistics(Path f) {
-		// TOCHANGE
-		return statistics;
-	}
-
-	protected InstrumentedFSInputStreamStats inputEntryStatsFor(Path path) {
-		// TODO
-		return inputEntryStats;
-	}
-
-	protected InstrumentedFSOutputStreamStats outputEntryStatsFor(Path path) {
-		// TODO 
-		return outputEntryStats;
-	}
-	
-	protected InstrumentedFSPathStats pathStatsFor(Path path) {
-		// TODO 
-		return fsPathStats;
-	}
-
 	// implements/overrides method wrapping delegate FsDataInputStream -> InstrumentedFSDataInputStream
 	// ------------------------------------------------------------------------
 	
@@ -165,11 +139,6 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 		// Statistics entryStatistics = getHadoopEntryStatistics(f);
 		InstrumentedFSInputStreamStats inputEntryStats = inputEntryStatsFor(f);
 		return new InstrumentedFSDataInputStream(delegateRes, f, inputEntryStats);
-	}
-
-	private Path pathForHandle(PathHandle fd) {
-		Path path = new Path("/dummyPathForHandle"); // TODO
-		return path;
 	}
 
 //	@Override
@@ -235,17 +204,6 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 	@Override
 	public FSDataOutputStreamBuilder appendFile(Path path) {
 		return createInstrumentedFsDataOutputStreamBuilder(path).append();
-	}
-
-	protected InstrumentedFSDataOutputStreamBuilder createInstrumentedFsDataOutputStreamBuilder(Path path) {
-		long startNanos = nanoTime();
-		FSDataOutputStreamBuilder<?,?> delegateRes = delegate.createFile(path);
-		long nanos = nanoTime() - startNanos;
-		InstrumentedFSPathStats stats = pathStatsFor(path);
-		stats.createStats.increment(nanos);
-		
-		InstrumentedFSOutputStreamStats outputEntryStats = outputEntryStatsFor(path);
-		return new InstrumentedFSDataOutputStreamBuilder(this, path, delegateRes, outputEntryStats);
 	}
 
 	@Override
@@ -995,4 +953,49 @@ public class InstrumentedHadoopFileSystem extends FileSystem {
 	}
 
 
+	private Path pathForHandle(PathHandle fd) {
+		Path path = new Path("/dummyPathForHandle"); // TODO
+		return path;
+	}
+
+
+	protected InstrumentedFSDataOutputStreamBuilder createInstrumentedFsDataOutputStreamBuilder(Path path) {
+		long startNanos = nanoTime();
+		FSDataOutputStreamBuilder<?,?> delegateRes = delegate.createFile(path);
+		long nanos = nanoTime() - startNanos;
+		InstrumentedFSPathStats stats = pathStatsFor(path);
+		stats.createStats.increment(nanos);
+		
+		InstrumentedFSOutputStreamStats outputEntryStats = outputEntryStatsFor(path);
+		return new InstrumentedFSDataOutputStreamBuilder(this, path, delegateRes, outputEntryStats);
+	}
+
+
+	// ------------------------------------------------------------------------
+
+	public Statistics getGlobalStatistics() {
+		return statistics;
+	}
+	
+	public Statistics getHadoopEntryStatistics(Path f) {
+		// TOCHANGE
+		return statistics;
+	}
+
+	protected InstrumentedFSInputStreamStats inputEntryStatsFor(Path path) {
+		// TODO
+		return inputEntryStats;
+	}
+
+	protected InstrumentedFSOutputStreamStats outputEntryStatsFor(Path path) {
+		// TODO 
+		return outputEntryStats;
+	}
+	
+	protected InstrumentedFSPathStats pathStatsFor(Path path) {
+		// TODO 
+		return fsPathStats;
+	}
+
+	
 }

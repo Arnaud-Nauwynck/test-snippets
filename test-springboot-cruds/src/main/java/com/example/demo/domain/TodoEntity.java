@@ -1,22 +1,20 @@
-package com.example.demo.rest;
+package com.example.demo.domain;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-/**
- * DTO = Data Transfer Object
- */
-@Entity
-@Data
+@Entity 
+@Getter @Setter
 public class TodoEntity {
 	@Id @GeneratedValue
 	private int id;
 	
-	String label;
+	private String label;
 	private String creationDate;
-	int priority;
+	private int priority;
 	
 }

@@ -16,7 +16,7 @@ service Greeter {
   // send 1 request => receive * responses stream
   rpc SayHello_OutStream (HelloRequest) returns (stream HelloReply);
 
-  // send * request stream => 1 response  (wait 5 request, then respond)
+  // send * request stream => 1 response  (wait X request, then respond)
   rpc SayHello_InStream (stream HelloRequest) returns (HelloReply);
 
   // send * request stream => receive * responses stream
@@ -31,3 +31,20 @@ message HelloRequest {
 message HelloReply {
   string message = 1;
 }
+
+
+message HelloMessage {
+
+  string  fieldString1  = 1;
+
+  int32   fieldInt2     = 2;
+  int64   fieldLong3    = 3;
+
+  float   fieldFloat4   = 4;
+  double  fieldDouble5  = 5;
+
+  bool    fieldBool6    = 6;
+
+}
+
+

@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.example.demo.badmerge.BadMergeReferenceEntity;
+import com.example.demo.badmerge.BadMergeSourceDTO;
+
 import ma.glasnost.orika.MapperFacade;
 import ma.glasnost.orika.MapperFactory;
 import ma.glasnost.orika.impl.DefaultMapperFactory;
@@ -24,6 +27,10 @@ public class DtoConverter {
 	
 	public <S, D> List<D> mapAsList(Iterable<S> source, Class<D> destinationClass) {
 		return mapper.mapAsList(source, destinationClass);
+	}
+
+	public <S, D> void map(S source, D dest) {
+		mapper.map(source, dest);
 	}
 	
 }

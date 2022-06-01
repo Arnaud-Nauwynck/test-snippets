@@ -1,0 +1,95 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>fr.an.tests</groupId>
+  <artifactId>test-tensorflow-core-java</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+
+    <name>Test TensorFlow-core Java</name>
+    <description>Test TensorFlow-core Java</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+
+        <tensorflow-core.version>0.4.0</tensorflow-core.version>
+<!-- 
+        <tensorflow-core.version>0.3.3</tensorflow-core.version>
+ -->        
+        
+        <javacpp.platform.extension></javacpp.platform.extension>
+        <!-- 
+        <javacpp.platform.extension>gpu</javacpp.platform.extension>
+        -->
+        
+        <exec.mainClass>fr.an.tests.tensorflow.HelloTensorFlowJava</exec.mainClass>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.1.5.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+		<!-- Include TensorFlow (pure CPU only) for all supported platforms -->
+		<dependency>
+		  <groupId>org.tensorflow</groupId>
+		  <artifactId>tensorflow-core-api</artifactId>
+		  <version>${tensorflow-core.version}</version>
+		</dependency>
+
+		<dependency>
+		  <groupId>org.tensorflow</groupId>
+		  <artifactId>tensorflow-core-platform</artifactId>
+		  <version>${tensorflow-core.version}</version>
+		</dependency>
+
+<!-- 
+		<dependency>
+		  <groupId>org.tensorflow</groupId>
+		  <artifactId>tensorflow-core-api</artifactId>
+		  <version>${tensorflow-core.version}</version>
+		  <classifier>windows-x86_64${javacpp.platform.extension}</classifier>
+		</dependency>
+ -->
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

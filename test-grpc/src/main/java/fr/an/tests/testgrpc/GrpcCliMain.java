@@ -1,9 +1,11 @@
 package fr.an.tests.testgrpc;
 
 import java.util.Iterator;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.salesforce.grpc.contrib.MoreFutures;
 
 import fr.an.tests.testpgrpc.GreeterGrpc;
 import fr.an.tests.testpgrpc.HelloReply;
@@ -60,14 +62,22 @@ public class GrpcCliMain {
 
 	public void sayHello_blockingStub() throws Exception {
 		HelloRequest helloReq = HelloRequest.newBuilder().setName("you").build();
+		
 		HelloReply reply = blockingStub.sayHello(helloReq);
+		
 		log.info("sayHello => " + reply.getMessage());
 	}
 
 	public void sayHello_asyncStub_get() throws Exception {
 		HelloRequest helloReq = HelloRequest.newBuilder().setName("you").build();
-		ListenableFuture<HelloReply> respFuture = asyncStub.sayHello(helloReq);
-		HelloReply reply = respFuture.get();
+		ListenableFuture<HelloReply> respListenableFuture = asyncStub.sayHello(helloReq);
+		
+		// wrap in java.util.CompletableFuture, use .thenApply(), thenCombine(), ...  
+		CompletableFuture<HelloReply> completableFuture = MoreFutures.toCompletableFuture(respListenableFuture);
+		CompletableFuture<HelloReply> resFuture = completableFuture// .thenCombine(..) // combine with other futures
+			.thenApply(x -> x); // transform when ready
+		
+		HelloReply reply = resFuture.get(); // (generally don't do that) async to blocking!
 		log.info("sayHello (async block) => " + reply.getMessage());
 	}
 
@@ -75,18 +85,15 @@ public class GrpcCliMain {
 		HelloRequest helloReq = HelloRequest.newBuilder().setName("you").build();
 		CountDownLatch latch = new CountDownLatch(1);
 		stub.sayHello(helloReq, new StreamObserver<HelloReply>() {
-
 			@Override
 			public void onNext(HelloReply reply) {
 				log.info("sayHello .. response => " + reply.getMessage());
 			}
-			
 			@Override
 			public void onCompleted() {
 				log.info("sayHello .. onComplete");
 				latch.countDown();
 			}
-
 			@Override
 			public void onError(Throwable t) {
 				log.info("sayHello .. onError", t);

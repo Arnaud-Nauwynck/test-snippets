@@ -1,6 +1,7 @@
 package fr.an.tests.mergesortpriorityqueue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -17,65 +18,71 @@ public class AppMain {
 	}
 
 	public void run(String[] args) {
-		int sortedListCount = 100;
-		int listLen = 100;
+		int sortedListCount = 10;
+		int listLen = 100_000;
 		int stringLen = 8;
 		
 		System.out.println("generate random strings List List, sort sub list");
-		List<List<String>> sortedFragList = new ArrayList<>();
+		List<String[]> sortedFragList = new ArrayList<>();
 		for (int i = 0; i < sortedListCount; i++) {
-			sortedFragList.add(generateRandomSortedList(listLen, stringLen));
+			String prefix = createRandomString(3);
+			List<String> ls = generateRandomSortedList(listLen, stringLen, prefix);
+			sortedFragList.add(ls.toArray(new String[ls.size()]));
 		}
 		System.out.println("done generated + pre sort sub lists");
 		
-		List<List<String>> copySortedFragList = new ArrayList<>();
-		List<String> copyAllList = new ArrayList<>();
-		for(val src: sortedFragList) {
-			copySortedFragList.add(new ArrayList<>(src));
-			copyAllList.addAll(src);
-		}
-		
-		long startMergeNanos = System.nanoTime();
-		List<String> mergeSortList = mergeSort(sortedFragList);
-		long nanosMerge = System.nanoTime() - startMergeNanos;
-		
-		long startSortAllNanos = System.nanoTime();
-		copyAllList.sort(Comparator.naturalOrder());
-		long nanosSortAll = System.nanoTime() - startSortAllNanos;
-		// check equals
-		int totalLen = copyAllList.size();
-		for(int i = 0; i < totalLen; i++) {
-			if (! mergeSortList.get(i).equals(copyAllList.get(i))) {
-				throw new IllegalStateException("SHOULD NOT OCCUR");
+		for(int repeat = 0; repeat < 50; repeat++) {
+			List<String> copyAllList = new ArrayList<>();
+			for(val src: sortedFragList) {
+				copyAllList.addAll(Arrays.asList(src));
 			}
+			
+			long startMergeNanos = System.nanoTime();
+			List<String> mergeSortList = mergeSort(sortedFragList);
+			long nanosMerge = System.nanoTime() - startMergeNanos;
+			
+			long startSortAllNanos = System.nanoTime();
+			copyAllList.sort(Comparator.naturalOrder());
+			long nanosSortAll = System.nanoTime() - startSortAllNanos;
+
+			// check equals
+			int totalLen = copyAllList.size();
+			for(int i = 0; i < totalLen; i++) {
+				if (! mergeSortList.get(i).equals(copyAllList.get(i))) {
+					throw new IllegalStateException("SHOULD NOT OCCUR");
+				}
+			}
+			System.out.println("finish sortMerge: " + (nanosMerge/1000) + " 탎, sortAll: " + (nanosSortAll/1000) + " 탎");
 		}
-		System.out.println("finish sortMerge:" + (nanosMerge/1000) + " 탎, sortAll:" + (nanosSortAll/1000) + " 탎");
 	}
 
-	private static class RemainSortedFrag {
-		List<String> sortedFrag;
+	private static final class RemainSortedFrag {
+		final String[] sortedFrag;
 		int fromIndex;
 		
-		public RemainSortedFrag(List<String> sortedFrag) {
+		public RemainSortedFrag(String[] sortedFrag) {
 			this.sortedFrag = sortedFrag;
 		}
 
 		String first() {
-			return sortedFrag.get(fromIndex);
+			return sortedFrag[fromIndex];
 		}
 		void incrAndAddTo(List<String> res, int toPos) {
-			res.addAll(sortedFrag.subList(fromIndex, toPos));
+			// res.addAll(sortedFrag.subList(fromIndex, toPos));
+			for(int i = fromIndex; i < toPos; i++) {
+				res.add(sortedFrag[i]);
+			}
 			fromIndex = toPos;
 		}
 		boolean isEmpty() {
-			return fromIndex >= sortedFrag.size();
+			return fromIndex >= sortedFrag.length;
 		}
 	}
 
-	private List<String> mergeSort(List<List<String>> sortedFragList) {
+	private List<String> mergeSort(List<String[]> sortedFragList) {
 		int totalLen = 0;
 		for(val ls : sortedFragList) {
-			totalLen += ls.size(); 
+			totalLen += ls.length; 
 		}
 		List<String> res = new ArrayList<>(totalLen);
 		
@@ -88,12 +95,12 @@ public class AppMain {
 		for(;;) {
 			RemainSortedFrag nextFrag = remainFragSortedByFirst.poll();
 			if (nextFrag == null) {
-				currFrag.incrAndAddTo(res, currFrag.sortedFrag.size());
+				currFrag.incrAndAddTo(res, currFrag.sortedFrag.length);
 				break;
 			}
 			String nextFragFirst = nextFrag.first();
 			// find max position in currFrag (<= nextFragFirst)
-			int foundPos = binarySearch(currFrag.sortedFrag, currFrag.fromIndex, currFrag.sortedFrag.size(), nextFragFirst);
+			int foundPos = Arrays.binarySearch(currFrag.sortedFrag, currFrag.fromIndex, currFrag.sortedFrag.length, nextFragFirst);
 			// assert foundPos != 0; 
 			if (foundPos >= 0) {
 				// found duplicate elt?
@@ -121,37 +128,13 @@ public class AppMain {
 		
 	}
 
-	// Copy&Paste from java.util.Arrays
-	private static int binarySearch(List<String> a, int fromIndex, int toIndex, String key) {
-		return binarySearch0(a, fromIndex, toIndex, key);
-	}
-
-	// idem java.util.Arrays.binarySearch()
-	private static int binarySearch0(List<String> a, int fromIndex, int toIndex, String key) {
-		int low = fromIndex;
-		int high = toIndex - 1;
-	
-		while (low <= high) {
-			int mid = (low + high) >>> 1;
-			String midVal = a.get(mid);
-	
-			int comp = midVal.compareTo(key);
-			if (comp < 0)
-				low = mid + 1;
-			else if (comp > 0)
-				high = mid - 1;
-			else
-				return mid; // key found
-		}
-		return -(low + 1); // key not found.
-	}
 
 
-	private List<String> generateRandomSortedList(int listLen, int stringLen) {
+	private List<String> generateRandomSortedList(int listLen, int stringLen, String prefix) {
 		List<String> ls = new ArrayList<>(listLen);
 		for (int j = 0; j < listLen; j++) {
 			String randString = createRandomString(20);
-			ls.add(randString);
+			ls.add(prefix + randString);
 		}
 		ls.sort(Comparator.naturalOrder());
 		return ls;

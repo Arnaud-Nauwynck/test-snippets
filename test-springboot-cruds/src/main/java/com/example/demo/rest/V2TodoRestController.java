@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dao.TodoRepository;
+import com.example.demo.domain.TodoEntity;
+
 @RestController
 @RequestMapping("/api/v2/todo")
 @Transactional
@@ -38,8 +41,8 @@ public class V2TodoRestController {
 	public TodoEntity putTodo(@RequestBody TodoEntity req) {
 		System.out.println("called http PUT /api/todo");
 		TodoEntity entity = repository.getById(req.getId());
-		entity.setLabel(req.label);
-		entity.setPriority(req.priority);
+		entity.setLabel(req.getLabel());
+		entity.setPriority(req.getPriority());
 		return entity;
 	}
 
