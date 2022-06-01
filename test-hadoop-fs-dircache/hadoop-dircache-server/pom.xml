@@ -17,7 +17,14 @@
 		    <groupId>fr.an.hadoop.fs</groupId>
 			<artifactId>test-hadoop-dircache-api</artifactId>
 		</dependency>
-		    
+
+		<dependency>
+		    <groupId>fr.an.attrtreestore</groupId>
+			<artifactId>attributed-tree-store-core</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+
+
     	<dependency>
 		  <groupId>org.springframework.boot</groupId>
 		  <artifactId>spring-boot-starter-web</artifactId>

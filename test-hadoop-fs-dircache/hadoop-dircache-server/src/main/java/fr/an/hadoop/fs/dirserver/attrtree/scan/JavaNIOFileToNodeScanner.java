@@ -10,11 +10,10 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.util.ArrayList;
 import java.util.List;
 
+import fr.an.attrtreestore.api.NodeAttr;
 import fr.an.hadoop.fs.dirserver.attrtree.DirNode;
 import fr.an.hadoop.fs.dirserver.attrtree.DirNode.DirNodeBuilder;
 import fr.an.hadoop.fs.dirserver.attrtree.FileNode;
-import fr.an.hadoop.fs.dirserver.attrtree.Node;
-import fr.an.hadoop.fs.dirserver.attrtree.NodeAttr;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +29,7 @@ public class JavaNIOFileToNodeScanner {
 		}
 		// tocheck root != parent
 		DirNode parentNode = parentNodeBuilder.build();
-		return parentNode.getSortedChildNodes()[0];
+		return (Node) parentNode._friend_getSortedEntries()[0];
 	}
 	
 	

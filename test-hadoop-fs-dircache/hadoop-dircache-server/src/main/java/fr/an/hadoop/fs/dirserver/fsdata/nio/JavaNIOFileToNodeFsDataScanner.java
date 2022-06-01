@@ -9,12 +9,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
+import fr.an.hadoop.fs.dirserver.fsdata.DirEntryNameAndType;
 import fr.an.hadoop.fs.dirserver.fsdata.FsNodeDataEntryCallback;
+import fr.an.hadoop.fs.dirserver.fsdata.FsNodeType;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsData;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsData.DirNodeFsData;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsData.FileNodeFsData;
@@ -41,7 +42,7 @@ public class JavaNIOFileToNodeFsDataScanner {
 		private final long creationTime;
 		private final long lastModifiedTime;
 		private final ImmutableMap<String,Object> extraFsAttrs;
-		TreeSet<String> childNames = new TreeSet<>();
+		private final TreeMap<String,DirEntryNameAndType> childEntries = new TreeMap<String,DirEntryNameAndType>();
 	}
 	
 	protected static class JavaNIOToNodeFsDataFileVisitor extends SimpleFileVisitor<Path> {
@@ -83,7 +84,7 @@ public class JavaNIOFileToNodeFsDataScanner {
 		public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 			DirNodeFsData dirNode = new DirNodeFsData(currDirBuilder.name, 
 					currDirBuilder.creationTime, currDirBuilder.lastModifiedTime, currDirBuilder.extraFsAttrs,
-					ImmutableSet.copyOf(currDirBuilder.childNames));
+					currDirBuilder.childEntries);
 			callback.handle(currDirBuilder.path, dirNode);
 			
 			// pop and add dir to parent
@@ -92,7 +93,7 @@ public class JavaNIOFileToNodeFsDataScanner {
 			
 			val parentNode = currDirBuilderStack.get(level-1);
 			this.currDirBuilder = parentNode;
-			parentNode.childNames.add(dirNode.name);
+			parentNode.childEntries.put(dirNode.name, new DirEntryNameAndType(dirNode.name, FsNodeType.DIR));
 			
 			return super.postVisitDirectory(dir, exc);
 		}
@@ -131,7 +132,7 @@ public class JavaNIOFileToNodeFsDataScanner {
 //		    Set<PosixFilePermission> permissions();
 			}
 			
-			this.currDirBuilder.childNames.add(name);
+			this.currDirBuilder.childEntries.put(name, new DirEntryNameAndType(name, FsNodeType.FILE));
 
 			return FileVisitResult.CONTINUE;
 		}

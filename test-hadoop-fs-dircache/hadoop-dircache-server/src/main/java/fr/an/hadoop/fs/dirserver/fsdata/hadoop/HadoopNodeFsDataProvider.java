@@ -2,14 +2,16 @@ package fr.an.hadoop.fs.dirserver.fsdata.hadoop;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.TreeMap;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
+import fr.an.hadoop.fs.dirserver.fsdata.DirEntryNameAndType;
+import fr.an.hadoop.fs.dirserver.fsdata.FsNodeType;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsData;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsData.DirNodeFsData;
 import fr.an.hadoop.fs.dirserver.fsdata.NodeFsData.FileNodeFsData;
@@ -68,11 +70,13 @@ public class HadoopNodeFsDataProvider extends NodeFsDataProvider {
 		if (hadoopFileStatus.isDirectory()) {
 			// also query child files
 			FileStatus[] hadoopChildLs = fsListStatus(hadoopPath);
-			val child = ImmutableSet.<String>builder();
+			val childEntriesBuilder = new TreeMap<String,DirEntryNameAndType>();
 			for(val hadoopChild: hadoopChildLs) {
-				child.add(hadoopChild.getPath().getName());
+				val childName = hadoopChild.getPath().getName();
+				val childType = hadoopChild.isDirectory()? FsNodeType.DIR : FsNodeType.FILE;
+				childEntriesBuilder.put(childName, new DirEntryNameAndType(childName, childType));
 			}
-			res = new DirNodeFsData(name, creationTime, lastModifiedTime, extraFsAttrs, child.build());
+			res = new DirNodeFsData(name, creationTime, lastModifiedTime, extraFsAttrs, childEntriesBuilder);
 		} else if (hadoopFileStatus.isFile()) {
 			long fileLength = hadoopFileStatus.getLen();
 			res = new FileNodeFsData(name, creationTime, lastModifiedTime, extraFsAttrs, fileLength);

@@ -2,7 +2,6 @@ package fr.an.hadoop.fs.dirserver.attrtree.impl;
 
 import fr.an.hadoop.fs.dirserver.attrtree.DirNode;
 import fr.an.hadoop.fs.dirserver.attrtree.FileNode;
-import fr.an.hadoop.fs.dirserver.attrtree.Node;
 import fr.an.hadoop.fs.dirserver.attrtree.NodeVisitor;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -28,9 +27,9 @@ public class MemCacheEvictNodeVisitor extends NodeVisitor {
 			return;
 		}
 		currLevel++;
-		Object[] childNameOrNodeArray = node._friend_getSortedChildNameOrNodeArray();
+		Object[] childEntry = node._friend_getSortedEntries();
 		for(int i = 0; i < childCount; i++) {
-			val childNameOrNode = childNameOrNodeArray[i];
+			val childNameOrNode = childEntry[i];
 			if (childNameOrNode instanceof Node) {
 				Node childNode = (Node) childNameOrNode;
 				if (childNode instanceof DirNode) {
@@ -41,7 +40,7 @@ public class MemCacheEvictNodeVisitor extends NodeVisitor {
 					
 					if (currLevel > minLevelEvictDir && currFreedMemSize < untilFreedMemSize) {
 						// cache evict child dir
-						childNameOrNodeArray[i] = null;
+						childEntry[i] = null;
 						int estimateNodeMem = 120 + 50 * childNode._friend_getAttrs().length + 16 * childDir.getChildCount();
 						currFreedMemSize += estimateNodeMem;
 						if (currFreedMemSize > untilFreedMemSize) {
@@ -52,7 +51,7 @@ public class MemCacheEvictNodeVisitor extends NodeVisitor {
 				} else { // if (childNode instanceof FileNode) {
 					if (currLevel > minLevelEvictFile && currFreedMemSize < untilFreedMemSize) {
 						// cache evict child file
-						childNameOrNodeArray[i] = null;
+						childEntry[i] = null;
 						int estimateNodeMem = 120 + 50 * childNode._friend_getAttrs().length;
 						currFreedMemSize += estimateNodeMem;
 						if (currFreedMemSize > untilFreedMemSize) {

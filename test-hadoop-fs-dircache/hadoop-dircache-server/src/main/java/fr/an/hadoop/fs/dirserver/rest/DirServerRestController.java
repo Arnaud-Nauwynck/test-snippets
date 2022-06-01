@@ -1,11 +1,7 @@
 package fr.an.hadoop.fs.dirserver.rest;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,12 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import fr.an.hadoop.fs.dirserver.api.converter.HadoopFsDTOConverter;
-import fr.an.hadoop.fs.dirserver.dto.FileStatusDTO;
 import fr.an.hadoop.fs.dirserver.dto.MountedDirDTO;
-import fr.an.hadoop.fs.dirserver.dto.NotifyCreateDTO;
-import fr.an.hadoop.fs.dirserver.dto.NotifyDeleteDTO;
-import fr.an.hadoop.fs.dirserver.dto.NotifyRenameDTO;
 import fr.an.hadoop.fs.dirserver.service.DirService;
 
 @RequestMapping(path="/api/fs")

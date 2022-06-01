@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import fr.an.hadoop.fs.dirserver.attrtree.Node;
-import fr.an.hadoop.fs.dirserver.attrtree.attrinfo.AttrInfoIndexes;
-import fr.an.hadoop.fs.dirserver.attrtree.attrinfo.AttrInfoRegistry;
+import fr.an.attrtreestore.api.attrinfo.AttrInfoRegistry;
+import fr.an.attrtreestore.storage.AttrInfoIndexes;
+import fr.an.hadoop.fs.dirserver.attrtree.cache.CachedNodeDataLoader;
 import fr.an.hadoop.fs.dirserver.attrtree.encoder.NodeTreeFileReader.ReadNodeEntry;
 import fr.an.hadoop.fs.dirserver.attrtree.scan.CountNodeVisitor;
 import fr.an.hadoop.fs.dirserver.attrtree.scan.JavaNIOFileToNodeScanner;
@@ -45,7 +45,8 @@ public class NodeTreeFileWriterTest {
 	}
 
 	private void countNodes(Node rootNode) {
-		val counter = new CountNodeVisitor();
+		CachedNodeDataLoader cachedNodeDataLoader = null ; // ?
+		val counter = new CountNodeVisitor(cachedNodeDataLoader);
 		rootNode.accept(counter);
 		val countFile = counter.getCountFile();
 		val countDir = counter.getCountDir();
@@ -59,7 +60,8 @@ public class NodeTreeFileWriterTest {
 		long filePos;
 		val startMillis = System.currentTimeMillis();
 		try (val out = new FileOutputStream(outputFile)) {
-			val writer = new NodeTreeFileWriter(attrIndexes, out, 0);
+			CachedNodeDataLoader cachedNodeDataLoader = null; // ?
+			val writer = new NodeTreeFileWriter(cachedNodeDataLoader, attrIndexes, out, 0);
 
 			writer.writeRecursiveNode("", rootNode);
 			writer.flush();
@@ -141,7 +143,8 @@ public class NodeTreeFileWriterTest {
 		val heapAfter = memBean.getHeapMemoryUsage().getUsed();
 		val usedMem = heapAfter - heapBefore;
 
-		val counter = new CountNodeVisitor();
+		CachedNodeDataLoader cachedNodeDataLoader = null ; // ?
+		val counter = new CountNodeVisitor(cachedNodeDataLoader);
 		rootNode.accept(counter);
 		val countFile = counter.getCountFile();
 		val countDir = counter.getCountDir();

@@ -1,7 +1,8 @@
 package fr.an.hadoop.fs.dirserver.fsdata;
 
+import java.util.TreeMap;
+
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 import lombok.Getter;
 
@@ -58,12 +59,13 @@ public abstract class NodeFsData {
 	@Getter
 	public static class DirNodeFsData extends NodeFsData {
 		
-		public final ImmutableSet<String> childNames;
+		// (may be immutable) ensured sorted + unique per name 
+		public final TreeMap<String,DirEntryNameAndType> childEntries;
 
 		public DirNodeFsData(String name, long creationTime, long lastModifiedTime, ImmutableMap<String,Object> extraFsAttrs, //
-				ImmutableSet<String> childNames) {
+				TreeMap<String,DirEntryNameAndType> childEntries) {
 			super(name, creationTime, lastModifiedTime, extraFsAttrs);
-			this.childNames = childNames;
+			this.childEntries = childEntries;
 		}
 		
 		@Override
