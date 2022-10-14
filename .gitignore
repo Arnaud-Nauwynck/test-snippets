@@ -4,4 +4,5 @@ target
 .settings
 .factorypath
 hs_err*.log
+~$*
 
