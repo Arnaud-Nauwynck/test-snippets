@@ -28,6 +28,8 @@ public class InstrumentedFSDataInputStream extends FSDataInputStream {
 	@Getter
 	private final InstrumentedFSInputStreamStats stats;
 	
+	private List<RangeReadOp>
+	
 	// --------------------------------------------------------------------------------------------
 
 	public InstrumentedFSDataInputStream(FSDataInputStream delegate, Path path, InstrumentedFSInputStreamStats stats) {

@@ -128,7 +128,7 @@ public class FooRestController {
 	public FooResponse getFooSlow() {
 		log.info("getFooSlow()");
 		sleep(10000);
-		return new FooResponse("hello", 123);
+		return new FooResponse("hello", 123, EnumStatus.OK);
 	}
 
 	@GetMapping("/getFoo401")

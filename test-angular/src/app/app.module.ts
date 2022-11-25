@@ -11,6 +11,7 @@ import { AppComponent } from './app.component';
 import { BottomPanelComponent } from './bottompanel.component';
 
 import { ApiModule } from './swagger-generated/api.module';
+import { RentService } from './rent-service.service';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,10 @@ import { ApiModule } from './swagger-generated/api.module';
     NgbModule,
     ApiModule
   ],
-  providers: [],
+  providers: [
+	RentService
+	
+],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
