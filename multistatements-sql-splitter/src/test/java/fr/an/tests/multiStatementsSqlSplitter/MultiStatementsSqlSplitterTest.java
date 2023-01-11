@@ -70,4 +70,47 @@ public class MultiStatementsSqlSplitterTest {
 				+ "stmt2-line1\n" //
 				+ "stmt2-line2\n", stmt2.text);
 	}
+	
+	@Test
+	public void testSplit_simpleQuote() {
+		String text = "stmt1-line1 ';' \n" // in simple-quote.. no split
+				+ "stmt1-line2\n" //
+				+ ";\n" // <= split
+				+ "stmt2-line1\n" //
+				+ "stmt2-line2\n"
+				;
+		val res = MultiStatementsSqlSplitter.splitSemiColon(text);
+		Assert.assertEquals(2, res.size());
+		val stmt1 = res.get(0);
+		val stmt2 = res.get(1);
+		Assert.assertEquals(1, stmt1.lineNumber);
+		Assert.assertEquals("stmt1-line1 ';' \n" // in simple-quote.. no split
+				+ "stmt1-line2\n", stmt1.text);
+		Assert.assertEquals(3, stmt2.lineNumber);
+		Assert.assertEquals("\n" // <= split
+				+ "stmt2-line1\n" //
+				+ "stmt2-line2\n", stmt2.text);
+	}
+	
+	@Test
+	public void testSplit_doubleQuote() {
+		String text = "stmt1-line1 \";;;\" \n" // in double-quote.. no split
+				+ "stmt1-line2\n" //
+				+ ";\n" // <= split
+				+ "stmt2-line1\n" //
+				+ "stmt2-line2\n"
+				;
+		val res = MultiStatementsSqlSplitter.splitSemiColon(text);
+		Assert.assertEquals(2, res.size());
+		val stmt1 = res.get(0);
+		val stmt2 = res.get(1);
+		Assert.assertEquals(1, stmt1.lineNumber);
+		Assert.assertEquals("stmt1-line1 \";;;\" \n" // in double-quote.. no split
+				+ "stmt1-line2\n", stmt1.text);
+		Assert.assertEquals(3, stmt2.lineNumber);
+		Assert.assertEquals("\n" // <= split
+				+ "stmt2-line1\n" //
+				+ "stmt2-line2\n", stmt2.text);
+	}
+	
 }
