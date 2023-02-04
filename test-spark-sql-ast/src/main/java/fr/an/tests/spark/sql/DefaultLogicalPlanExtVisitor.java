@@ -118,297 +118,7 @@ import org.apache.spark.sql.execution.streaming.continuous.WriteToContinuousData
 import org.apache.spark.sql.execution.streaming.sources.MemoryPlan;
 import org.apache.spark.sql.execution.streaming.sources.WriteToMicroBatchDataSource;
 
-import lombok.val;
-import scala.Option;
-import scala.collection.Seq;
-
-public abstract class LogicalPlanExtVisitor<T> {
-
-	@SuppressWarnings("deprecation")
-	public T accept(LogicalPlan p) {
-		if (p == null) {
-			return null;
-		}
-		if (p instanceof UnaryNode) { 
-			// return switchUnaryNode((UnaryNode) p); 
-			// import?? UnresolvedTVFAliases
-			if (p instanceof UnresolvedSubqueryColumnAliases) {
-				return caseUnresolvedSubqueryColumnAliases((UnresolvedSubqueryColumnAliases) p);
-			} else if (p instanceof UnresolvedHaving) {
-				return caseUnresolvedHaving((UnresolvedHaving) p);
-			} else if (p instanceof ReturnAnswer) {
-				return caseReturnAnswer((ReturnAnswer) p);
-			} else if (p instanceof Generate) {
-				return caseGenerate((Generate) p);
-			} else if (p instanceof InsertIntoDir) {
-				return caseInsertIntoDir((InsertIntoDir) p);
-			} else if (p instanceof View) {
-				return caseView((View) p);
-			} else if (p instanceof UnresolvedWith) {
-				return caseUnresolvedWith((UnresolvedWith) p);
-			} else if (p instanceof CTERelationDef) {
-				return caseCTERelationDef((CTERelationDef) p);
-			} else if (p instanceof WithWindowDefinition) {
-				return caseWithWindowDefinition((WithWindowDefinition) p);
-			} else if (p instanceof Aggregate) {
-				return caseAggregate((Aggregate) p);
-			} else if (p instanceof Window) {
-				return caseWindow((Window) p);
-			} else if (p instanceof Expand) {
-				return caseExpand((Expand) p);
-			} else if (p instanceof Pivot) {
-				return casePivot((Pivot) p);
-			// import??
-//			} else if (p instanceof Unpivot) {
-//				return caseUnpivot((Unpivot) p);
-			} else if (p instanceof GlobalLimit) {
-				return caseGlobalLimit((GlobalLimit) p);
-			} else if (p instanceof Sample) {
-				return caseSample((Sample) p);
-			} else if (p instanceof Distinct) {
-				return caseDistinct((Distinct) p);
-			} else if (p instanceof Repartition) {
-				return caseRepartition((Repartition) p);
-			} else if (p instanceof RepartitionByExpression) {
-				return caseRepartitionByExpression((RepartitionByExpression) p);
-			} else if (p instanceof RebalancePartitions) {
-				return caseRebalancePartitions((RebalancePartitions) p);
-			} else if (p instanceof Deduplicate) {
-				return caseDeduplicate((Deduplicate) p);
-			} else if (p instanceof CollectMetrics) {
-				return caseCollectMetrics((CollectMetrics) p);
-			} else if (p instanceof DomainJoin) {
-				return caseDomainJoin((DomainJoin) p);
-			} else if (p instanceof LateralJoin) {
-				return caseLateralJoin((LateralJoin) p);
-			} else if (p instanceof EventTimeWatermark) {
-				return caseEventTimeWatermark((EventTimeWatermark) p);
-			} else if (p instanceof UnresolvedHint) {
-				return caseUnresolvedHint((UnresolvedHint) p);
-			} else if (p instanceof ResolvedHint) {
-				return caseResolvedHint((ResolvedHint) p);
-			} else if (p instanceof OrderPreservingUnaryNode) {
-				if (p instanceof Filter) {
-					return caseFilter((Filter) p);
-				} else if (p instanceof LocalLimit) {
-					return caseLocalLimit((LocalLimit) p);
-				} else if (p instanceof Project) {
-					return caseProject((Project) p);
-				} else if (p instanceof Subquery) {
-					return caseSubquery((Subquery) p);
-				} else if (p instanceof SubqueryAlias) {
-					return caseSubqueryAlias((SubqueryAlias) p);
-				} else if (p instanceof Tail) {
-					return caseTail((Tail) p);
-				} else {
-					// should not occur
-					return caseOrderPreservingUnaryNode((OrderPreservingUnaryNode) p);
-				}
-			} else if (p instanceof ObjectConsumer) {
-				return caseObjectConsumer((ObjectConsumer) p);
-			} else if (p instanceof DeserializeToObject) {
-				return caseDeserializeToObject((DeserializeToObject) p);
-			} else if (p instanceof MapPartitionsInRWithArrow) {
-				return caseMapPartitionsInRWithArrow((MapPartitionsInRWithArrow) p);
-			} else if (p instanceof TypedFilter) {
-				return caseTypedFilter((TypedFilter) p);
-			} else if (p instanceof AppendColumns) {
-				return caseAppendColumns((AppendColumns) p);
-			} else if (p instanceof MapGroups) {
-				return caseMapGroups((MapGroups) p);
-			} else if (p instanceof FlatMapGroupsInR) {
-				return caseFlatMapGroupsInR((FlatMapGroupsInR) p);
-			} else if (p instanceof FlatMapGroupsInRWithArrow) {
-				return caseFlatMapGroupsInRWithArrow((FlatMapGroupsInRWithArrow) p);
-			} else if (p instanceof FlatMapGroupsInPandas) {
-				return caseFlatMapGroupsInPandas((FlatMapGroupsInPandas) p);
-			} else if (p instanceof MapInPandas) {
-				return caseMapInPandas((MapInPandas) p);
-			} else if (p instanceof PythonMapInArrow) {
-				return casePythonMapInArrow((PythonMapInArrow) p);
-//			// import?
-//			} else if (p instanceof FlatMapGroupsInPandasWithState) {
-//				return caseFlatMapGroupsInPandasWithState((FlatMapGroupsInPandasWithState) p);
-			} else if (p instanceof BaseEvalPython) {
-				return caseBaseEvalPython((BaseEvalPython) p);
-			} else if (p instanceof AttachDistributedSequence) {
-				return caseAttachDistributedSequence((AttachDistributedSequence) p);
-			} else if (p instanceof ScriptTransformation) {
-				return caseScriptTransformation((ScriptTransformation) p);
-			} else if (p instanceof WriteToStream) {
-				return caseWriteToStream((WriteToStream) p);
-			} else if (p instanceof WriteToStreamStatement) {
-				return caseWriteToStreamStatement((WriteToStreamStatement) p);
-			} else if (p instanceof WriteToDataSourceV2) {
-				return caseWriteToDataSourceV2((WriteToDataSourceV2) p);
-			// import?
-//			} else if (p instanceof WriteFiles) {
-//				return caseWriteFiles((WriteFiles) p);
-			} else if (p instanceof WriteToContinuousDataSource) {
-				return caseWriteToContinuousDataSource((WriteToContinuousDataSource) p);
-			} else if (p instanceof WriteToMicroBatchDataSource) {
-				return caseWriteToMicroBatchDataSource((WriteToMicroBatchDataSource) p);
-			// import?
-//			} else if (p instanceof WriteToMicroBatchDataSourceV1) {
-//				return caseWriteToMicroBatchDataSourceV1((WriteToMicroBatchDataSourceV1) p);
-			} else {
-				// should not occur
-				return caseUnaryNode((UnaryNode) p);
-			}
-		
-		} else if (p instanceof BinaryNode) {
-			// BinaryNode
-			if (p instanceof OrderedJoin) {
-				return caseOrderedJoin((OrderedJoin) p);
-			} else if (p instanceof SetOperation) {
-				if (p instanceof Except) {
-					return caseExcept((Except) p);
-				} else if (p instanceof Intersect) {
-					return caseIntersect((Intersect) p);
-				} else {
-					// should not occur 
-					return caseSetOperation((SetOperation) p);
-				}
-			} else if (p instanceof Join) {
-				return caseJoin((Join) p);
-			} else if (p instanceof AsOfJoin) {
-				return caseAsOfJoin((AsOfJoin) p);
-			} else if (p instanceof FlatMapGroupsWithState) {
-				return caseFlatMapGroupsWithState((FlatMapGroupsWithState) p);
-			} else if (p instanceof CoGroup) {
-				return caseCoGroup((CoGroup) p);
-			} else if (p instanceof FlatMapCoGroupsInPandas) {
-				return caseFlatMapCoGroupsInPandas((FlatMapCoGroupsInPandas) p);
-			} else {
-				// should not occur
-				return caseBinaryNode((BinaryNode) p); 
-			}
-		} else if (p instanceof LeafNode) { 
-			// LeafNode
-			if (p instanceof RelationTimeTravel) {
-				return caseRelationTimeTravel((RelationTimeTravel) p);
-			} else if (p instanceof UnresolvedRelation) {
-				return caseUnresolvedRelation((UnresolvedRelation) p);
-			} else if (p instanceof UnresolvedInlineTable) {
-				return caseUnresolvedInlineTable((UnresolvedInlineTable) p);
-			} else if (p instanceof UnresolvedTableValuedFunction) {
-				return caseUnresolvedTableValuedFunction((UnresolvedTableValuedFunction) p);
-			} else if (p instanceof UnresolvedNamespace) {
-				return caseUnresolvedNamespace((UnresolvedNamespace) p);
-			} else if (p instanceof UnresolvedTable) {
-				return caseUnresolvedTable((UnresolvedTable) p);
-			} else if (p instanceof UnresolvedView) {
-				return caseUnresolvedView((UnresolvedView) p);
-			} else if (p instanceof UnresolvedTableOrView) {
-				return caseUnresolvedTableOrView((UnresolvedTableOrView) p);
-			} else if (p instanceof UnresolvedFunc) {
-				return caseUnresolvedFunc((UnresolvedFunc) p);
-			} else if (p instanceof UnresolvedDBObjectName) {
-				return caseUnresolvedDBObjectName((UnresolvedDBObjectName) p);
-			} else if (p instanceof LeafNodeWithoutStats) {
-				return caseLeafNodeWithoutStats((LeafNodeWithoutStats) p);
-			} else if (p instanceof ResolvedNamespace) {
-				return caseResolvedNamespace((ResolvedNamespace) p);
-			} else if (p instanceof ResolvedTable) {
-				return caseResolvedTable((ResolvedTable) p);
-			} else if (p instanceof ResolvedView) {
-				return caseResolvedView((ResolvedView) p);
-			} else if (p instanceof ResolvedPersistentFunc) {
-				return caseResolvedPersistentFunc((ResolvedPersistentFunc) p);
-			} else if (p instanceof ResolvedNonPersistentFunc) {
-				return caseResolvedNonPersistentFunc((ResolvedNonPersistentFunc) p);
-			} else if (p instanceof ResolvedDBObjectName) {
-				return caseResolvedDBObjectName((ResolvedDBObjectName) p);
-			} else if (p instanceof UnresolvedCatalogRelation) {
-				return caseUnresolvedCatalogRelation((UnresolvedCatalogRelation) p);
-			} else if (p instanceof TemporaryViewRelation) {
-				return caseTemporaryViewRelation((TemporaryViewRelation) p);
-			} else if (p instanceof HiveTableRelation) {
-				return caseHiveTableRelation((HiveTableRelation) p);
-			} else if (p instanceof DummyExpressionHolder) {
-				return caseDummyExpressionHolder((DummyExpressionHolder) p);
-			} else if (p instanceof CTERelationRef) {
-				return caseCTERelationRef((CTERelationRef) p);
-			} else if (p instanceof Range) {
-				return caseRange((Range) p);
-			} else if (p instanceof OneRowRelation) {
-				return caseOneRowRelation((OneRowRelation) p);
-			} else if (p instanceof LocalRelation) {
-				return caseLocalRelation((LocalRelation) p);
-			} else if (p instanceof StreamingRelationV2) {
-				return caseStreamingRelationV2((StreamingRelationV2) p);
-			} else if (p instanceof DataSourceV2Relation) {
-				return caseDataSourceV2Relation((DataSourceV2Relation) p);
-			} else if (p instanceof DataSourceV2ScanRelation) {
-				return caseDataSourceV2ScanRelation((DataSourceV2ScanRelation) p);
-			} else if (p instanceof StreamingDataSourceV2Relation) {
-				return caseStreamingDataSourceV2Relation((StreamingDataSourceV2Relation) p);
-			} else if (p instanceof CommandResult) {
-				return caseCommandResult((CommandResult) p);
-			} else if (p instanceof LogicalQueryStage) {
-				return caseLogicalQueryStage((LogicalQueryStage) p);
-			} else if (p instanceof LogicalRelation) {
-				return caseLogicalRelation((LogicalRelation) p);
-			} else if (p instanceof ScanBuilderHolder) {
-				return caseScanBuilderHolder((ScanBuilderHolder) p);
-			} else if (p instanceof ExternalRDD) {
-				return caseExternalRDD((ExternalRDD<?>) p);
-			} else if (p instanceof LogicalRDD) {
-				return caseLogicalRDD((LogicalRDD) p);
-			} else if (p instanceof OffsetHolder) {
-				return caseOffsetHolder((OffsetHolder) p);
-			} else if (p instanceof MemoryPlan) {
-				return caseMemoryPlan((MemoryPlan) p);
-			} else if (p instanceof StreamingRelation) {
-				return caseStreamingRelation((StreamingRelation) p);
-			} else if (p instanceof StreamingExecutionRelation) {
-				return caseStreamingExecutionRelation((StreamingExecutionRelation) p);
-			} else {
-				// should not occur
-				return caseLeafNode((LeafNode) p);
-			}
-		} else if (p instanceof NamedRelation) { 
-			return caseNamedRelation((NamedRelation) p); 
-		} else if (p instanceof Union) {
-			return caseUnion((Union) p);
-		} else if (p instanceof WithCTE) {
-			return caseWithCTE((WithCTE) p);
-		} else if (p instanceof InsertIntoStatement) {
-			return caseInsertIntoStatement((InsertIntoStatement) p);
-		} else if (p instanceof CreateTable) {
-			return caseCreateTable((CreateTable) p);
-		} else if (p instanceof ParsedStatement) {
-			if (p instanceof InsertIntoStatement) {
-				return caseInsertIntoStatement((InsertIntoStatement) p);
-			} else {
-				// should not occur
-				return caseParsedStatement((ParsedStatement) p);
-			}
-		} else {
-			// should not occur
-			return caseLogicalPlan(p);
-		}
-	}
-
-	public void acceptSeq(Seq<? extends LogicalPlan> ls) {
-		if (ls != null) {
-			for(val e: ScalaToJavaUtils.toJavaList(ls)) {
-				accept(e);
-			}
-		}
-	}
-	
-	public T acceptOpt(Option<LogicalPlan> p) {
-		if (p == null) {
-			return null;
-		}
-		if (p.isDefined()) {
-			return accept(p.get());
-		} else {
-			return null;
-		}
-	}
-	
+public abstract class DefaultLogicalPlanExtVisitor<T> extends LogicalPlanExtVisitor<T> {
 	
 	/**
 	 * direct sub-clasess of LogicalPlan:
@@ -434,31 +144,45 @@ public abstract class LogicalPlanExtVisitor<T> {
      * 
      * </PRE>
 	 */
-	public abstract T caseLogicalPlan(LogicalPlan p);
+	public T caseLogicalPlan(LogicalPlan p) {
+		return null;
+	}
 
 	/**
 	 * (interface)
 	 */
-	public abstract T caseNamedRelation(NamedRelation p);
+	public T caseNamedRelation(NamedRelation p) {
+		return null;
+	}
 
-	public abstract T caseUnion(Union p);
+	public T caseUnion(Union p) {
+		return caseLogicalPlan(p);
+	}
 
-	public abstract T caseWithCTE(WithCTE p);
-
-	/**
-	 * (interface)
-	 */
-	public abstract T caseSupportsSubquery(SupportsSubquery p);
-
-	/**
-	 * (interface)
-	 */
-	public abstract T caseCommand(Command p);
+	public T caseWithCTE(WithCTE p) {
+		return caseLogicalPlan(p);
+	}
 
 	/**
 	 * (interface)
 	 */
-	public abstract T caseIgnoreCachedData(IgnoreCachedData p);
+	public T caseSupportsSubquery(SupportsSubquery p) {
+		return null;
+	}
+
+	/**
+	 * (interface)
+	 */
+	public T caseCommand(Command p) {
+		return null;
+	}
+
+	/**
+	 * (interface)
+	 */
+	public T caseIgnoreCachedData(IgnoreCachedData p) {
+		return null;
+	}
 
 	/**
 	 * direct sub-classes:
@@ -505,7 +229,9 @@ public abstract class LogicalPlanExtVisitor<T> {
      * core/src/main/scala/org/apache/spark/sql/execution/streaming/StreamingRelation.scala:  extends LeafNode with MultiInstanceRelation {
 	 * </PRE>
 	 */
-	public abstract T caseLeafNode(LeafNode p);
+	public T caseLeafNode(LeafNode p) {
+		return null;
+	}
 
 	/**
 	 * direct sub-classes:
@@ -563,7 +289,9 @@ public abstract class LogicalPlanExtVisitor<T> {
      * core/src/main/scala/org/apache/spark/sql/execution/streaming/sources/WriteToMicroBatchDataSourceV1.scala:  extends UnaryNode {
 	 * </PRE>
 	 */
-	public abstract T caseUnaryNode(UnaryNode p);
+	public T caseUnaryNode(UnaryNode p) {
+		return null;
+	}
 
 	/**
 	 * direct sub-classes
@@ -577,13 +305,19 @@ public abstract class LogicalPlanExtVisitor<T> {
      * catalyst/src/main/scala/org/apache/spark/sql/catalyst/plans/logical/pythonLogicalOperators.scala:    right: LogicalPlan) extends BinaryNode {
 	 * </PRE>
 	 */
-	public abstract T caseBinaryNode(BinaryNode p);
+	public T caseBinaryNode(BinaryNode p) {
+		return null;
+	}
 
 	/** interface */
-	public abstract T caseExposesMetadataColumns(ExposesMetadataColumns p);
+	public T caseExposesMetadataColumns(ExposesMetadataColumns p) {
+		return null;
+	}
 
 	/** interface */
-	public abstract T caseObjectProducer(ObjectProducer p);
+	public T caseObjectProducer(ObjectProducer p) {
+		return null;
+	}
 	
 	/**
 	 * sub-classes
@@ -591,139 +325,257 @@ public abstract class LogicalPlanExtVisitor<T> {
 	 * InsertIntoStatement
 	 * </PRE>
 	 */
-	public abstract T caseParsedStatement(ParsedStatement p);
+	public T caseParsedStatement(ParsedStatement p) {
+		return caseLogicalPlan(p);
+	}
 	
-	public abstract T caseInsertIntoStatement(InsertIntoStatement p);
+	public T caseInsertIntoStatement(InsertIntoStatement p) {
+		return caseParsedStatement(p);
+	}
 	
 	/** interface */
-	public abstract T caseV2CreateTablePlan(V2CreateTablePlan p);
+	public T caseV2CreateTablePlan(V2CreateTablePlan p) {
+		return null;
+	}
 	
-	public abstract T caseCreateTable(CreateTable p);
+	public T caseCreateTable(CreateTable p) {
+		return null;
+	}
 
 	// sub-classes of LeafNode
 	// ------------------------------------------------------------------------
 	
-	public abstract T caseRelationTimeTravel(RelationTimeTravel p);
+	public T caseRelationTimeTravel(RelationTimeTravel p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedRelation(UnresolvedRelation p);
+	public T caseUnresolvedRelation(UnresolvedRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedInlineTable(UnresolvedInlineTable p);
+	public T caseUnresolvedInlineTable(UnresolvedInlineTable p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedTableValuedFunction(UnresolvedTableValuedFunction p);
+	public T caseUnresolvedTableValuedFunction(UnresolvedTableValuedFunction p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedNamespace(UnresolvedNamespace p);
+	public T caseUnresolvedNamespace(UnresolvedNamespace p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedTable(UnresolvedTable p);
+	public T caseUnresolvedTable(UnresolvedTable p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedView(UnresolvedView p);
+	public T caseUnresolvedView(UnresolvedView p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedTableOrView(UnresolvedTableOrView p);
+	public T caseUnresolvedTableOrView(UnresolvedTableOrView p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedFunc(UnresolvedFunc p);
+	public T caseUnresolvedFunc(UnresolvedFunc p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedDBObjectName(UnresolvedDBObjectName p);
+	public T caseUnresolvedDBObjectName(UnresolvedDBObjectName p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseLeafNodeWithoutStats(LeafNodeWithoutStats p);
+	public T caseLeafNodeWithoutStats(LeafNodeWithoutStats p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseResolvedNamespace(ResolvedNamespace p);
+	public T caseResolvedNamespace(ResolvedNamespace p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseResolvedTable(ResolvedTable p);
+	public T caseResolvedTable(ResolvedTable p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseResolvedView(ResolvedView p);
+	public T caseResolvedView(ResolvedView p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseResolvedPersistentFunc(ResolvedPersistentFunc p);
+	public T caseResolvedPersistentFunc(ResolvedPersistentFunc p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseResolvedNonPersistentFunc(ResolvedNonPersistentFunc p);
+	public T caseResolvedNonPersistentFunc(ResolvedNonPersistentFunc p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseResolvedDBObjectName(ResolvedDBObjectName p);
+	public T caseResolvedDBObjectName(ResolvedDBObjectName p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseUnresolvedCatalogRelation(UnresolvedCatalogRelation p);
+	public T caseUnresolvedCatalogRelation(UnresolvedCatalogRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseTemporaryViewRelation(TemporaryViewRelation p);
+	public T caseTemporaryViewRelation(TemporaryViewRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseHiveTableRelation(HiveTableRelation p);
+	public T caseHiveTableRelation(HiveTableRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseDummyExpressionHolder(DummyExpressionHolder p);
+	public T caseDummyExpressionHolder(DummyExpressionHolder p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseCTERelationRef(CTERelationRef p);
+	public T caseCTERelationRef(CTERelationRef p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseRange(Range p);
+	public T caseRange(Range p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseOneRowRelation(OneRowRelation p);
+	public T caseOneRowRelation(OneRowRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseLocalRelation(LocalRelation p);
+	public T caseLocalRelation(LocalRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseStreamingRelationV2(StreamingRelationV2 p);
+	public T caseStreamingRelationV2(StreamingRelationV2 p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseDataSourceV2Relation(DataSourceV2Relation p);
+	public T caseDataSourceV2Relation(DataSourceV2Relation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseDataSourceV2ScanRelation(DataSourceV2ScanRelation p);
+	public T caseDataSourceV2ScanRelation(DataSourceV2ScanRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseStreamingDataSourceV2Relation(StreamingDataSourceV2Relation p);
+	public T caseStreamingDataSourceV2Relation(StreamingDataSourceV2Relation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseCommandResult(CommandResult p);
+	public T caseCommandResult(CommandResult p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseLogicalQueryStage(LogicalQueryStage p);
+	public T caseLogicalQueryStage(LogicalQueryStage p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseLogicalRelation(LogicalRelation p);
+	public T caseLogicalRelation(LogicalRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseScanBuilderHolder(ScanBuilderHolder p);
+	public T caseScanBuilderHolder(ScanBuilderHolder p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseExternalRDD(ExternalRDD p);
+	public T caseExternalRDD(ExternalRDD p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseLogicalRDD(LogicalRDD p);
+	public T caseLogicalRDD(LogicalRDD p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseOffsetHolder(OffsetHolder p);
+	public T caseOffsetHolder(OffsetHolder p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseMemoryPlan(MemoryPlan p);
+	public T caseMemoryPlan(MemoryPlan p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseStreamingRelation(StreamingRelation p);
+	public T caseStreamingRelation(StreamingRelation p) {
+		return caseLeafNode(p);
+	}
 
-	public abstract T caseStreamingExecutionRelation(StreamingExecutionRelation p);
+	public T caseStreamingExecutionRelation(StreamingExecutionRelation p) {
+		return caseLeafNode(p);
+	}
 
 	// UnaryNode sub-classes
 	// ------------------------------------------------------------------------
 
 	// import??
-//	public abstract T caseUnresolvedTVFAliases(UnresolvedTVFAliases p) {
+//	public T caseUnresolvedTVFAliases(UnresolvedTVFAliases p) {
 //		return caseUnaryNode(p);
 //	}
-	public abstract T caseUnresolvedSubqueryColumnAliases(UnresolvedSubqueryColumnAliases p);
+	public T caseUnresolvedSubqueryColumnAliases(UnresolvedSubqueryColumnAliases p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseUnresolvedHaving(UnresolvedHaving p);
+	public T caseUnresolvedHaving(UnresolvedHaving p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseReturnAnswer(ReturnAnswer p);
+	public T caseReturnAnswer(ReturnAnswer p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseGenerate(Generate p);
+	public T caseGenerate(Generate p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseInsertIntoDir(InsertIntoDir p);
+	public T caseInsertIntoDir(InsertIntoDir p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseView(View p);
+	public T caseView(View p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseUnresolvedWith(UnresolvedWith p);
+	public T caseUnresolvedWith(UnresolvedWith p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseCTERelationDef(CTERelationDef p);
+	public T caseCTERelationDef(CTERelationDef p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseWithWindowDefinition(WithWindowDefinition p);
+	public T caseWithWindowDefinition(WithWindowDefinition p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseAggregate(Aggregate p);
+	public T caseAggregate(Aggregate p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseWindow(Window p);
+	public T caseWindow(Window p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseExpand(Expand p);
+	public T caseExpand(Expand p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T casePivot(Pivot p);
+	public T casePivot(Pivot p) {
+		return caseUnaryNode(p);
+	}
 
 	// import??
-//	public abstract T caseUnpivot(Unpivot p) {
+//	public T caseUnpivot(Unpivot p) {
 //		return caseUnaryNode(p);
 //	}
 
-	public abstract T caseGlobalLimit(GlobalLimit p);
+	public T caseGlobalLimit(GlobalLimit p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseSample(Sample p);
+	public T caseSample(Sample p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseDistinct(Distinct p);
+	public T caseDistinct(Distinct p) {
+		return caseUnaryNode(p);
+	}
 
 	/**
 	 * direct-sub-classes:
@@ -732,27 +584,49 @@ public abstract class LogicalPlanExtVisitor<T> {
 	 * RepartitionByExpression
 	 * </PRE>
 	 */
-	public abstract T caseRepartitionOperation(RepartitionOperation p);
+	public T caseRepartitionOperation(RepartitionOperation p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseRepartition(Repartition p);
+	public T caseRepartition(Repartition p) {
+		return caseRepartitionOperation(p);
+	}
 
-	public abstract T caseRepartitionByExpression(RepartitionByExpression p);
+	public T caseRepartitionByExpression(RepartitionByExpression p) {
+		return caseRepartitionOperation(p);
+	}
 
-	public abstract T caseRebalancePartitions(RebalancePartitions p);
+	public T caseRebalancePartitions(RebalancePartitions p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseDeduplicate(Deduplicate p);
+	public T caseDeduplicate(Deduplicate p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseCollectMetrics(CollectMetrics p);
+	public T caseCollectMetrics(CollectMetrics p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseDomainJoin(DomainJoin p);
+	public T caseDomainJoin(DomainJoin p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseLateralJoin(LateralJoin p);
+	public T caseLateralJoin(LateralJoin p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseEventTimeWatermark(EventTimeWatermark p);
+	public T caseEventTimeWatermark(EventTimeWatermark p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseUnresolvedHint(UnresolvedHint p);
+	public T caseUnresolvedHint(UnresolvedHint p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseResolvedHint(ResolvedHint p);
+	public T caseResolvedHint(ResolvedHint p) {
+		return caseUnaryNode(p);
+	}
 
 	/**
 	 * TODO direct-sub-classes:
@@ -765,78 +639,133 @@ public abstract class LogicalPlanExtVisitor<T> {
 	 * Tail
 	 * </PRE>
 	 */
-	public abstract T caseOrderPreservingUnaryNode(OrderPreservingUnaryNode p);
+	public T caseOrderPreservingUnaryNode(OrderPreservingUnaryNode p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseFilter(Filter p);
+	public T caseFilter(Filter p) {
+		return caseOrderPreservingUnaryNode(p);
+	}
 
-	public abstract T caseLocalLimit(LocalLimit p);
+	public T caseLocalLimit(LocalLimit p) {
+		return caseOrderPreservingUnaryNode(p);
+	}
 
-	public abstract T caseProject(Project p);
+	public T caseProject(Project p) {
+		return caseOrderPreservingUnaryNode(p);
+	}
 
-	public abstract T caseSubquery(Subquery p);
+	public T caseSubquery(Subquery p) {
+		return caseOrderPreservingUnaryNode(p);
+	}
 
-	public abstract T caseSubqueryAlias(SubqueryAlias p);
+	public T caseSubqueryAlias(SubqueryAlias p) {
+		return caseOrderPreservingUnaryNode(p);
+	}
 
-	public abstract T caseTail(Tail p);
+	public T caseTail(Tail p) {
+		return caseOrderPreservingUnaryNode(p);
+	}
 
-	public abstract T caseObjectConsumer(ObjectConsumer p);
+	
+	public T caseObjectConsumer(ObjectConsumer p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseDeserializeToObject(DeserializeToObject p);
+	public T caseDeserializeToObject(DeserializeToObject p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseMapPartitionsInRWithArrow(MapPartitionsInRWithArrow p);
+	public T caseMapPartitionsInRWithArrow(MapPartitionsInRWithArrow p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseTypedFilter(TypedFilter p);
+	public T caseTypedFilter(TypedFilter p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseAppendColumns(AppendColumns p);
+	public T caseAppendColumns(AppendColumns p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseMapGroups(MapGroups p);
+	public T caseMapGroups(MapGroups p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseFlatMapGroupsInR(FlatMapGroupsInR p);
+	public T caseFlatMapGroupsInR(FlatMapGroupsInR p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseFlatMapGroupsInRWithArrow(FlatMapGroupsInRWithArrow p);
+	public T caseFlatMapGroupsInRWithArrow(FlatMapGroupsInRWithArrow p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseFlatMapGroupsInPandas(FlatMapGroupsInPandas p);
+	public T caseFlatMapGroupsInPandas(FlatMapGroupsInPandas p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseMapInPandas(MapInPandas p);
+	public T caseMapInPandas(MapInPandas p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T casePythonMapInArrow(PythonMapInArrow p);
+	public T casePythonMapInArrow(PythonMapInArrow p) {
+		return caseUnaryNode(p);
+	}
 
 //	// import?
-//	public abstract T caseFlatMapGroupsInPandasWithState(FlatMapGroupsInPandasWithState p) {
+//	public T caseFlatMapGroupsInPandasWithState(FlatMapGroupsInPandasWithState p) {
 //		return caseUnaryNode(p);
 //	}
 
-	public abstract T caseBaseEvalPython(BaseEvalPython p);
+	public T caseBaseEvalPython(BaseEvalPython p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseAttachDistributedSequence(AttachDistributedSequence p);
+	public T caseAttachDistributedSequence(AttachDistributedSequence p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseScriptTransformation(ScriptTransformation p);
+	public T caseScriptTransformation(ScriptTransformation p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseWriteToStream(WriteToStream p);
+	public T caseWriteToStream(WriteToStream p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseWriteToStreamStatement(WriteToStreamStatement p);
+	public T caseWriteToStreamStatement(WriteToStreamStatement p) {
+		return caseUnaryNode(p);
+	}
 
 	// @deprecated
-	public abstract T caseWriteToDataSourceV2(WriteToDataSourceV2 p);
+	public T caseWriteToDataSourceV2(WriteToDataSourceV2 p) {
+		return caseUnaryNode(p);
+	}
 
 	// import?
-//	public abstract T caseWriteFiles(WriteFiles p) {
+//	public T caseWriteFiles(WriteFiles p) {
 //		return caseUnaryNode(p);
 //	}
 
-	public abstract T caseWriteToContinuousDataSource(WriteToContinuousDataSource p);
+	public T caseWriteToContinuousDataSource(WriteToContinuousDataSource p) {
+		return caseUnaryNode(p);
+	}
 
-	public abstract T caseWriteToMicroBatchDataSource(WriteToMicroBatchDataSource p);
+	public T caseWriteToMicroBatchDataSource(WriteToMicroBatchDataSource p) {
+		return caseUnaryNode(p);
+	}
 
 	// import?
-//	public abstract T caseWriteToMicroBatchDataSourceV1(WriteToMicroBatchDataSourceV1 p) {
+//	public T caseWriteToMicroBatchDataSourceV1(WriteToMicroBatchDataSourceV1 p) {
 //		return caseUnaryNode(p);
 //	}
 
 	// BinaryNode sub-classes
 	// ------------------------------------------------------------------------
 		
-	public abstract T caseOrderedJoin(OrderedJoin p);
+	public T caseOrderedJoin(OrderedJoin p) {
+		return caseBinaryNode(p);
+	}
 	
 	/** abstract, sub-classes:
 	 * <PRE>
@@ -844,20 +773,36 @@ public abstract class LogicalPlanExtVisitor<T> {
 	 * Intersect
 	 * </PRE>
 	 */
-	public abstract T caseSetOperation(SetOperation p);
+	public T caseSetOperation(SetOperation p) {
+		return caseBinaryNode(p);
+	}
 
-	public abstract T caseExcept(Except p);
+	public T caseExcept(Except p) {
+		return caseSetOperation(p);
+	}
 
-	public abstract T caseIntersect(Intersect p);
+	public T caseIntersect(Intersect p) {
+		return caseSetOperation(p);
+	}
 
-	public abstract T caseJoin(Join p);
+	public T caseJoin(Join p) {
+		return caseBinaryNode(p);
+	}
 	
-	public abstract T caseAsOfJoin(AsOfJoin p);
+	public T caseAsOfJoin(AsOfJoin p) {
+		return caseBinaryNode(p);
+	}
 
-	public abstract T caseFlatMapGroupsWithState(FlatMapGroupsWithState p);
+	public T caseFlatMapGroupsWithState(FlatMapGroupsWithState p) {
+		return caseBinaryNode(p);
+	}
 	
-	public abstract T caseCoGroup(CoGroup p);
+	public T caseCoGroup(CoGroup p) {
+		return caseBinaryNode(p);
+	}
 
-	public abstract T caseFlatMapCoGroupsInPandas(FlatMapCoGroupsInPandas p);
+	public T caseFlatMapCoGroupsInPandas(FlatMapCoGroupsInPandas p) {
+		return caseBinaryNode(p);
+	}
 	
 }
