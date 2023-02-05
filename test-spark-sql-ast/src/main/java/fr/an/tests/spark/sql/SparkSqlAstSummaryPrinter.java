@@ -1,8 +1,11 @@
 package fr.an.tests.spark.sql;
 
+import static fr.an.tests.spark.sql.ScalaToJavaUtils.toJavaList;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import org.apache.spark.sql.catalyst.FunctionIdentifier;
 import org.apache.spark.sql.catalyst.analysis.NamedRelation;
 import org.apache.spark.sql.catalyst.analysis.RelationTimeTravel;
 import org.apache.spark.sql.catalyst.analysis.ResolvedDBObjectName;
@@ -79,7 +82,6 @@ import org.apache.spark.sql.catalyst.plans.logical.ResolvedHint;
 import org.apache.spark.sql.catalyst.plans.logical.ReturnAnswer;
 import org.apache.spark.sql.catalyst.plans.logical.Sample;
 import org.apache.spark.sql.catalyst.plans.logical.ScriptTransformation;
-import org.apache.spark.sql.catalyst.plans.logical.SetOperation;
 import org.apache.spark.sql.catalyst.plans.logical.Subquery;
 import org.apache.spark.sql.catalyst.plans.logical.SubqueryAlias;
 import org.apache.spark.sql.catalyst.plans.logical.Tail;
@@ -110,9 +112,8 @@ import org.apache.spark.sql.execution.streaming.StreamingRelation;
 import org.apache.spark.sql.execution.streaming.continuous.WriteToContinuousDataSource;
 import org.apache.spark.sql.execution.streaming.sources.MemoryPlan;
 import org.apache.spark.sql.execution.streaming.sources.WriteToMicroBatchDataSource;
-import lombok.val;
 
-import static fr.an.tests.spark.sql.ScalaToJavaUtils.*;
+import lombok.val;
 
 public class SparkSqlAstSummaryPrinter<Void> extends DefaultLogicalPlanExtVisitor<Void> {
 
@@ -254,7 +255,15 @@ public class SparkSqlAstSummaryPrinter<Void> extends DefaultLogicalPlanExtVisito
 
 	@Override
 	public Void caseCreateTable(CreateTable p) {
-		return unknown(p);
+		val tableDesc = p.tableDesc();
+		// val mode = p.mode();
+		val query = p.query();
+		print("CREATE TABLE ");
+		val tableId = tableDesc.identifier();
+		print(tableId.identifier());
+		print(" ");
+		acceptOpt(query);
+		return null;
 	}
 
 	// sub-classes of LeafNode
@@ -275,12 +284,23 @@ public class SparkSqlAstSummaryPrinter<Void> extends DefaultLogicalPlanExtVisito
 
 	@Override
 	public Void caseUnresolvedInlineTable(UnresolvedInlineTable p) {
-		return unknown(p);
+		val names = toJavaList(p.names());
+		// rows: Seq[Seq[Expression]]
+		print(String.join(".", names));
+		return null;
 	}
 
 	@Override
 	public Void caseUnresolvedTableValuedFunction(UnresolvedTableValuedFunction p) {
-		return unknown(p);
+		FunctionIdentifier name = p.name(); // FunctionIdentifier,
+	    // val functionArgs = toJavaList(p.functionArgs());
+	    // val outputNames = toJavaList(p.outputNames());
+	    val database = name.database();
+	    if (database.isDefined()) {
+	    	print(database.get() + ".");
+	    }
+	    print(name.funcName());
+		return null;
 	}
 
 	@Override
@@ -779,19 +799,6 @@ public class SparkSqlAstSummaryPrinter<Void> extends DefaultLogicalPlanExtVisito
 
 	@Override
 	public Void caseOrderedJoin(OrderedJoin p) {
-		return unknown(p);
-	}
-
-	/**
-	 * abstract, sub-classes:
-	 * 
-	 * <PRE>
-	 * Except
-	 * Intersect
-	 * </PRE>
-	 */
-	@Override
-	public Void caseSetOperation(SetOperation p) {
 		return unknown(p);
 	}
 
