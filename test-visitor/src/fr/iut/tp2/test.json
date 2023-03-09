@@ -1,0 +1,8 @@
+{
+  "a": null,
+  "b": true,
+  "c": 3.1415,
+  "d": "hello",
+  "e": [ null, "hello"],
+  "f": { "a": null, "b": {} }
+}
