@@ -3,6 +3,11 @@ target
 .classpath
 .settings
 .factorypath
+
+.idea/
+*.iml
+
+
 hs_err*.log
 ~$*
 
