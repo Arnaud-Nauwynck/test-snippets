@@ -9,9 +9,13 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
+import { ParquetColumnChunkMetaDataDTO } from './parquetColumnChunkMetaDataDTO';
 
-export interface ParquetAesGcmV1 { 
-    aadPrefix?: Array<string>;
-    aadFileUnique?: Array<string>;
-    supplyAadPrefix?: boolean;
+export interface ParquetBlockMetadataDTO { 
+    columns?: Array<ParquetColumnChunkMetaDataDTO>;
+    rowCount?: number;
+    totalByteSize?: number;
+    path?: string;
+    ordinal?: number;
+    rowIndexOffset?: number;
 }

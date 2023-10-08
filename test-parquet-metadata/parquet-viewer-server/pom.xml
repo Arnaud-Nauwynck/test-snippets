@@ -42,18 +42,20 @@
 	      	<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-client</artifactId>
 	    </dependency>
-    
-    	<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>2.9.2</version>
-		</dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+		<!--
 		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>2.9.2</version>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.7.0</version>
 		</dependency>
-    
+        -->
+
     
 	</dependencies>
 
@@ -71,11 +73,10 @@
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>io.swagger</groupId>
+						<groupId>io.swagger.codegen.v3</groupId>
 						<artifactId>swagger-codegen-maven-plugin</artifactId>
-						<version>${swagger-codegen.version}</version>
 						<configuration>
-							<inputSpec>http://localhost:8080/v2/api-docs</inputSpec>
+							<inputSpec>http://localhost:8080/v3/api-docs</inputSpec>
 							<language>typescript-angular</language>
 							<output>${basedir}/target/generated-typescript-angular7</output>
 							<configOptions>

@@ -367,6 +367,9 @@ public class ParquetDTOConverter {
 	}
 
 	private ParquetEncodingStatsDTO toEncodingStatDTO(EncodingStats src) {
+		if (src == null) {
+			return null;
+		}
 		Map</*Encoding*/String, Number> dictStats = new LinkedHashMap<>();
 		for(val enc : src.getDictionaryEncodings()) {
 			dictStats.put(enc.name(), src.getNumDictionaryPagesEncodedAs(enc));

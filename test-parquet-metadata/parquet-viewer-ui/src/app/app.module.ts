@@ -30,9 +30,7 @@ let apiConfiguration = new Configuration({
     AppRoutingModule,
     FormsModule, ReactiveFormsModule,
  	NgbModule,
-    AgGridModule.withComponents([
-		ButtonRendererComponent
-	]),
+    AgGridModule,
 	ApiModule.forRoot(() => apiConfiguration),
   ],
   providers: [

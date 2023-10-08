@@ -15,7 +15,6 @@
 		<parquet.version>1.13.1</parquet.version>
 		<hadoop.version>3.2.1</hadoop.version>
 		
-		<swagger-codegen.version>2.4.5</swagger-codegen.version>
 	</properties>
 
 	<dependencyManagement>
@@ -108,7 +107,11 @@
 						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
-
+				<plugin>
+					<groupId>io.swagger.codegen.v3</groupId>
+					<artifactId>swagger-codegen-maven-plugin</artifactId>
+					<version>3.0.47</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>

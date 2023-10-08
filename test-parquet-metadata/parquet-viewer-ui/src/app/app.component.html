@@ -1,12 +1,12 @@
-<div class="container">
+<div class="container-fluid">
 
 <div class="content" role="main">
 
 <ngb-accordion #acc="ngbAccordion" activeIds="ngb-panel-0">
-  
+
   <ngb-panel title="Input">
   	<ng-template ngbPanelContent>
-  	
+
   		<div class="container-fluid">
   			<div class="row">
 				<label class="col-md-3">file</label>
@@ -34,18 +34,18 @@
   			</div>
 
   		</div>
-  	
+
 	</ng-template>
   </ngb-panel>
-  
+
   <ngb-panel title="Schema">
   	<ng-template ngbPanelContent>
-<!-- 
+<!--
 	<span>
 		<label>columnName</label>
 		<input type="text"
 			[(ngModel)]="columnName" (input)="reevalFilterChange()">
-		
+
 	</span>
 	<br>
  -->
@@ -53,10 +53,9 @@
 		    	#schemaColGrid
 		        class="ag-theme-alpine"
 		        style="width: 100%; height: 400px;"
-				(gridReady)="onSchemaColGridReady($event)"
+    				(gridReady)="onSchemaColGridReady($event)"
 		        [columnDefs]="schemaColColumnDefs"
 		        [gridOptions]="schemaColGridOptions"
-				[frameworkComponents]="frameworkComponents"
 		        >
 		</ag-grid-angular>
 	</ng-template>
@@ -73,10 +72,9 @@
 	    	#fileGrid
 	        class="ag-theme-alpine"
 	        style="width: 100%; height: 400px;"
-			(gridReady)="onFileGridReady($event)"
+    			(gridReady)="onFileGridReady($event)"
 	        [columnDefs]="fileColumnDefs"
 	        [gridOptions]="fileGridOptions"
-			[frameworkComponents]="frameworkComponents"
 	        >
 	    </ag-grid-angular>
 	</ng-template>
@@ -91,7 +89,6 @@
 			(gridReady)="onRowGroupGridReady($event)"
 	        [columnDefs]="rowGroupColumnDefs"
 	        [gridOptions]="rowGroupGridOptions"
-			[frameworkComponents]="frameworkComponents"
 	        >
 	    </ag-grid-angular>
 	</ng-template>
@@ -99,28 +96,27 @@
 
   <ngb-panel title="Chunks">
   	<ng-template ngbPanelContent>
-  
+
 	    <ag-grid-angular
 	    	#columnChunkGrid
 	        class="ag-theme-alpine"
 	        style="width: 100%; height: 400px;"
-			(gridReady)="onColumnChunkGridReady($event)"
+			    (gridReady)="onColumnChunkGridReady($event)"
 	        [columnDefs]="columnChunkColumnDefs"
 	        [gridOptions]="columnChunkGridOptions"
-			[frameworkComponents]="frameworkComponents"
 	        >
 	    </ag-grid-angular>
-	<!-- 
+	<!--
 	        [rowData]="colChunks"
 	 -->
 	</ng-template>
   </ngb-panel>
 
 </ngb-accordion>
-  
 
 
-	
+
+
 </div>
 
 <div class="row">Messages: </div>

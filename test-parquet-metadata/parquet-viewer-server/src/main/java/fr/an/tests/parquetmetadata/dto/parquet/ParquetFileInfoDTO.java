@@ -37,21 +37,6 @@ public class ParquetFileInfoDTO {
    **/
   String createdBy;
 
-  /**
-   * Sort order used for the minValue and maxValue fields of each column in
-   * this file. Sort orders are listed in the order matching the columns in the
-   * schema. The indexes are not necessary the same though, because only leaf
-   * nodes of the schema are represented in the list of sort orders.
-   *
-   * Without columnOrders, the meaning of the minValue and maxValue fields is
-   * undefined. To ensure well-defined behaviour, if minValue and maxValue are
-   * written to a Parquet file, columnOrders must be written as well.
-   *
-   * The obsolete min and max fields are always sorted by signed comparison
-   * regardless of columnOrders.
-   */
-  List<ParquetColumnOrderDTO> _colOrders;
-
   /** 
    * Encryption algorithm. This field is set only in encrypted files
    * with plaintext footer. Files with encrypted footer store algorithm id

@@ -1,5 +1,6 @@
 package fr.an.tests.parquetmetadata;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,6 +15,7 @@ import lombok.val;
 
 
 @SpringBootApplication
+@Slf4j
 public class ParquetAppMain {
 
 	public static void main(String[] args) {
@@ -24,6 +26,7 @@ public class ParquetAppMain {
 	public CommandLineRunner commandLineRunner(ParquetMetadataService service) {
 		return args -> {
 			String file = "src/test/data/datapage_V2.snappy.parquet";
+			log.info("read sample " + file);
 			ParquetFileInfoDTO fileInfo = service.readFileInfo(file);
 			val om = new ObjectMapper();
 			om.configure(SerializationFeature.INDENT_OUTPUT, true);

@@ -10,8 +10,7 @@
  * Do not edit the class manually.
  */
 
-export interface ParquetAesGcmV1 { 
-    aadPrefix?: Array<string>;
-    aadFileUnique?: Array<string>;
-    supplyAadPrefix?: boolean;
+export interface ParquetIndexReferenceDTO { 
+    offset?: number;
+    length?: number;
 }

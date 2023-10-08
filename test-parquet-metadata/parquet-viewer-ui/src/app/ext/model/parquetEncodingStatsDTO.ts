@@ -10,8 +10,8 @@
  * Do not edit the class manually.
  */
 
-export interface ParquetAesGcmV1 { 
-    aadPrefix?: Array<string>;
-    aadFileUnique?: Array<string>;
-    supplyAadPrefix?: boolean;
+export interface ParquetEncodingStatsDTO { 
+    dictStats?: { [key: string]: number; };
+    dataStats?: { [key: string]: number; };
+    usesV2Pages?: boolean;
 }

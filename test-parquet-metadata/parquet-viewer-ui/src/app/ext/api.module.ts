@@ -3,14 +3,14 @@ import { Configuration } from './configuration';
 import { HttpClient } from '@angular/common/http';
 
 
-import { ParquetMetadataRestControllerService } from './api/parquetMetadataRestController.service';
+import { ParquetMetadataRestService } from './api/parquetMetadataRest.service';
 
 @NgModule({
   imports:      [],
   declarations: [],
   exports:      [],
   providers: [
-    ParquetMetadataRestControllerService ]
+    ParquetMetadataRestService ]
 })
 export class ApiModule {
     public static forRoot(configurationFactory: () => Configuration): ModuleWithProviders<ApiModule> {

@@ -1,3 +1,3 @@
-export * from './parquetMetadataRestController.service';
-import { ParquetMetadataRestControllerService } from './parquetMetadataRestController.service';
-export const APIS = [ParquetMetadataRestControllerService];
+export * from './parquetMetadataRest.service';
+import { ParquetMetadataRestService } from './parquetMetadataRest.service';
+export const APIS = [ParquetMetadataRestService];
