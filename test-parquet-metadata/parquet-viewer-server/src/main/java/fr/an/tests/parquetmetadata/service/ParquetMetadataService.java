@@ -1,28 +1,6 @@
 package fr.an.tests.parquetmetadata.service;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.parquet.ParquetReadOptions;
-import org.apache.parquet.hadoop.ParquetFileReader;
-import org.apache.parquet.hadoop.util.HadoopInputFile;
-import org.apache.parquet.io.InputFile;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import fr.an.tests.parquetmetadata.dto.ParquetDataFileInfoDTO;
 import fr.an.tests.parquetmetadata.dto.ScanDirFileMetadatasResultDTO;
 import fr.an.tests.parquetmetadata.dto.ScanDirFileMetadatasResultDTO.PartitionAndFileDataInfoDTO;
@@ -31,11 +9,27 @@ import fr.an.tests.parquetmetadata.dto.parquet.ParquetFileInfoDTO;
 import fr.an.tests.parquetmetadata.util.LsUtils;
 import lombok.AllArgsConstructor;
 import lombok.val;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.parquet.ParquetReadOptions;
+import org.apache.parquet.hadoop.ParquetFileReader;
+import org.apache.parquet.hadoop.util.HadoopInputFile;
+import org.apache.parquet.io.InputFile;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ParquetMetadataService {
 
-	@Autowired 
 	ParquetDTOConverter dtoConverter;
 	
 	Configuration hadoopConf = new Configuration();
@@ -45,11 +39,15 @@ public class ParquetMetadataService {
 //	ExecutorService executorService = Executors.newFixedThreadPool(4);
 	
 	// ------------------------------------------------------------------------
-	
-	@PostConstruct
-	public void init() throws IOException {
-		hadoopFs = FileSystem.get(hadoopConf);
-		hadoopLocalFs = FileSystem.get(stringToURI("file:///local"), hadoopConf);
+
+	public ParquetMetadataService(ParquetDTOConverter dtoConverter) {
+		this.dtoConverter = dtoConverter;
+		try {
+			hadoopFs = FileSystem.get(hadoopConf);
+			hadoopLocalFs = FileSystem.get(stringToURI("file:///local"), hadoopConf);
+		} catch(IOException ex) {
+			throw new RuntimeException("Failed", ex);
+		}
 	}
 
 	// ------------------------------------------------------------------------
@@ -91,7 +89,7 @@ public class ParquetMetadataService {
 			ParquetFileInfoDTO fileInfo0 = readParquetInfoAndConvertToDTO(file0Path);
 			res.setSchema(fileInfo0.getSchema());
 			
-			ParquetDataFileInfoDTO dataInfo0 = new ParquetDataFileInfoDTO(fileInfo0.getNumRows(), fileInfo0.getRowGroups());
+			ParquetDataFileInfoDTO dataInfo0 = new ParquetDataFileInfoDTO(fileInfo0.getNumRows(), fileInfo0.getBlocks());
 			PartitionAndFileDataInfoDTO partFileInfo0 = new PartitionAndFileDataInfoDTO(
 					resFile0.partitions, file0Path.getName(), dataInfo0);
 			partFileInfos.add(partFileInfo0);
@@ -113,7 +111,7 @@ public class ParquetMetadataService {
 	private PartitionAndFileDataInfoDTO readParquetInfoAndConvertToDTO(PartitionAndFile partAndFile) {
 		ParquetFileInfoDTO fileInfo = readParquetInfoAndConvertToDTO(partAndFile.fileStatus.getPath());
 		
-		ParquetDataFileInfoDTO dataInfo = new ParquetDataFileInfoDTO(fileInfo.getNumRows(), fileInfo.getRowGroups());
+		ParquetDataFileInfoDTO dataInfo = new ParquetDataFileInfoDTO(fileInfo.getNumRows(), fileInfo.getBlocks());
 		String fileName = partAndFile.fileStatus.getPath().getName();
 		return new PartitionAndFileDataInfoDTO(partAndFile.partitions, fileName, dataInfo);
 	}

@@ -26,7 +26,7 @@ public class ParquetFileInfoDTO {
   long numRows;
 
   /** Row groups in this file **/
-  List<ParquetRowGroupDTO> rowGroups;
+  List<ParquetBlockMetadataDTO> blocks;
 
   /** Optional key/value metadata **/
   Map<String,String> keyValueMetadata;
@@ -50,7 +50,7 @@ public class ParquetFileInfoDTO {
    * The obsolete min and max fields are always sorted by signed comparison
    * regardless of columnOrders.
    */
-  List<ParquetColumnOrderDTO> colOrders;
+  List<ParquetColumnOrderDTO> _colOrders;
 
   /** 
    * Encryption algorithm. This field is set only in encrypted files

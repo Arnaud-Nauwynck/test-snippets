@@ -7,54 +7,37 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Data;
+import org.apache.parquet.column.EncodingStats;
+import org.apache.parquet.column.statistics.Statistics;
+import org.apache.parquet.hadoop.metadata.ColumnChunkProperties;
+import org.apache.parquet.internal.hadoop.metadata.IndexReference;
 
 /**
- * cspecific metadata per Chunk ... cf implicit parent ParquetColumnMetaDataDTO
+ * Column Chunk Metadata
+ * cf {@link org.apache.parquet.hadoop.metadata.ColumnChunkMetaData}
  */
 @Data
 public class ParquetColumnChunkMetaDataDTO {
 
-	/** Number of values in this column **/
-	long numValues;
+	int rowGroupOrdinal;
 
-	/**
-	 * total byte size of all uncompressed pages in this column chunk (including the
-	 * headers)
-	 **/
+	ParquetEncodingStatsDTO encodingStats;
+
+	// we save 3 references by storing together the column properties that have few distinct values
+	ParquetColumnChunkPropertiesDTO properties;
+
+	ParquetIndexReferenceDTO columnIndexReference;
+	ParquetIndexReferenceDTO offsetIndexReference;
+
+	long bloomFilterOffset = -1;
+
+	// field used in sub-class IntColumnChunkMetaData and LongColumnChunkMetaData
+	// cf also EncryptedColumnChunkMetaData
+	long firstDataPageOffset;
+	long dictionaryPageOffset;
+	long valueCount;
+	long totalSize;
 	long totalUncompressedSize;
-
-	/**
-	 * total byte size of all compressed, and potentially encrypted, pages in this
-	 * column chunk (including the headers)
-	 **/
-	long totalCompressedSize;
-
-	/** Optional key/value metadata **/
-	@JsonInclude(Include.NON_NULL)
-	Map<String, String> keyValueMetadata;
-
-	/** Byte offset from beginning of file to first data page **/
-	Long dataPageOffset;
-
-	/** Byte offset from beginning of file to root index page **/
-	Long indexPageOffset;
-
-	/** Byte offset from the beginning of file to first (only) dictionary page **/
-	@JsonInclude(Include.NON_NULL)
-	Long dicPageOffset;
-
-	/** optional statistics for this column chunk */
-	@JsonInclude(Include.NON_NULL)
 	ParquetStatisticsDTO<?> statistics;
-
-	/**
-	 * Set of all encodings used for pages in this column chunk. This information
-	 * can be used to determine if all data pages are dictionary encoded for example
-	 **/
-	List<ParquetPageEncodingStatsDTO> encodingStats;
-
-	/** Byte offset from beginning of file to Bloom filter data. **/
-	@JsonInclude(Include.NON_NULL)
-	Long bloomFilterOffset;
 
 }

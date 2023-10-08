@@ -6,8 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
+import fr.an.tests.parquetmetadata.dto.parquet.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.parquet.column.EncodingStats;
 import org.apache.parquet.column.statistics.BinaryStatistics;
@@ -17,13 +17,11 @@ import org.apache.parquet.column.statistics.FloatStatistics;
 import org.apache.parquet.column.statistics.IntStatistics;
 import org.apache.parquet.column.statistics.LongStatistics;
 import org.apache.parquet.crypto.InternalFileDecryptor;
-import org.apache.parquet.column.Encoding;
 import org.apache.parquet.schema.Type;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.metadata.BlockMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnChunkMetaData;
 import org.apache.parquet.hadoop.metadata.ColumnPath;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.apache.parquet.hadoop.metadata.FileMetaData;
 import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 import org.apache.parquet.internal.hadoop.metadata.IndexReference;
@@ -50,20 +48,8 @@ import org.apache.parquet.schema.PrimitiveType.PrimitiveTypeName;
 import org.apache.parquet.schema.Type.Repetition;
 import org.springframework.stereotype.Service;
 
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetColumnChunkDTO;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetColumnChunkMetaDataDTO;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetEncoding;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetFieldRepetitionType;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetFileInfoDTO;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetLogicalType;
 import fr.an.tests.parquetmetadata.dto.parquet.ParquetLogicalType.ParquetLogicalTypeEnum;
 import fr.an.tests.parquetmetadata.dto.parquet.ParquetLogicalType.ParquetTimeUnit;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetPageEncodingStatsDTO;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetPageType;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetRowGroupDTO;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetSchemaElementDTO;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetSortingColumnDTO;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetStatisticsDTO;
 import fr.an.tests.parquetmetadata.dto.parquet.ParquetStatisticsDTO.BinaryParquetStatisticsDTO;
 import fr.an.tests.parquetmetadata.dto.parquet.ParquetStatisticsDTO.BooleanParquetStatisticsDTO;
 import fr.an.tests.parquetmetadata.dto.parquet.ParquetStatisticsDTO.DoubleParquetStatisticsDTO;
@@ -71,7 +57,6 @@ import fr.an.tests.parquetmetadata.dto.parquet.ParquetStatisticsDTO.FloatParquet
 import fr.an.tests.parquetmetadata.dto.parquet.ParquetStatisticsDTO.IntParquetStatisticsDTO;
 import fr.an.tests.parquetmetadata.dto.parquet.ParquetStatisticsDTO.LongParquetStatisticsDTO;
 import fr.an.tests.parquetmetadata.dto.parquet.ParquetStatisticsDTO.StringParquetStatisticsDTO;
-import fr.an.tests.parquetmetadata.dto.parquet.ParquetType;
 import fr.an.tests.parquetmetadata.util.LsUtils;
 import lombok.val;
 
@@ -84,9 +69,12 @@ public class ParquetDTOConverter {
 		FileMetaData fileMetaData = fileReader.getFileMetaData();
 		fillFileMetadata(res, fileMetaData);
 		
-		ParquetMetadata fileFooter = fileReader.getFooter();
-		fillFooter(res, fileFooter);
-		
+		ParquetMetadata footer = fileReader.getFooter();
+		List<BlockMetaData> blocks = footer.getBlocks();
+		MessageType schema = fileMetaData.getSchema();
+		List<ParquetBlockMetadataDTO> blockMetadataDtos = LsUtils.map(blocks, b -> toBlockMetadataDTO(b, schema));
+		res.setBlocks(blockMetadataDtos);
+
 
 		// TODO
 
@@ -313,81 +301,49 @@ public class ParquetDTOConverter {
 		return res;
 	}
 
-	public void fillFooter(ParquetFileInfoDTO res, ParquetMetadata src) {
-		List<BlockMetaData> blocks = src.getBlocks();
-		MessageType schema = src.getFileMetaData().getSchema();
-		List<ParquetRowGroupDTO> rowGroups = LsUtils.map(blocks, b -> toParquetRowGroupDTO(b, schema));
-		res.setRowGroups(rowGroups);
-	}
 
+	private ParquetBlockMetadataDTO toBlockMetadataDTO(BlockMetaData src, MessageType schema) {
+		ParquetBlockMetadataDTO res = new ParquetBlockMetadataDTO();
 
-	
-	private ParquetRowGroupDTO toParquetRowGroupDTO(BlockMetaData src, MessageType schema) {
-		ParquetRowGroupDTO res = new ParquetRowGroupDTO();
-		res.setNumRows(src.getRowCount());
-		res.setTotalByteSize(src.getTotalByteSize());
-		res.setOrdinal(src.getOrdinal());
-		// TODO String path
-
-		List<ParquetColumnChunkDTO> colChunks = LsUtils.map(src.getColumns(), c -> {
+		List<ParquetColumnChunkMetaDataDTO> colChunkMetadataDtos = LsUtils.map(src.getColumns(), c -> {
 			ColumnPath colPath = c.getPath();
 			String[] colPathArray = colPath.toArray();
 			String colFqn = String.join(".", Arrays.asList(colPathArray));
 			Type colType = schema.getType(colPathArray);
-			return toColumnChunkDTO(c, colFqn, colType);
+			return toColumnChunkMetaDataDTO(c, colFqn, colType);
 		});
-		res.setColChunks(colChunks);
+		res.setColumns(colChunkMetadataDtos);
 
-		// If set, specifies a sort ordering of the rows in this RowGroup. The sorting columns can be a subset of all the columns.
-		List<ParquetSortingColumnDTO> sortingColumns = null; // TODO
-		res.setSortingCols(sortingColumns);
-		
-		// Byte offset from beginning of file to first page (data or dictionary) in this row group
-		Long fileOffset = null; // TODO 
-		res.setFileOffset(fileOffset);
-		
-		// Total byte size of all compressed (and potentially encrypted) column data in this row group **/
-		long totalCompressedSize = 0;
-		for(val c: src.getColumns()) {
-			totalCompressedSize += c.getTotalSize(); // TOCHECK
-		}
-		res.setTotalCompressedSize(totalCompressedSize);
-
-		  
+		res.setRowCount(src.getRowCount());
+		res.setTotalByteSize(src.getTotalByteSize());
+		res.setPath(src.getPath());
+		res.setOrdinal(src.getOrdinal());
+		res.setRowIndexOffset(src.getRowIndexOffset());
 		return res;
 	}
 
-	private ParquetColumnChunkDTO toColumnChunkDTO(
+	private ParquetColumnChunkMetaDataDTO toColumnChunkMetaDataDTO(
 			ColumnChunkMetaData src,
 			String colFqn,
 			Type colType) {
-		ParquetColumnChunkDTO res = new ParquetColumnChunkDTO();
-		
-		res.setColName(colFqn);
-		// .. colType.getName() contains only last name
-		res.setFilePath(null);
+		ParquetColumnChunkMetaDataDTO res = new ParquetColumnChunkMetaDataDTO();
+		res.setRowGroupOrdinal(src.getRowGroupOrdinal());
+		res.setEncodingStats(toEncodingStatDTO(src.getEncodingStats()));
+		// TODO res.setProperties(toColumnChunkPropertiesDTO(src.getProperties()));
 
-		/** Byte offset in filePath to the ColumnMetaData **/
-		res.setFileOffset(src.getFirstDataPageOffset()); // TOCHECK
+		res.setColumnIndexReference(toIndexReferenceDTO(src.getColumnIndexReference()));
+		res.setOffsetIndexReference(toIndexReferenceDTO(src.getOffsetIndexReference()));
+		res.setBloomFilterOffset(src.getBloomFilterOffset());
 
-		/** Column metadata for this chunk. This is the same content as what is at
-		 * filePath/fileOffset.  Having it here has it replicated in the file
-		 * metadata.
-		 **/
-		ParquetColumnChunkMetaDataDTO metaData = toColumnChunkMetadataDTO(src, colType);
-		res.setMetaData(metaData);
-		
-		IndexReference offsetIndexRef = src.getOffsetIndexReference();
-		if (offsetIndexRef != null) {
-			res.setOffsetIndexOffset(offsetIndexRef.getOffset());
-			res.setOffsetIndexLength(offsetIndexRef.getLength());
-		}
+		// field used in sub-class IntColumnChunkMetaData and LongColumnChunkMetaData
+		// cf also EncryptedColumnChunkMetaData
+		res.setFirstDataPageOffset(src.getFirstDataPageOffset());
+		res.setDictionaryPageOffset(src.getDictionaryPageOffset());
+		res.setValueCount(src.getValueCount());
+		res.setTotalSize(src.getTotalSize());
+		res.setTotalUncompressedSize(src.getTotalUncompressedSize());
 
-		IndexReference columnIndexReference = src.getColumnIndexReference();
-		if (columnIndexReference != null) {
-			res.setColIndexOffset(columnIndexReference.getOffset());
-			res.setColIndexLength(columnIndexReference.getLength());
-		}
+		res.setStatistics(toStatisticsDTO(src.getStatistics(), colType));
 
 //		// TODO
 //		if (src instanceof EncryptedColumnChunkMetaData) { //  ... package protected!
@@ -403,57 +359,31 @@ public class ParquetDTOConverter {
 		return res;
 	}
 
-	private ParquetColumnChunkMetaDataDTO toColumnChunkMetadataDTO(ColumnChunkMetaData src, Type type) {
-		ParquetColumnChunkMetaDataDTO res = new ParquetColumnChunkMetaDataDTO();
-		
-		EncodingStats srcEncodingStats = src.getEncodingStats();
-		// ColumnChunkProperties srcProperties = codec, path, type, encoding ...
-		CompressionCodecName srcCodec = src.getCodec();
-		ColumnPath srcPath = src.getPath();
-		PrimitiveTypeName srcPrimitiveType = src.getType();
-		Set<Encoding> srcEncodings = src.getEncodings();
-
-		IndexReference srcColumnIndexReference = src.getColumnIndexReference();
-		IndexReference srcOffsetIndexReference = src.getOffsetIndexReference();
-
-		long srcBloomFilterOffset = src.getBloomFilterOffset();
-
-		/** Number of values in this column **/
-		long numValues;
-		
-		res.setTotalUncompressedSize(src.getTotalUncompressedSize());
-		res.setTotalCompressedSize(src.getTotalSize());
-
-		/** Optional key/value metadata **/
-		Map<String,String> keyValueMetadata;
-		
-		/** Byte offset from beginning of file to first data page **/
-		Long dataPageOffset;
-
-		/** Byte offset from beginning of file to root index page **/
-		Long indexPageOffset;
-
-		/** Byte offset from the beginning of file to first (only) dictionary page **/
-		Long dictionaryPageOffset;
-
-		// TOCHECK ... only 3 sub-classes for columnChunk: Int,Long,Encrypted?
-		ParquetStatisticsDTO<?> statistics = toStatisticsDTO(src.getStatistics(), srcPrimitiveType, type);
-		res.setStatistics(statistics);
-		
-		if (srcEncodingStats != null) {
-			res.setEncodingStats(toEncodingStatsDTO(srcEncodingStats));
+	private ParquetIndexReferenceDTO toIndexReferenceDTO(IndexReference src) {
+		if (src == null) {
+			return null;
 		}
-		
-		res.setBloomFilterOffset(srcBloomFilterOffset);
+		return new ParquetIndexReferenceDTO(src.getOffset(), src.getLength());
+	}
 
-		return res;
+	private ParquetEncodingStatsDTO toEncodingStatDTO(EncodingStats src) {
+		Map</*Encoding*/String, Number> dictStats = new LinkedHashMap<>();
+		for(val enc : src.getDictionaryEncodings()) {
+			dictStats.put(enc.name(), src.getNumDictionaryPagesEncodedAs(enc));
+		}
+		Map</*Encoding*/String, Number> dataStats = new LinkedHashMap<>();
+		for(val enc : src.getDataEncodings()) {
+			dictStats.put(enc.name(), src.getNumDataPagesEncodedAs(enc));
+		}
+		boolean usesV2Pages = src.usesV2Pages();
+		return  new ParquetEncodingStatsDTO(dictStats, dataStats, usesV2Pages);
 	}
 
 
 	private <T extends Comparable<T>> ParquetStatisticsDTO<T> toStatisticsDTO(
 			org.apache.parquet.column.statistics.Statistics<T> src,
-			PrimitiveTypeName primitiveType,
-			Type type) {
+			Type type
+	) {
 		ParquetStatisticsDTO<?> res;
 		long nullCount = src.getNumNulls();
 		Long distinctCount = null; // TODO ... not in java clas??
@@ -519,20 +449,4 @@ public class ParquetDTOConverter {
 		return res2;
 	}
 
-	private List<ParquetPageEncodingStatsDTO> toEncodingStatsDTO(EncodingStats src) {
-		List<ParquetPageEncodingStatsDTO> res = new ArrayList<>();
-		for(val e : src.getDataEncodings()) {
-			int num = src.getNumDataPagesEncodedAs(e);
-			ParquetEncoding parquetEncoding = ParquetEncoding.valueOf(e.name());
-			res.add(new ParquetPageEncodingStatsDTO(ParquetPageType.DATA_PAGE, parquetEncoding, num));
-		}
-		for(val e : src.getDictionaryEncodings()) {
-			int num = src.getNumDictionaryPagesEncodedAs(e);
-			ParquetEncoding parquetEncoding = ParquetEncoding.valueOf(e.name());
-			res.add(new ParquetPageEncodingStatsDTO(ParquetPageType.DICTIONARY_PAGE, parquetEncoding, num));
-		}
-		return res;
-	}
-
-	
 }
