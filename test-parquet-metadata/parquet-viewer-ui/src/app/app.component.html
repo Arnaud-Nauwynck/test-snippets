@@ -27,8 +27,12 @@
   			</div>
 
   			<div class="row">
-				<button type="button" class="col-md-2 btn btn-primary" (click)="onClickLoadSampleFile()">Load sample file</button>
-  			</div>
+          <div class="col-md-3">
+            <label>Load sample</label> &nbsp;
+            <button type="button" class="btn btn-primary" (click)="onClickLoadSampleFile()">file</button>
+            <button type="button" class="btn btn-primary" (click)="onClickLoadSampleFile2()">file2</button>
+          </div>
+        </div>
   			<div class="row">
 				<button type="button" class="col-md-2 btn btn-primary" (click)="onClickScanSampleDir()">Scan sample dir</button>
   			</div>

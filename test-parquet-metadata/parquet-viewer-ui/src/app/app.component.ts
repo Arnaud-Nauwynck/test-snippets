@@ -7,11 +7,42 @@ import {ButtonRendererComponent} from './renderer/button-renderer.component';
 
 import {ParquetMetadataRestService} from './ext/api/api';
 import {
-  ParquetFileInfoDTO, ParquetSchemaElementDTO,
+  ParquetFileInfoDTO,
+  ParquetSchemaElementDTO,
   ParquetBlockMetadataDTO,
   ParquetColumnChunkMetaDataDTO,
-  ScanDirFileMetadatasResultDTO, PartitionAndFileDataInfoDTO, PartitionScanStatisticsDTO,
+  ScanDirFileMetadatasResultDTO,
+  PartitionAndFileDataInfoDTO,
+  PartitionScanStatisticsDTO,
+  ParquetEncodingStatsDTO,
+  ParquetColumnChunkPropertiesDTO,
+  ParquetIndexReferenceDTO,
+  BinaryParquetStatisticsDTO,
+  BooleanParquetStatisticsDTO,
+  DoubleParquetStatisticsDTO,
+  FloatParquetStatisticsDTO,
+  IntParquetStatisticsDTO,
+  LongParquetStatisticsDTO,
+  StringParquetStatisticsDTO,
 } from './ext/model/models';
+
+const KILO = 1024;
+const MEGA = KILO * KILO;
+
+function objectMapNumberToString(obj: { [key: string]: number; }): string {
+  if (!obj) return '';
+  let res = '';
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (res) {
+        res += ', ';
+      }
+      res += key + ':' + obj[key];
+    }
+  }
+  return res;
+}
+
 
 interface SchemaColRow {
   col: ParquetSchemaElementDTO;
@@ -36,6 +67,7 @@ interface ColumnChunkRow {
   fileName?: string;
   f: ParquetFileInfoDTO;
   col: ParquetSchemaElementDTO;
+  colRow: SchemaColRow; // for selection
   rg: ParquetBlockMetadataDTO;
   chunk: ParquetColumnChunkMetaDataDTO;
 }
@@ -95,6 +127,13 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   onClickLoadSampleFile(): void {
     let file = 'src/test/data/datapage_V2.snappy.parquet';
+    if (!this.inputFile) {
+      this.inputFile = file;
+    }
+    this.loadFileData(file);
+  }
+  onClickLoadSampleFile2(): void {
+    let file = 'c:/data/td2/parquet-16/part-00000-a019a644-4f8b-4ee0-aecb-d9ed9815a163-c000.snappy.parquet';
     if (!this.inputFile) {
       this.inputFile = file;
     }
@@ -188,7 +227,8 @@ export class AppComponent implements OnInit, AfterViewInit {
             rowGroups.push({...file, rg});
             rg.columns?.forEach((chunk, colIdx) => {
               let col = schema[colIdx];
-              colChunks.push({...file, col, rg, chunk});
+              let colRow = this.schemaCols[colIdx];
+              colChunks.push({...file, col, colRow, rg, chunk});
             })
           })
         })
@@ -229,7 +269,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       rowGroups.forEach(rg => {
         rg.columns?.forEach((chunk, colIdx) => {
           let col = schema[colIdx];
-          res.push({partitions: '', fileName, f, col, rg, chunk});
+          let colRow = this.schemaCols[colIdx];
+          res.push({partitions: '', fileName, f, col, colRow, rg, chunk});
         })
       })
     }
@@ -292,7 +333,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     {
       headerName: '',
       // TODO ?? field: 'toggleSelectedButton',
-      cellRenderer: 'buttonRenderer',
+      cellRenderer: ButtonRendererComponent,
       cellRendererParams: {
         onClick: (clickParams: any) => this.onSchemaColToggleSelectedButtonClick(clickParams),
         label: 'Toggle Select'
@@ -342,7 +383,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     r.selected = !r.selected;
     // console.log('toggle col ' + r.col.name + ' => selected:' + r.selected)
     this.schemaColGrid.api.redrawRows();
-    // TODO refresh other grids..
+    this.columnChunkGrid.api.onFilterChanged();
+    // this.columnChunkGrid.api.redrawRows();
   }
 
   schemaColFilterPass(params: IRowNode): boolean {
@@ -482,21 +524,32 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   columnChunkFilterPass(params: IRowNode): boolean {
     let d: ColumnChunkRow = params.data;
+    if (d.colRow && !d.colRow.selected) {
+      return false;
+    }
 
     return true;
   }
+
 
   columnChunkColumnDefs: ColDef<ColumnChunkRow>[] = [
     {
       headerName: 'Parts', field: 'partitions', width: 150,
       checkboxSelection: true,
     },
-    {headerName: 'fileName', field: 'fileName', width: 90},
-    {headerName: 'RG#', field: 'rg.ordinal', width: 90},
-    {headerName: 'Col', field: 'col.name', width: 120},
-
+    {headerName: 'fileName',
+      valueGetter: p => p.data!!.fileName,
+      width: 90},
+    {headerName: 'RG#',
+      valueGetter: p => p.data!!.rg.ordinal,
+      width: 90},
+    {headerName: 'Col',
+      valueGetter: p => p.data!!.col.name,
+      width: 120},
     {
-      headerName: 'col.type', field: 'col.type', width: 100,
+      headerName: 'col.type',
+      valueGetter: p => p.data!!.col.type,
+      width: 100,
       valueFormatter: p => {
         let col = p.data!!.col;
         return this.colTypeEnumToString(col.type!!);
@@ -507,6 +560,14 @@ export class AppComponent implements OnInit, AfterViewInit {
       valueGetter: p => p.data!!.chunk.totalSize, width: 120},
     {headerName: 'UncompressedSize',
       valueGetter: p => p.data!!.chunk.totalUncompressedSize, width: 120},
+
+    {headerName: 'totalSize Kb',
+      valueGetter: p => Math.round(p.data!!.chunk.totalSize!! / KILO), width: 120},
+    {headerName: 'UncompressedSize Kb',
+      valueGetter: p => Math.round(p.data!!.chunk.totalUncompressedSize!! / KILO), width: 120},
+    {headerName: 'Compression Rate',
+      valueGetter: p => (p.data!!.chunk.totalUncompressedSize)? Math.round(100.0 * p.data!!.chunk.totalSize!! / p.data!!.chunk.totalUncompressedSize!!) : 0, width: 120},
+
     {headerName: 'NumValues',
       valueGetter: p => p.data!!.chunk.valueCount, width: 120},
 
@@ -517,24 +578,59 @@ export class AppComponent implements OnInit, AfterViewInit {
     {headerName: 'stats.maxValue',
       valueGetter: p => p.data!!.chunk.statistics?.maxValue, width: 120},
 
-    // {headerName: 'dataPageOffset', field: 'chunk.metaData.dataPageOffset', width: 120},
-    // {headerName: 'dicPageOffset', field: 'chunk.metaData.dicPageOffset', width: 120},
-    // {headerName: 'indexPageOffset', field: 'chunk.metaData.indexPageOffset', width: 120},
-    // {headerName: 'bloomFilterOffset', field: 'chunk.metaData.bloomFilterOffset', width: 120},
-    //
-    // {headerName: 'encodingStats', field: 'chunk.metaData.encodingStats', width: 120},
-    // {headerName: 'keyValueMetadata', field: 'chunk.metaData.keyValueMetadata', width: 120},
-    //
-    // {headerName: 'filePath', field: 'chunk.filePath', width: 120, hide: true},
-    // {headerName: 'fileOffset', field: 'chunk.fileOffset', width: 120},
-    // {headerName: 'colIndexOffset', field: 'chunk.colIndexOffset', width: 120},
-    // {headerName: 'colIndexLength', field: 'chunk.colIndexLength', width: 120},
-    //
-    // {headerName: 'offsetIndexLength', field: 'chunk.offsetIndexLength', width: 120},
-    // {headerName: 'offsetIndexOffset', field: 'chunk.offsetIndexOffset', width: 120},
-    //
-    // {headerName: 'cryptoMetadata', field: 'chunk.cryptoMetadata', width: 120, hide: true},
-    // {headerName: 'encryptedColMetadata', field: 'chunk.encryptedColMetadata', width: 120, hide: true},
+    {headerName: 'First Data PageOffset',
+      valueGetter: p => p.data!!.chunk.firstDataPageOffset, width: 120},
+    {headerName: 'Dic PageOffset',
+      valueGetter: p => p.data!!.chunk.dictionaryPageOffset, width: 120},
+    {headerName: 'bloomFilter Offset',
+      valueGetter: p => p.data!!.chunk.bloomFilterOffset, width: 120},
+
+    {headerName: 'Encoding Stats.dictStats',
+      valueGetter: p => p.data!!.chunk.encodingStats?.dictStats,
+      valueFormatter: p => objectMapNumberToString(p.value),
+      width: 120},
+    {headerName: 'Encoding Stats.dataStats',
+      valueGetter: p => p.data!!.chunk.encodingStats?.dataStats,
+      valueFormatter: p => objectMapNumberToString(p.value),
+      width: 120},
+
+    {headerName: 'Encoding Stats.useV2Page',
+      valueGetter: p => p.data!!.chunk.encodingStats?.usesV2Pages,
+      width: 120},
+
+    {headerName: 'properties.codec',
+      valueGetter: p => p.data!!.chunk.properties?.codec,
+      width: 120},
+    {headerName: 'properties.path',
+      valueGetter: p => p.data!!.chunk.properties?.path,
+      width: 120},
+    {headerName: 'properties.encodings',
+      valueGetter: p => p.data!!.chunk.properties?.encodings,
+      valueFormatter: p=> {
+        let v: ParquetColumnChunkPropertiesDTO.EncodingsEnum[] = p.value;
+        if (!v) return '';
+        let res = v.join(',');
+        return res;
+      },
+      width: 120},
+
+
+    {headerName: 'colIndex Offset',
+      valueGetter: p => p.data!!.chunk.columnIndexReference?.offset,
+      width: 120},
+    {headerName: 'colIndex Length',
+      valueGetter: p => p.data!!.chunk.columnIndexReference?.length,
+      width: 120},
+
+    {headerName: 'offsetIndex Offset',
+      valueGetter: p => p.data!!.chunk.offsetIndexReference?.offset,
+      width: 120},
+    {headerName: 'offsetIndex Length',
+      valueGetter: p => p.data!!.chunk.offsetIndexReference?.length,
+      width: 120},
+
+    // {headerName: 'cryptoMetadata', valueGetter: p => p.data!!.chunk.cryptoMetadata, width: 120, hide: true},
+    // {headerName: 'encryptedColMetadata', valueGetter: p => p.data!!.chunk.encryptedColMetadata, width: 120, hide: true},
 
   ];
 

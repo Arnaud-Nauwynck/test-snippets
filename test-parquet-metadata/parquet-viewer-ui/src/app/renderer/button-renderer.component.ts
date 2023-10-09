@@ -29,7 +29,7 @@ export class ButtonRendererComponent implements ICellRendererAngularComp {
       const clickParams = {
         event: $event,
         rowData: this.params.node.data,
-		rendererParams: this.params
+		    rendererParams: this.params
         // ...something
       }
       this.params.onClick(clickParams);
