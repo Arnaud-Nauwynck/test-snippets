@@ -1,16 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Main" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
-    <option name="ALTERNATIVE_JRE_PATH" value="C:\apps\jdk\jdk-20.0.1+9" />
-    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-    <module name="test-springboot-spark" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="org.example.Main" />
+  <configuration default="false" name="Springboot3SparkMain" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <module name="springboot3-spark-no-depmgt-fixed-log" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.example.Springboot3SparkNoDepMgtMain" />
     <option name="VM_PARAMETERS" value="-Xmx3g --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED" />
-    <extension name="coverage">
-      <pattern>
-        <option name="PATTERN" value="org.example.*" />
-        <option name="ENABLED" value="true" />
-      </pattern>
-    </extension>
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

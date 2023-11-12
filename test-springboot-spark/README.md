@@ -1,219 +1,118 @@
 
 # Running with springboot-dependencies 2.7
 
-```
-C:\apps\jdk\jdk-20.0.1+9\bin\java.exe -agentlib:jdwp=transport=dt_socket,address=127.0.0.1:51014,suspend=y,server=n -Xmx3g --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -XX:TieredStopAtLevel=1 -Dspring.output.ansi.enabled=always -Dcom.sun.management.jmxremote -Dspring.jmx.enabled=true -Dspring.liveBeansView.mbeanDomain -Dspring.application.admin.enabled=true "-Dmanagement.endpoints.jmx.exposure.include=*" -javaagent:C:\apps\intellij\IntelliJ-IDEA-2023.2.2\plugins\java\lib\rt\debugger-agent.jar=file:/C:/Users/arnaud/AppData/Local/Temp/capture.props -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath C:\arn\devPerso\test-snippets\test-springboot-spark\target\classes;C:\Users\arnaud\.m2\repository\org\springframework\boot\spring-boot-starter\2.7.14\spring-boot-starter-2.7.14.jar;C:\Users\arnaud\.m2\repository\org\springframework\boot\spring-boot\2.7.14\spring-boot-2.7.14.jar;C:\Users\arnaud\.m2\repository\org\springframework\spring-context\5.3.29\spring-context-5.3.29.jar;C:\Users\arnaud\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\2.7.14\spring-boot-autoconfigure-2.7.14.jar;C:\Users\arnaud\.m2\repository\org\springframework\boot\spring-boot-starter-logging\2.7.14\spring-boot-starter-logging-2.7.14.jar;C:\Users\arnaud\.m2\repository\ch\qos\logback\logback-classic\1.2.12\logback-classic-1.2.12.jar;C:\Users\arnaud\.m2\repository\ch\qos\logback\logback-core\1.2.12\logback-core-1.2.12.jar;C:\Users\arnaud\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.17.2\log4j-to-slf4j-2.17.2.jar;C:\Users\arnaud\.m2\repository\org\slf4j\jul-to-slf4j\1.7.36\jul-to-slf4j-1.7.36.jar;C:\Users\arnaud\.m2\repository\jakarta\annotation\jakarta.annotation-api\1.3.5\jakarta.annotation-api-1.3.5.jar;C:\Users\arnaud\.m2\repository\org\springframework\spring-core\5.3.29\spring-core-5.3.29.jar;C:\Users\arnaud\.m2\repository\org\springframework\spring-jcl\5.3.29\spring-jcl-5.3.29.jar;C:\Users\arnaud\.m2\repository\org\yaml\snakeyaml\1.30\snakeyaml-1.30.jar;C:\Users\arnaud\.m2\repository\org\springframework\boot\spring-boot-starter-web\2.7.14\spring-boot-starter-web-2.7.14.jar;C:\Users\arnaud\.m2\repository\org\springframework\boot\spring-boot-starter-json\2.7.14\spring-boot-starter-json-2.7.14.jar;C:\Users\arnaud\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jdk8\2.13.5\jackson-datatype-jdk8-2.13.5.jar;C:\Users\arnaud\.m2\repository\com\fasterxml\jackson\datatype\jackson-datatype-jsr310\2.13.5\jackson-datatype-jsr310-2.13.5.jar;C:\Users\arnaud\.m2\repository\com\fasterxml\jackson\module\jackson-module-parameter-names\2.13.5\jackson-module-parameter-names-2.13.5.jar;C:\Users\arnaud\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat\2.7.14\spring-boot-starter-tomcat-2.7.14.jar;C:\Users\arnaud\.m2\repository\org\apache\tomcat\embed\tomcat-embed-core\9.0.78\tomcat-embed-core-9.0.78.jar;C:\Users\arnaud\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\9.0.78\tomcat-embed-el-9.0.78.jar;C:\Users\arnaud\.m2\repository\org\apache\tomcat\embed\tomcat-embed-websocket\9.0.78\tomcat-embed-websocket-9.0.78.jar;C:\Users\arnaud\.m2\repository\org\springframework\spring-web\5.3.29\spring-web-5.3.29.jar;C:\Users\arnaud\.m2\repository\org\springframework\spring-beans\5.3.29\spring-beans-5.3.29.jar;C:\Users\arnaud\.m2\repository\org\springframework\spring-webmvc\5.3.29\spring-webmvc-5.3.29.jar;C:\Users\arnaud\.m2\repository\org\springframework\spring-aop\5.3.29\spring-aop-5.3.29.jar;C:\Users\arnaud\.m2\repository\org\springframework\spring-expression\5.3.29\spring-expression-5.3.29.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-core_2.13\3.5.0\spark-core_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\scala-lang\modules\scala-parallel-collections_2.13\1.0.4\scala-parallel-collections_2.13-1.0.4.jar;C:\Users\arnaud\.m2\repository\org\apache\avro\avro\1.11.2\avro-1.11.2.jar;C:\Users\arnaud\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.13.5\jackson-core-2.13.5.jar;C:\Users\arnaud\.m2\repository\org\slf4j\slf4j-api\1.7.36\slf4j-api-1.7.36.jar;C:\Users\arnaud\.m2\repository\org\apache\avro\avro-mapred\1.11.2\avro-mapred-1.11.2.jar;C:\Users\arnaud\.m2\repository\org\apache\avro\avro-ipc\1.11.2\avro-ipc-1.11.2.jar;C:\Users\arnaud\.m2\repository\org\tukaani\xz\1.9\xz-1.9.jar;C:\Users\arnaud\.m2\repository\com\twitter\chill_2.13\0.10.0\chill_2.13-0.10.0.jar;C:\Users\arnaud\.m2\repository\com\esotericsoftware\kryo-shaded\4.0.2\kryo-shaded-4.0.2.jar;C:\Users\arnaud\.m2\repository\com\esotericsoftware\minlog\1.3.0\minlog-1.3.0.jar;C:\Users\arnaud\.m2\repository\org\objenesis\objenesis\2.5.1\objenesis-2.5.1.jar;C:\Users\arnaud\.m2\repository\com\twitter\chill-java\0.10.0\chill-java-0.10.0.jar;C:\Users\arnaud\.m2\repository\org\apache\xbean\xbean-asm9-shaded\4.23\xbean-asm9-shaded-4.23.jar;C:\Users\arnaud\.m2\repository\org\apache\hadoop\hadoop-client-api\3.3.4\hadoop-client-api-3.3.4.jar;C:\Users\arnaud\.m2\repository\org\apache\hadoop\hadoop-client-runtime\3.3.4\hadoop-client-runtime-3.3.4.jar;C:\Users\arnaud\.m2\repository\commons-logging\commons-logging\1.1.3\commons-logging-1.1.3.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-launcher_2.13\3.5.0\spark-launcher_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-kvstore_2.13\3.5.0\spark-kvstore_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\fusesource\leveldbjni\leveldbjni-all\1.8\leveldbjni-all-1.8.jar;C:\Users\arnaud\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.13.5\jackson-annotations-2.13.5.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-network-common_2.13\3.5.0\spark-network-common_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\com\google\crypto\tink\tink\1.9.0\tink-1.9.0.jar;C:\Users\arnaud\.m2\repository\com\google\code\gson\gson\2.9.1\gson-2.9.1.jar;C:\Users\arnaud\.m2\repository\com\google\protobuf\protobuf-java\3.19.6\protobuf-java-3.19.6.jar;C:\Users\arnaud\.m2\repository\joda-time\joda-time\2.12.5\joda-time-2.12.5.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-network-shuffle_2.13\3.5.0\spark-network-shuffle_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-unsafe_2.13\3.5.0\spark-unsafe_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-common-utils_2.13\3.5.0\spark-common-utils_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\slf4j\jcl-over-slf4j\1.7.36\jcl-over-slf4j-1.7.36.jar;C:\Users\arnaud\.m2\repository\org\apache\logging\log4j\log4j-slf4j2-impl\2.20.0\log4j-slf4j2-impl-2.20.0.jar;C:\Users\arnaud\.m2\repository\org\apache\logging\log4j\log4j-api\2.17.2\log4j-api-2.17.2.jar;C:\Users\arnaud\.m2\repository\org\apache\logging\log4j\log4j-core\2.17.2\log4j-core-2.17.2.jar;C:\Users\arnaud\.m2\repository\org\apache\logging\log4j\log4j-1.2-api\2.17.2\log4j-1.2-api-2.17.2.jar;C:\Users\arnaud\.m2\repository\javax\activation\activation\1.1.1\activation-1.1.1.jar;C:\Users\arnaud\.m2\repository\org\apache\curator\curator-recipes\2.13.0\curator-recipes-2.13.0.jar;C:\Users\arnaud\.m2\repository\org\apache\curator\curator-framework\2.13.0\curator-framework-2.13.0.jar;C:\Users\arnaud\.m2\repository\org\apache\curator\curator-client\2.13.0\curator-client-2.13.0.jar;C:\Users\arnaud\.m2\repository\com\google\guava\guava\16.0.1\guava-16.0.1.jar;C:\Users\arnaud\.m2\repository\org\apache\zookeeper\zookeeper\3.6.3\zookeeper-3.6.3.jar;C:\Users\arnaud\.m2\repository\org\apache\zookeeper\zookeeper-jute\3.6.3\zookeeper-jute-3.6.3.jar;C:\Users\arnaud\.m2\repository\org\apache\yetus\audience-annotations\0.5.0\audience-annotations-0.5.0.jar;C:\Users\arnaud\.m2\repository\jakarta\servlet\jakarta.servlet-api\4.0.4\jakarta.servlet-api-4.0.4.jar;C:\Users\arnaud\.m2\repository\commons-codec\commons-codec\1.15\commons-codec-1.15.jar;C:\Users\arnaud\.m2\repository\org\apache\commons\commons-compress\1.23.0\commons-compress-1.23.0.jar;C:\Users\arnaud\.m2\repository\org\apache\commons\commons-lang3\3.12.0\commons-lang3-3.12.0.jar;C:\Users\arnaud\.m2\repository\org\apache\commons\commons-math3\3.6.1\commons-math3-3.6.1.jar;C:\Users\arnaud\.m2\repository\org\apache\commons\commons-text\1.10.0\commons-text-1.10.0.jar;C:\Users\arnaud\.m2\repository\commons-io\commons-io\2.13.0\commons-io-2.13.0.jar;C:\Users\arnaud\.m2\repository\commons-collections\commons-collections\3.2.2\commons-collections-3.2.2.jar;C:\Users\arnaud\.m2\repository\org\apache\commons\commons-collections4\4.4\commons-collections4-4.4.jar;C:\Users\arnaud\.m2\repository\com\google\code\findbugs\jsr305\3.0.0\jsr305-3.0.0.jar;C:\Users\arnaud\.m2\repository\com\ning\compress-lzf\1.1.2\compress-lzf-1.1.2.jar;C:\Users\arnaud\.m2\repository\org\xerial\snappy\snappy-java\1.1.10.3\snappy-java-1.1.10.3.jar;C:\Users\arnaud\.m2\repository\org\lz4\lz4-java\1.8.0\lz4-java-1.8.0.jar;C:\Users\arnaud\.m2\repository\com\github\luben\zstd-jni\1.5.5-4\zstd-jni-1.5.5-4.jar;C:\Users\arnaud\.m2\repository\org\roaringbitmap\RoaringBitmap\0.9.45\RoaringBitmap-0.9.45.jar;C:\Users\arnaud\.m2\repository\org\roaringbitmap\shims\0.9.45\shims-0.9.45.jar;C:\Users\arnaud\.m2\repository\org\scala-lang\modules\scala-xml_2.13\2.1.0\scala-xml_2.13-2.1.0.jar;C:\Users\arnaud\.m2\repository\org\scala-lang\scala-library\2.13.8\scala-library-2.13.8.jar;C:\Users\arnaud\.m2\repository\org\scala-lang\scala-reflect\2.13.8\scala-reflect-2.13.8.jar;C:\Users\arnaud\.m2\repository\org\json4s\json4s-jackson_2.13\3.7.0-M11\json4s-jackson_2.13-3.7.0-M11.jar;C:\Users\arnaud\.m2\repository\org\json4s\json4s-core_2.13\3.7.0-M11\json4s-core_2.13-3.7.0-M11.jar;C:\Users\arnaud\.m2\repository\org\json4s\json4s-ast_2.13\3.7.0-M11\json4s-ast_2.13-3.7.0-M11.jar;C:\Users\arnaud\.m2\repository\org\json4s\json4s-scalap_2.13\3.7.0-M11\json4s-scalap_2.13-3.7.0-M11.jar;C:\Users\arnaud\.m2\repository\org\glassfish\jersey\core\jersey-client\2.35\jersey-client-2.35.jar;C:\Users\arnaud\.m2\repository\jakarta\ws\rs\jakarta.ws.rs-api\2.1.6\jakarta.ws.rs-api-2.1.6.jar;C:\Users\arnaud\.m2\repository\org\glassfish\hk2\external\jakarta.inject\2.6.1\jakarta.inject-2.6.1.jar;C:\Users\arnaud\.m2\repository\org\glassfish\jersey\core\jersey-common\2.35\jersey-common-2.35.jar;C:\Users\arnaud\.m2\repository\org\glassfish\hk2\osgi-resource-locator\1.0.3\osgi-resource-locator-1.0.3.jar;C:\Users\arnaud\.m2\repository\org\glassfish\jersey\core\jersey-server\2.35\jersey-server-2.35.jar;C:\Users\arnaud\.m2\repository\jakarta\validation\jakarta.validation-api\2.0.2\jakarta.validation-api-2.0.2.jar;C:\Users\arnaud\.m2\repository\org\glassfish\jersey\containers\jersey-container-servlet\2.35\jersey-container-servlet-2.35.jar;C:\Users\arnaud\.m2\repository\org\glassfish\jersey\containers\jersey-container-servlet-core\2.35\jersey-container-servlet-core-2.35.jar;C:\Users\arnaud\.m2\repository\org\glassfish\jersey\inject\jersey-hk2\2.35\jersey-hk2-2.35.jar;C:\Users\arnaud\.m2\repository\org\glassfish\hk2\hk2-locator\2.6.1\hk2-locator-2.6.1.jar;C:\Users\arnaud\.m2\repository\org\glassfish\hk2\external\aopalliance-repackaged\2.6.1\aopalliance-repackaged-2.6.1.jar;C:\Users\arnaud\.m2\repository\org\glassfish\hk2\hk2-api\2.6.1\hk2-api-2.6.1.jar;C:\Users\arnaud\.m2\repository\org\glassfish\hk2\hk2-utils\2.6.1\hk2-utils-2.6.1.jar;C:\Users\arnaud\.m2\repository\org\javassist\javassist\3.25.0-GA\javassist-3.25.0-GA.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-all\4.1.94.Final\netty-all-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-buffer\4.1.94.Final\netty-buffer-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-codec\4.1.94.Final\netty-codec-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-codec-http\4.1.94.Final\netty-codec-http-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-codec-http2\4.1.94.Final\netty-codec-http2-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-codec-socks\4.1.94.Final\netty-codec-socks-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-common\4.1.94.Final\netty-common-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-handler\4.1.94.Final\netty-handler-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-transport-native-unix-common\4.1.94.Final\netty-transport-native-unix-common-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-handler-proxy\4.1.94.Final\netty-handler-proxy-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-resolver\4.1.94.Final\netty-resolver-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-transport\4.1.94.Final\netty-transport-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-transport-classes-epoll\4.1.94.Final\netty-transport-classes-epoll-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-transport-classes-kqueue\4.1.94.Final\netty-transport-classes-kqueue-4.1.94.Final.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-transport-native-epoll\4.1.94.Final\netty-transport-native-epoll-4.1.94.Final-linux-x86_64.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-transport-native-epoll\4.1.94.Final\netty-transport-native-epoll-4.1.94.Final-linux-aarch_64.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-transport-native-kqueue\4.1.94.Final\netty-transport-native-kqueue-4.1.94.Final-osx-aarch_64.jar;C:\Users\arnaud\.m2\repository\io\netty\netty-transport-native-kqueue\4.1.94.Final\netty-transport-native-kqueue-4.1.94.Final-osx-x86_64.jar;C:\Users\arnaud\.m2\repository\com\clearspring\analytics\stream\2.9.6\stream-2.9.6.jar;C:\Users\arnaud\.m2\repository\io\dropwizard\metrics\metrics-core\4.2.19\metrics-core-4.2.19.jar;C:\Users\arnaud\.m2\repository\io\dropwizard\metrics\metrics-jvm\4.2.19\metrics-jvm-4.2.19.jar;C:\Users\arnaud\.m2\repository\io\dropwizard\metrics\metrics-json\4.2.19\metrics-json-4.2.19.jar;C:\Users\arnaud\.m2\repository\io\dropwizard\metrics\metrics-graphite\4.2.19\metrics-graphite-4.2.19.jar;C:\Users\arnaud\.m2\repository\io\dropwizard\metrics\metrics-jmx\4.2.19\metrics-jmx-4.2.19.jar;C:\Users\arnaud\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.13.5\jackson-databind-2.13.5.jar;C:\Users\arnaud\.m2\repository\com\fasterxml\jackson\module\jackson-module-scala_2.13\2.13.5\jackson-module-scala_2.13-2.13.5.jar;C:\Users\arnaud\.m2\repository\com\thoughtworks\paranamer\paranamer\2.8\paranamer-2.8.jar;C:\Users\arnaud\.m2\repository\org\apache\ivy\ivy\2.5.1\ivy-2.5.1.jar;C:\Users\arnaud\.m2\repository\oro\oro\2.0.8\oro-2.0.8.jar;C:\Users\arnaud\.m2\repository\net\razorvine\pickle\1.3\pickle-1.3.jar;C:\Users\arnaud\.m2\repository\net\sf\py4j\py4j\0.10.9.7\py4j-0.10.9.7.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-tags_2.13\3.5.0\spark-tags_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\apache\commons\commons-crypto\1.1.0\commons-crypto-1.1.0.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-sql_2.13\3.5.0\spark-sql_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\rocksdb\rocksdbjni\8.3.2\rocksdbjni-8.3.2.jar;C:\Users\arnaud\.m2\repository\com\univocity\univocity-parsers\2.9.1\univocity-parsers-2.9.1.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-sketch_2.13\3.5.0\spark-sketch_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-catalyst_2.13\3.5.0\spark-catalyst_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\apache\spark\spark-sql-api_2.13\3.5.0\spark-sql-api_2.13-3.5.0.jar;C:\Users\arnaud\.m2\repository\org\scala-lang\modules\scala-parser-combinators_2.13\2.3.0\scala-parser-combinators_2.13-2.3.0.jar;C:\Users\arnaud\.m2\repository\org\antlr\antlr4-runtime\4.9.3\antlr4-runtime-4.9.3.jar;C:\Users\arnaud\.m2\repository\org\apache\arrow\arrow-vector\12.0.1\arrow-vector-12.0.1.jar;C:\Users\arnaud\.m2\repository\org\apache\arrow\arrow-format\12.0.1\arrow-format-12.0.1.jar;C:\Users\arnaud\.m2\repository\org\apache\arrow\arrow-memory-core\12.0.1\arrow-memory-core-12.0.1.jar;C:\Users\arnaud\.m2\repository\com\google\flatbuffers\flatbuffers-java\1.12.0\flatbuffers-java-1.12.0.jar;C:\Users\arnaud\.m2\repository\org\apache\arrow\arrow-memory-netty\12.0.1\arrow-memory-netty-12.0.1.jar;C:\Users\arnaud\.m2\repository\org\codehaus\janino\janino\3.1.10\janino-3.1.10.jar;C:\Users\arnaud\.m2\repository\org\codehaus\janino\commons-compiler\3.1.10\commons-compiler-3.1.10.jar;C:\Users\arnaud\.m2\repository\org\apache\datasketches\datasketches-java\3.3.0\datasketches-java-3.3.0.jar;C:\Users\arnaud\.m2\repository\org\apache\datasketches\datasketches-memory\2.1.0\datasketches-memory-2.1.0.jar;C:\Users\arnaud\.m2\repository\org\apache\orc\orc-core\1.9.1\orc-core-1.9.1-shaded-protobuf.jar;C:\Users\arnaud\.m2\repository\org\apache\orc\orc-shims\1.9.1\orc-shims-1.9.1.jar;C:\Users\arnaud\.m2\repository\io\airlift\aircompressor\0.25\aircompressor-0.25.jar;C:\Users\arnaud\.m2\repository\org\jetbrains\annotations\17.0.0\annotations-17.0.0.jar;C:\Users\arnaud\.m2\repository\org\threeten\threeten-extra\1.7.1\threeten-extra-1.7.1.jar;C:\Users\arnaud\.m2\repository\org\apache\orc\orc-mapreduce\1.9.1\orc-mapreduce-1.9.1-shaded-protobuf.jar;C:\Users\arnaud\.m2\repository\org\apache\hive\hive-storage-api\2.8.1\hive-storage-api-2.8.1.jar;C:\Users\arnaud\.m2\repository\org\apache\parquet\parquet-column\1.13.1\parquet-column-1.13.1.jar;C:\Users\arnaud\.m2\repository\org\apache\parquet\parquet-common\1.13.1\parquet-common-1.13.1.jar;C:\Users\arnaud\.m2\repository\org\apache\parquet\parquet-encoding\1.13.1\parquet-encoding-1.13.1.jar;C:\Users\arnaud\.m2\repository\org\apache\parquet\parquet-hadoop\1.13.1\parquet-hadoop-1.13.1.jar;C:\Users\arnaud\.m2\repository\org\apache\parquet\parquet-format-structures\1.13.1\parquet-format-structures-1.13.1.jar;C:\Users\arnaud\.m2\repository\org\apache\parquet\parquet-jackson\1.13.1\parquet-jackson-1.13.1.jar;C:\apps\intellij\IntelliJ-IDEA-2023.2.2\lib\idea_rt.jar org.example.Main
-Connected to the target VM, address: '127.0.0.1:51014', transport: 'socket'
+Simplest maven pom.xml works fine with (very old) BOM spring-boot-dependencies 2.7.x  and spark 3.5
 
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::               (v2.7.14)
+```xml
+    <properties>
+        <spark.version>3.5.0</spark.version>
+        <scala.version>2.13</scala.version>
+    </properties>
 
-2023-11-12 12:32:57.199  INFO 116 --- [           main] org.example.Main                         : Starting Main using Java 20.0.1 on DesktopArnaud with PID 116 (C:\arn\devPerso\test-snippets\test-springboot-spark\target\classes started by arnaud in C:\arn\devPerso\test-snippets\test-springboot-spark)
-2023-11-12 12:32:57.202  INFO 116 --- [           main] org.example.Main                         : No active profile set, falling back to 1 default profile: "default"
-2023-11-12 12:32:57.997  INFO 116 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-2023-11-12 12:32:58.004  INFO 116 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2023-11-12 12:32:58.005  INFO 116 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.78]
-2023-11-12 12:32:58.128  INFO 116 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2023-11-12 12:32:58.129  INFO 116 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 873 ms
-SparkSession getOrCreate
-2023-11-12 12:32:58.541  INFO 116 --- [           main] org.apache.spark.SparkContext            : Running Spark version 3.5.0
-2023-11-12 12:32:58.542  INFO 116 --- [           main] org.apache.spark.SparkContext            : OS info Windows 11, 10.0, amd64
-2023-11-12 12:32:58.542  INFO 116 --- [           main] org.apache.spark.SparkContext            : Java version 20.0.1
-2023-11-12 12:32:58.717  INFO 116 --- [           main] org.apache.spark.resource.ResourceUtils  : ==============================================================
-2023-11-12 12:32:58.717  INFO 116 --- [           main] org.apache.spark.resource.ResourceUtils  : No custom resources configured for spark.driver.
-2023-11-12 12:32:58.717  INFO 116 --- [           main] org.apache.spark.resource.ResourceUtils  : ==============================================================
-2023-11-12 12:32:58.718  INFO 116 --- [           main] org.apache.spark.SparkContext            : Submitted application: test-springboot-spark
-2023-11-12 12:32:58.738  INFO 116 --- [           main] o.apache.spark.resource.ResourceProfile  : Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
-2023-11-12 12:32:58.743  INFO 116 --- [           main] o.apache.spark.resource.ResourceProfile  : Limiting resource is cpu
-2023-11-12 12:32:58.744  INFO 116 --- [           main] o.a.s.resource.ResourceProfileManager    : Added ResourceProfile id: 0
-2023-11-12 12:32:58.800  INFO 116 --- [           main] org.apache.spark.SecurityManager         : Changing view acls to: arnaud
-2023-11-12 12:32:58.801  INFO 116 --- [           main] org.apache.spark.SecurityManager         : Changing modify acls to: arnaud
-2023-11-12 12:32:58.802  INFO 116 --- [           main] org.apache.spark.SecurityManager         : Changing view acls groups to: 
-2023-11-12 12:32:58.802  INFO 116 --- [           main] org.apache.spark.SecurityManager         : Changing modify acls groups to: 
-2023-11-12 12:32:58.802  INFO 116 --- [           main] org.apache.spark.SecurityManager         : SecurityManager: authentication disabled; ui acls disabled; users with view permissions: arnaud; groups with view permissions: EMPTY; users with modify permissions: arnaud; groups with modify permissions: EMPTY
-2023-11-12 12:32:59.038  INFO 116 --- [           main] org.apache.spark.util.Utils              : Successfully started service 'sparkDriver' on port 51019.
-2023-11-12 12:32:59.060  INFO 116 --- [           main] org.apache.spark.SparkEnv                : Registering MapOutputTracker
-2023-11-12 12:32:59.092  INFO 116 --- [           main] org.apache.spark.SparkEnv                : Registering BlockManagerMaster
-2023-11-12 12:32:59.110  INFO 116 --- [           main] o.a.s.s.BlockManagerMasterEndpoint       : Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
-2023-11-12 12:32:59.111  INFO 116 --- [           main] o.a.s.s.BlockManagerMasterEndpoint       : BlockManagerMasterEndpoint up
-2023-11-12 12:32:59.113  INFO 116 --- [           main] org.apache.spark.SparkEnv                : Registering BlockManagerMasterHeartbeat
-2023-11-12 12:32:59.132  INFO 116 --- [           main] o.apache.spark.storage.DiskBlockManager  : Created local directory at C:\Users\arnaud\AppData\Local\Temp\blockmgr-27f5db1e-b938-4d23-80f8-7645e7537c30
-2023-11-12 12:32:59.157  INFO 116 --- [           main] o.a.spark.storage.memory.MemoryStore     : MemoryStore started with capacity 1663.2 MiB
-2023-11-12 12:32:59.171  INFO 116 --- [           main] org.apache.spark.SparkEnv                : Registering OutputCommitCoordinator
-2023-11-12 12:32:59.199  INFO 116 --- [           main] org.sparkproject.jetty.util.log          : Logging initialized @3255ms to org.sparkproject.jetty.util.log.Slf4jLog
-2023-11-12 12:32:59.262  INFO 116 --- [           main] org.apache.spark.ui.JettyUtils           : Start Jetty 0.0.0.0:4040 for SparkUI
-2023-11-12 12:32:59.273  INFO 116 --- [           main] org.sparkproject.jetty.server.Server     : jetty-9.4.52.v20230823; built: 2023-08-23T19:29:37.669Z; git: abdcda73818a1a2c705da276edb0bf6581e7997e; jvm 20.0.1+9
-2023-11-12 12:32:59.288  INFO 116 --- [           main] org.sparkproject.jetty.server.Server     : Started @3345ms
-2023-11-12 12:32:59.319  INFO 116 --- [           main] o.s.jetty.server.AbstractConnector       : Started ServerConnector@7686f701{HTTP/1.1, (http/1.1)}{0.0.0.0:4040}
-2023-11-12 12:32:59.319  INFO 116 --- [           main] org.apache.spark.util.Utils              : Successfully started service 'SparkUI' on port 4040.
-2023-11-12 12:32:59.338  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@25109608{/,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.447  INFO 116 --- [           main] org.apache.spark.executor.Executor       : Starting executor ID driver on host DesktopArnaud
-2023-11-12 12:32:59.447  INFO 116 --- [           main] org.apache.spark.executor.Executor       : OS info Windows 11, 10.0, amd64
-2023-11-12 12:32:59.448  INFO 116 --- [           main] org.apache.spark.executor.Executor       : Java version 20.0.1
-2023-11-12 12:32:59.461  INFO 116 --- [           main] org.apache.spark.executor.Executor       : Starting executor with user classpath (userClassPathFirst = false): ''
-2023-11-12 12:32:59.463  INFO 116 --- [           main] org.apache.spark.executor.Executor       : Created or updated repl class loader org.apache.spark.util.MutableURLClassLoader@7e50eeb9 for default.
-2023-11-12 12:32:59.521  INFO 116 --- [           main] org.apache.spark.util.Utils              : Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 51020.
-2023-11-12 12:32:59.521  INFO 116 --- [           main] o.a.s.n.netty.NettyBlockTransferService  : Server created on DesktopArnaud:51020
-2023-11-12 12:32:59.523  INFO 116 --- [           main] org.apache.spark.storage.BlockManager    : Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
-2023-11-12 12:32:59.531  INFO 116 --- [           main] o.a.spark.storage.BlockManagerMaster     : Registering BlockManager BlockManagerId(driver, DesktopArnaud, 51020, None)
-2023-11-12 12:32:59.536  INFO 116 --- [ckManagerMaster] o.a.s.s.BlockManagerMasterEndpoint       : Registering block manager DesktopArnaud:51020 with 1663.2 MiB RAM, BlockManagerId(driver, DesktopArnaud, 51020, None)
-2023-11-12 12:32:59.539  INFO 116 --- [           main] o.a.spark.storage.BlockManagerMaster     : Registered BlockManager BlockManagerId(driver, DesktopArnaud, 51020, None)
-2023-11-12 12:32:59.540  INFO 116 --- [           main] org.apache.spark.storage.BlockManager    : Initialized BlockManager: BlockManagerId(driver, DesktopArnaud, 51020, None)
-2023-11-12 12:32:59.581  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Stopped o.s.j.s.ServletContextHandler@25109608{/,null,STOPPED,@Spark}
-2023-11-12 12:32:59.582  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@5501d1c8{/jobs,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.583  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@7b598d05{/jobs/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.584  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@371cd2fc{/jobs/job,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.585  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@3c346c45{/jobs/job/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.586  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@478530cb{/stages,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.587  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@44aeae34{/stages/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.587  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@40a8a26f{/stages/stage,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.588  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@177ddd24{/stages/stage/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.589  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@126675fd{/stages/pool,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.590  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@5560b64d{/stages/pool/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.591  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@23321be7{/storage,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.592  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@312f3050{/storage/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.593  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@52856ff9{/storage/rdd,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.594  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@1242d96b{/storage/rdd/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.595  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@574ebdaf{/environment,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.596  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@377e573a{/environment/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.597  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@54daf8f9{/executors,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.598  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@38cf3ae1{/executors/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.599  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@11228bee{/executors/threadDump,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.601  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@460f1cdb{/executors/threadDump/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.603  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@349f3ff7{/executors/heapHistogram,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.604  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@3c9f4376{/executors/heapHistogram/json,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.631  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@7da77305{/static,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.632  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@704c3bdf{/,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.634  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@c82d925{/api,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.635  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@43fd77d8{/jobs/job/kill,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.636  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@1805ec96{/stages/stage/kill,null,AVAILABLE,@Spark}
-2023-11-12 12:32:59.640  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@4d825dbe{/metrics/json,null,AVAILABLE,@Spark}
-2023-11-12 12:33:00.102  INFO 116 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
-2023-11-12 12:33:00.110  INFO 116 --- [           main] org.example.Main                         : Started Main in 3.35 seconds (JVM running for 4.167)
-spark.sql ...
-2023-11-12 12:33:00.162  WARN 116 --- [           main] o.apache.spark.sql.internal.SharedState  : URL.setURLStreamHandlerFactory failed to set FsUrlStreamHandlerFactory
-2023-11-12 12:33:00.163  INFO 116 --- [           main] o.apache.spark.sql.internal.SharedState  : Setting hive.metastore.warehouse.dir ('null') to the value of spark.sql.warehouse.dir.
-2023-11-12 12:33:00.171  INFO 116 --- [           main] o.apache.spark.sql.internal.SharedState  : Warehouse path is 'file:/C:/arn/devPerso/test-snippets/test-springboot-spark/spark-warehouse'.
-2023-11-12 12:33:00.184  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@22ff11ef{/SQL,null,AVAILABLE,@Spark}
-2023-11-12 12:33:00.184  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@23d978b{/SQL/json,null,AVAILABLE,@Spark}
-2023-11-12 12:33:00.185  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@602a3237{/SQL/execution,null,AVAILABLE,@Spark}
-2023-11-12 12:33:00.186  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@74a74070{/SQL/execution/json,null,AVAILABLE,@Spark}
-2023-11-12 12:33:00.187  INFO 116 --- [           main] o.s.jetty.server.handler.ContextHandler  : Started o.s.j.s.ServletContextHandler@3a3bc0da{/static/sql,null,AVAILABLE,@Spark}
-2023-11-12 12:33:02.190  INFO 116 --- [           main] o.a.s.s.c.e.codegen.CodeGenerator        : Code generated in 176.7899 ms
-2023-11-12 12:33:02.286  INFO 116 --- [           main] org.apache.spark.SparkContext            : Starting job: show at Main.java:45
-2023-11-12 12:33:02.297  INFO 116 --- [uler-event-loop] org.apache.spark.scheduler.DAGScheduler  : Got job 0 (show at Main.java:45) with 1 output partitions
-2023-11-12 12:33:02.298  INFO 116 --- [uler-event-loop] org.apache.spark.scheduler.DAGScheduler  : Final stage: ResultStage 0 (show at Main.java:45)
-2023-11-12 12:33:02.298  INFO 116 --- [uler-event-loop] org.apache.spark.scheduler.DAGScheduler  : Parents of final stage: List()
-2023-11-12 12:33:02.299  INFO 116 --- [uler-event-loop] org.apache.spark.scheduler.DAGScheduler  : Missing parents: List()
-2023-11-12 12:33:02.301  INFO 116 --- [uler-event-loop] org.apache.spark.scheduler.DAGScheduler  : Submitting ResultStage 0 (MapPartitionsRDD[2] at show at Main.java:45), which has no missing parents
-2023-11-12 12:33:02.345  INFO 116 --- [uler-event-loop] o.a.spark.storage.memory.MemoryStore     : Block broadcast_0 stored as values in memory (estimated size 7.7 KiB, free 1663.2 MiB)
-2023-11-12 12:33:02.415  INFO 116 --- [uler-event-loop] o.a.spark.storage.memory.MemoryStore     : Block broadcast_0_piece0 stored as bytes in memory (estimated size 3.9 KiB, free 1663.2 MiB)
-2023-11-12 12:33:02.418  INFO 116 --- [ckManagerMaster] o.apache.spark.storage.BlockManagerInfo  : Added broadcast_0_piece0 in memory on DesktopArnaud:51020 (size: 3.9 KiB, free: 1663.2 MiB)
-2023-11-12 12:33:02.422  INFO 116 --- [uler-event-loop] org.apache.spark.SparkContext            : Created broadcast 0 from broadcast at DAGScheduler.scala:1580
-2023-11-12 12:33:02.437  INFO 116 --- [uler-event-loop] org.apache.spark.scheduler.DAGScheduler  : Submitting 1 missing tasks from ResultStage 0 (MapPartitionsRDD[2] at show at Main.java:45) (first 15 tasks are for partitions Vector(0))
-2023-11-12 12:33:02.438  INFO 116 --- [uler-event-loop] o.a.spark.scheduler.TaskSchedulerImpl    : Adding task set 0.0 with 1 tasks resource profile 0
-2023-11-12 12:33:02.483  INFO 116 --- [er-event-loop-6] o.apache.spark.scheduler.TaskSetManager  : Starting task 0.0 in stage 0.0 (TID 0) (DesktopArnaud, executor driver, partition 0, PROCESS_LOCAL, 7967 bytes) 
-2023-11-12 12:33:02.494  INFO 116 --- [age 0.0 (TID 0)] org.apache.spark.executor.Executor       : Running task 0.0 in stage 0.0 (TID 0)
-2023-11-12 12:33:02.557  INFO 116 --- [age 0.0 (TID 0)] o.a.s.s.c.e.codegen.CodeGenerator        : Code generated in 7.6071 ms
-2023-11-12 12:33:02.575  INFO 116 --- [age 0.0 (TID 0)] org.apache.spark.executor.Executor       : Finished task 0.0 in stage 0.0 (TID 0). 1560 bytes result sent to driver
-2023-11-12 12:33:02.582  INFO 116 --- [result-getter-0] o.apache.spark.scheduler.TaskSetManager  : Finished task 0.0 in stage 0.0 (TID 0) in 110 ms on DesktopArnaud (executor driver) (1/1)
-2023-11-12 12:33:02.583  INFO 116 --- [result-getter-0] o.a.spark.scheduler.TaskSchedulerImpl    : Removed TaskSet 0.0, whose tasks have all completed, from pool 
-2023-11-12 12:33:02.587  INFO 116 --- [uler-event-loop] org.apache.spark.scheduler.DAGScheduler  : ResultStage 0 (show at Main.java:45) finished in 0,275 s
-2023-11-12 12:33:02.590  INFO 116 --- [uler-event-loop] org.apache.spark.scheduler.DAGScheduler  : Job 0 is finished. Cancelling potential speculative or zombie tasks for this job
-2023-11-12 12:33:02.590  INFO 116 --- [uler-event-loop] o.a.spark.scheduler.TaskSchedulerImpl    : Killing all running tasks in stage 0: Stage finished
-2023-11-12 12:33:02.591  INFO 116 --- [           main] org.apache.spark.scheduler.DAGScheduler  : Job 0 finished: show at Main.java:45, took 0,306364 s
-2023-11-12 12:33:02.689  INFO 116 --- [ckManagerMaster] o.apache.spark.storage.BlockManagerInfo  : Removed broadcast_0_piece0 on DesktopArnaud:51020 in memory (size: 3.9 KiB, free: 1663.2 MiB)
-2023-11-12 12:33:03.410  INFO 116 --- [           main] o.a.s.s.c.e.codegen.CodeGenerator        : Code generated in 12.6161 ms
-+---+
-|  1|
-+---+
-|  1|
-+---+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.7.14</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+    </dependencies>
 ```
+
+=> run OK... but outdated springboot 2.7.*, should migrate to springboot 3.*
+
+Notice... springboot 2.7 can work with jdk < 17, therefore not requiring jvm options
+
+
+# Upgrading JDK >= 17  ... required jvm options
+
+```
+--add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+--add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+--add-opens=java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/java.net=ALL-UNNAMED
+--add-opens=java.base/java.nio=ALL-UNNAMED
+--add-opens=java.base/java.util=ALL-UNNAMED
+--add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+--add-opens=java.base/sun.nio.cs=ALL-UNNAMED
+--add-opens=java.base/sun.security.action=ALL-UNNAMED
+--add-opens=java.base/sun.util.calendar=ALL-UNNAMED
+--add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED
+```
+
 
 # Error while Running with springboot-dependencies 3.1
 
+```xml
+    <properties>
+        <spark.version>3.5.0</spark.version>
+        <scala.version>2.13</scala.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.1.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+    </dependencies>
 ```
-Connected to the target VM, address: '127.0.0.1:50933', transport: 'socket'
+
+=> ERROR 
+
+```
 SLF4J: Class path contains multiple SLF4J providers.
 SLF4J: Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@10959ece]
 SLF4J: Found provider [org.apache.logging.slf4j.SLF4JServiceProvider@3a6bb9bf]
 SLF4J: See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
 SLF4J: Actual provider is of type [ch.qos.logback.classic.spi.LogbackServiceProvider@10959ece]
 
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.1.2)
+....
 
-2023-11-12T12:30:55.220+01:00  INFO 13764 --- [           main] org.example.Main                         : Starting Main using Java 20.0.1 with PID 13764 (C:\arn\devPerso\test-snippets\test-springboot-spark\target\classes started by arnaud in C:\arn\devPerso\test-snippets\test-springboot-spark)
-2023-11-12T12:30:55.224+01:00  INFO 13764 --- [           main] org.example.Main                         : No active profile set, falling back to 1 default profile: "default"
-2023-11-12T12:30:55.982+01:00  INFO 13764 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
-2023-11-12T12:30:55.990+01:00  INFO 13764 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2023-11-12T12:30:55.991+01:00  INFO 13764 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.11]
-2023-11-12T12:30:56.090+01:00  INFO 13764 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2023-11-12T12:30:56.090+01:00  INFO 13764 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 817 ms
-SparkSession getOrCreate
-2023-11-12T12:30:56.526+01:00  INFO 13764 --- [           main] org.apache.spark.SparkContext            : Running Spark version 3.5.0
-2023-11-12T12:30:56.527+01:00  INFO 13764 --- [           main] org.apache.spark.SparkContext            : OS info Windows 11, 10.0, amd64
-2023-11-12T12:30:56.527+01:00  INFO 13764 --- [           main] org.apache.spark.SparkContext            : Java version 20.0.1
-2023-11-12T12:30:56.695+01:00  INFO 13764 --- [           main] o.apache.spark.resource.ResourceUtils    : ==============================================================
-2023-11-12T12:30:56.695+01:00  INFO 13764 --- [           main] o.apache.spark.resource.ResourceUtils    : No custom resources configured for spark.driver.
-2023-11-12T12:30:56.695+01:00  INFO 13764 --- [           main] o.apache.spark.resource.ResourceUtils    : ==============================================================
-2023-11-12T12:30:56.696+01:00  INFO 13764 --- [           main] org.apache.spark.SparkContext            : Submitted application: test-springboot-spark
-2023-11-12T12:30:56.713+01:00  INFO 13764 --- [           main] o.apache.spark.resource.ResourceProfile  : Default ResourceProfile created, executor resources: Map(cores -> name: cores, amount: 1, script: , vendor: , memory -> name: memory, amount: 1024, script: , vendor: , offHeap -> name: offHeap, amount: 0, script: , vendor: ), task resources: Map(cpus -> name: cpus, amount: 1.0)
-2023-11-12T12:30:56.716+01:00  INFO 13764 --- [           main] o.apache.spark.resource.ResourceProfile  : Limiting resource is cpu
-2023-11-12T12:30:56.717+01:00  INFO 13764 --- [           main] o.a.s.resource.ResourceProfileManager    : Added ResourceProfile id: 0
-2023-11-12T12:30:56.778+01:00  INFO 13764 --- [           main] org.apache.spark.SecurityManager         : Changing view acls to: arnaud
-2023-11-12T12:30:56.779+01:00  INFO 13764 --- [           main] org.apache.spark.SecurityManager         : Changing modify acls to: arnaud
-2023-11-12T12:30:56.779+01:00  INFO 13764 --- [           main] org.apache.spark.SecurityManager         : Changing view acls groups to: 
-2023-11-12T12:30:56.780+01:00  INFO 13764 --- [           main] org.apache.spark.SecurityManager         : Changing modify acls groups to: 
-2023-11-12T12:30:56.780+01:00  INFO 13764 --- [           main] org.apache.spark.SecurityManager         : SecurityManager: authentication disabled; ui acls disabled; users with view permissions: arnaud; groups with view permissions: EMPTY; users with modify permissions: arnaud; groups with modify permissions: EMPTY
-2023-11-12T12:30:57.021+01:00  INFO 13764 --- [           main] org.apache.spark.util.Utils              : Successfully started service 'sparkDriver' on port 50938.
-2023-11-12T12:30:57.054+01:00  INFO 13764 --- [           main] org.apache.spark.SparkEnv                : Registering MapOutputTracker
-2023-11-12T12:30:57.085+01:00  INFO 13764 --- [           main] org.apache.spark.SparkEnv                : Registering BlockManagerMaster
-2023-11-12T12:30:57.105+01:00  INFO 13764 --- [           main] o.a.s.s.BlockManagerMasterEndpoint       : Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
-2023-11-12T12:30:57.106+01:00  INFO 13764 --- [           main] o.a.s.s.BlockManagerMasterEndpoint       : BlockManagerMasterEndpoint up
-2023-11-12T12:30:57.108+01:00  INFO 13764 --- [           main] org.apache.spark.SparkEnv                : Registering BlockManagerMasterHeartbeat
-2023-11-12T12:30:57.134+01:00  INFO 13764 --- [           main] o.apache.spark.storage.DiskBlockManager  : Created local directory at C:\Users\arnaud\AppData\Local\Temp\blockmgr-59a60473-1328-4137-af00-78dc29f64ed5
-2023-11-12T12:30:57.160+01:00  INFO 13764 --- [           main] o.a.spark.storage.memory.MemoryStore     : MemoryStore started with capacity 1663.2 MiB
-2023-11-12T12:30:57.173+01:00  INFO 13764 --- [           main] org.apache.spark.SparkEnv                : Registering OutputCommitCoordinator
-2023-11-12T12:30:57.182+01:00  WARN 13764 --- [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cmdRunner' defined in file [C:\arn\devPerso\test-snippets\test-springboot-spark\target\classes\org\example\CmdRunner.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'sparkSession' defined in class path resource [org/example/SparkConfiguration.class]: Failed to instantiate [org.apache.spark.sql.SparkSession]: Factory method 'sparkSession' threw exception with message: javax/servlet/Servlet
-2023-11-12T12:30:57.184+01:00  INFO 13764 --- [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
-2023-11-12T12:30:57.196+01:00  INFO 13764 --- [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
-
-Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2023-11-12T12:30:57.212+01:00 ERROR 13764 --- [           main] o.s.boot.SpringApplication               : Application run failed
-
-org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'cmdRunner' defined in file [C:\arn\devPerso\test-snippets\test-springboot-spark\target\classes\org\example\CmdRunner.class]: Unsatisfied dependency expressed through constructor parameter 0: Error creating bean with name 'sparkSession' defined in class path resource [org/example/SparkConfiguration.class]: Failed to instantiate [org.apache.spark.sql.SparkSession]: Factory method 'sparkSession' threw exception with message: javax/servlet/Servlet
-	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:800) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:245) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1352) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1189) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:560) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:520) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:326) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:324) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:200) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973) ~[spring-beans-6.0.11.jar:6.0.11]
-	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:942) ~[spring-context-6.0.11.jar:6.0.11]
-	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:608) ~[spring-context-6.0.11.jar:6.0.11]
-	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146) ~[spring-boot-3.1.2.jar:3.1.2]
-	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:734) ~[spring-boot-3.1.2.jar:3.1.2]
-	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:436) ~[spring-boot-3.1.2.jar:3.1.2]
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:312) ~[spring-boot-3.1.2.jar:3.1.2]
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1306) ~[spring-boot-3.1.2.jar:3.1.2]
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1295) ~[spring-boot-3.1.2.jar:3.1.2]
-	at org.example.Main.main(Main.java:15) ~[classes/:na]
 Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'sparkSession' defined in class path resource [org/example/SparkConfiguration.class]: Failed to instantiate [org.apache.spark.sql.SparkSession]: Factory method 'sparkSession' threw exception with message: javax/servlet/Servlet
 	at org.springframework.beans.factory.support.ConstructorResolver.instantiate(ConstructorResolver.java:659) ~[spring-beans-6.0.11.jar:6.0.11]
 	at org.springframework.beans.factory.support.ConstructorResolver.instantiateUsingFactoryMethod(ConstructorResolver.java:493) ~[spring-beans-6.0.11.jar:6.0.11]
@@ -257,9 +156,211 @@ Caused by: java.lang.ClassNotFoundException: javax.servlet.Servlet
 	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188) ~[na:na]
 	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:521) ~[na:na]
 	... 49 common frames omitted
+```
 
-Disconnected from the target VM, address: '127.0.0.1:50933', transport: 'socket'
+Root cause: major change with springboot 3: 'javax.servlet.Servlet' class is NO more defined in package 'javax.*', but migrated to 'jakarta.*'
 
-Process finished with exit code 1
+The compiled dependency from spark-core to javax-servlet-api is replaced by maven dependencyManagement
+
+
+
+# Running with springboot3, no dependenciesManagement
+
+```xml
+    <properties>
+        <spark.version>3.5.0</spark.version>
+        <scala.version>2.13</scala.version>
+        <springboot.version>3.1.2</springboot.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${springboot.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+    </dependencies>
+```
+
+=> ERROR
 
 ```
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Exception in thread "main" java.lang.IllegalArgumentException: LoggerFactory is not a Logback LoggerContext but Logback is on the classpath. Either remove Logback or the competing implementation (class org.slf4j.helpers.NOPLoggerFactory loaded from file:/C:/Users/arnaud/.m2/repository/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar). If you are using WebLogic you will need to add 'org.slf4j' to prefer-application-packages in WEB-INF/weblogic.xml: org.slf4j.helpers.NOPLoggerFactory
+at org.springframework.util.Assert.instanceCheckFailed(Assert.java:713)
+at org.springframework.util.Assert.isInstanceOf(Assert.java:632)
+at org.springframework.boot.logging.logback.LogbackLoggingSystem.getLoggerContext(LogbackLoggingSystem.java:381)
+at org.springframework.boot.logging.logback.LogbackLoggingSystem.beforeInitialize(LogbackLoggingSystem.java:122)
+at org.springframework.boot.context.logging.LoggingApplicationListener.onApplicationStartingEvent(LoggingApplicationListener.java:238)
+at org.springframework.boot.context.logging.LoggingApplicationListener.onApplicationEvent(LoggingApplicationListener.java:220)
+at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:172)
+at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:165)
+at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:143)
+at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:131)
+at org.springframework.boot.context.event.EventPublishingRunListener.multicastInitialEvent(EventPublishingRunListener.java:136)
+at org.springframework.boot.context.event.EventPublishingRunListener.starting(EventPublishingRunListener.java:75)
+at org.springframework.boot.SpringApplicationRunListeners.lambda$starting$0(SpringApplicationRunListeners.java:54)
+at java.base/java.lang.Iterable.forEach(Iterable.java:75)
+at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:118)
+at org.springframework.boot.SpringApplicationRunListeners.starting(SpringApplicationRunListeners.java:54)
+at org.springframework.boot.SpringApplication.run(SpringApplication.java:304)
+at org.springframework.boot.SpringApplication.run(SpringApplication.java:1306)
+at org.springframework.boot.SpringApplication.run(SpringApplication.java:1295)
+at org.example.Springboot3SparkNoDepMgtMain.main(Springboot3SparkNoDepMgtMain.java:15)
+```
+
+Root cause? some slf4j / Logback / Log4j2  dependency HELL
+
+spark-core comes with org.apache.logging.log4j:log4j-slf4j2-impl  (bad idea... Developpers community prefers compile-time dependencies to slf4j-api only, and runtime to logback)
+
+
+# Running with springboot3, no <dependenciesManagement>, force version slf4j-api, <exclusion> org.apache.logging.log4j:log4j-slf4j2-impl
+
+```xml
+    <properties>
+        <spark.version>3.5.0</spark.version>
+        <scala.version>2.13</scala.version>
+        <springboot.version>3.1.2</springboot.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j2-impl</artifactId>
+                <version>__invalid_version_to_force_exclude</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${springboot.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j2-impl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+    </dependencies>
+
+```
+
+=> OK !!!
+
+BUT NOT PRACTICAL to not being able to use maven <dependencyManagement> and springboot-dependencies BOM !! 
+
+Need to maintain tones of maven <version> manually in applications.
+
+
+# Springboot3 (with dependencyManagement BOM) and forced override for glassfish + servlet-api + exclude log4j-slf4j2-impl
+
+```xml
+    <properties>
+        <spark.version>3.5.0</spark.version>
+        <scala.version>2.13</scala.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.1.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-servlet-core</artifactId>
+                <version>2.41</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j2-impl</artifactId>
+                <version>__invalid_version_to_force_exclude</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j2-impl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>4.0.4</version>
+        </dependency>
+
+    </dependencies>
+```
+
+=> OK !!!
+
+Luckily the default implementation of springboot-starter-web is Tomcat, and NOT glassfish.
+
+Overriding glassfish version is OK, because it is used only by Spark and not by spring.
+
+Adding very old version of Servlet api is OK, because it is NOT used by Spring. 
+
+cf also possibility to repackaged jar of servlet, and giving a different groupId:artifactId, not colliding with BOM and spring-web.
+
+
+But LOT of tricky code in pom.xml to setup !!

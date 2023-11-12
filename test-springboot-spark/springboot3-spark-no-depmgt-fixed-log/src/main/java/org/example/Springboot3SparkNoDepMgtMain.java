@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
 @SpringBootApplication
-public class Main {
+public class Springboot3SparkNoDepMgtMain {
 
     public static void main(String[] args) {
-        SpringApplication.run(Main.class, args);
+        SpringApplication.run(Springboot3SparkNoDepMgtMain.class, args);
     }
 
 }

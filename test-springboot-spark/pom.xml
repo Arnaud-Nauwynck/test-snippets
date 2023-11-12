@@ -11,8 +11,14 @@
 
     <modules>
         <module>springboot2-spark</module>
-        <module>servlet-repackacked</module>
         <module>springboot3-spark</module>
+        <module>servlet-repackaged</module>
+        <module>springboot3-spark-no-depmgt</module>
+        <module>springboot3-spark-no-depmgt-fixed-log</module>
+        <module>springboot3-spark-with-repackaged</module>
+        <module>springboot3-spark-with-repackaged-no-springweb</module>
+        <module>springboot3-spark-fixed-glassfish</module>
+        <module>springboot3-spark-with-repackaged-fixed-glassfish</module>
     </modules>
 
     <properties>
