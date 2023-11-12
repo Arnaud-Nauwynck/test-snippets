@@ -1,0 +1,18 @@
+<aspectj>
+    <aspects>
+        <aspect name="fr.an.test.aspectjfile.FileAccessAspect"/>
+        <aspect name="fr.an.test.aspectjfile.SparkConfAspect"/>
+    </aspects>
+
+
+    <weaver >
+        <!--
+        options="-debug"
+        -->
+        <exclude within="org.jline..*" />
+        <exclude within="org.apache.ivy..*" />
+        <exclude within="org.apache.logging..*" />
+        <exclude within="org.apache.spark.sql.catalyst.expressions.GeneratedClass$..*" />
+    </weaver>
+
+</aspectj>
