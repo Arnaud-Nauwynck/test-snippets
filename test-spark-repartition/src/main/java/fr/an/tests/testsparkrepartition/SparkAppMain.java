@@ -10,16 +10,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.security.SaslOutputStream;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.spark.sql.package$;
 
 @Slf4j
 public class SparkAppMain {
@@ -70,12 +66,16 @@ public class SparkAppMain {
 			// do not generate the ".crc" files (only on LocalFileSystem)
 			hadoopFs.setWriteChecksum(false);
 
+			DebugUDF.registerUDFs(spark.udf());
+
+
 			doRunApp();
 		
 		} finally {
 			spark.stop();
 		}
 	}
+
 
 	// --------------------------------------------------------------------------------------------
 
@@ -93,21 +93,19 @@ public class SparkAppMain {
 
 		Dataset<MyBean> ds = createDataset_MyBeans(100_000);
 
-		runPartitionTest1_byCount(ds);
-
+		// runPartitionTest_all(ds);
 		runPartitionTest2_byPartitionedColumn(ds);
 
-		runPartitionTest3_byWrongColumn(ds);
-
-		runPartitionTest4_byWrongColumnAndAQEDisabled(ds);
 
 		BufferedReader stdinReader = new BufferedReader(new InputStreamReader(System.in));
 		repl_loop: for(;;) {
 			System.out.println("prompt to interactive re-execute? ");
+			System.out.println("[0] run all test: 1,2,..5 ");
 			System.out.println("[1] test .repartition(25).write..");
 			System.out.println("[2] test .repartition($'_2').write..  (correct partitioned column for table)");
 			System.out.println("[3] test .repartition($'_1').write..  (WRONG partitioned column for table)");
 			System.out.println("[4] test AQE disable .repartition($'_1').write..  (WRONG partitioned column for table, and AQE disabled)");
+			System.out.println("[5] .repartition($'_2', callUDF('udfDebugIdentityInt', $'_2')).write..");
 			System.out.println("[q] to exit");
 			System.out.println("Enter your choice to re-execute: ");
 			String line = stdinReader.readLine();
@@ -116,6 +114,10 @@ public class SparkAppMain {
 			}
 			line = line.trim();
 			switch(line) {
+				case "0":
+					runPartitionTest_all(ds);
+					break;
+
 				case "1":
 					runPartitionTest1_byCount(ds);
 					break;
@@ -132,11 +134,27 @@ public class SparkAppMain {
 					runPartitionTest4_byWrongColumnAndAQEDisabled(ds);
 					break;
 
+				case "5":
+					runPartitionTest5_byPartitionedColumnAndUDF(ds);
+					break;
+
 				case "q":
 					break repl_loop;
 			}
 		}
 
+	}
+
+	private void runPartitionTest_all(Dataset<MyBean> ds) {
+		runPartitionTest1_byCount(ds);
+
+		runPartitionTest2_byPartitionedColumn(ds);
+
+		runPartitionTest3_byWrongColumn(ds);
+
+		runPartitionTest4_byWrongColumnAndAQEDisabled(ds);
+
+		runPartitionTest5_byPartitionedColumnAndUDF(ds);
 	}
 
 	private void sanityCheckHelloSpark() {
@@ -205,6 +223,19 @@ public class SparkAppMain {
 			spark.conf().set("spark.sql.adaptive.enabled", "true");
 		});
 	}
+
+	private void runPartitionTest5_byPartitionedColumnAndUDF(Dataset<MyBean> ds) {
+		System.out.println("INSERT TEST 5 ... repartition($'_2', functions.callUDF('udfDebugIdentityInt', col('_2')).insert");
+
+		sqlWithCallSite("drop table if exists db1.test_part5");
+		sqlWithCallSite("create table db1.test_part5 (col1 string) partitioned by (part1 int) stored as parquet");
+
+		withCallSite(".repartition($'_5', callUDF('udfDebugIdentityInt', $'_2')).write..", () -> {
+			ds.repartition(ds.col("_2"), functions.callUDF(DebugUDF.NAME_udfDebugIdentityInt, ds.col("_2")))
+					.write().mode("overwrite").insertInto("db1.test_part2");
+		});
+	}
+
 
 	private void sqlWithCallSite(String sql) {
 		withCallSite("SQL " + sql, () -> {

@@ -3,42 +3,46 @@ package fr.an.tests.datapointzscore;
 import lombok.Getter;
 import lombok.val;
 
+/**
+ * stats accumulator using EMA = Exponential Moving Average (=exponential smoothing)
+ */
 @Getter
-public class ExponentialMovingStatsAccumulator {
-    protected double amortizedCount;
-    protected double sumValues;
-    protected double sumSquares;
+public class EMAStatsAccumulator {
+    protected double sumCoefs;
+    protected double sumCoefValues;
+    protected double sumCoefSquareValues;
 
     //---------------------------------------------------------------------------------------------
 
-    public ExponentialMovingStatsAccumulator() {
+    public EMAStatsAccumulator() {
     }
 
-    public ExponentialMovingStatsAccumulator(MeanAndStddev src) {
-        val n = this.count = src.count;
-        val sum = this.sumValues = src.average * n;
+    public EMAStatsAccumulator(WeightedMeanAndStddev src) {
+        val n = this.sumCoefs = src.sumCoefs;
+        val sum = this.sumCoefValues = src.average * n;
         // stddev = Math.sqrt(variance);
         double variance = src.stddev * src.stddev;
         // double variance = (sumOfSquares - (sum * sum / n)) / (n - 1);
-        this.sumSquares = (n > 1)? variance * (n-1) + sum * sum / n : 0;
+        this.sumCoefSquareValues = (n > 1.0)? variance * (n-1) + sum * sum / n : 0;
     }
 
 
     //---------------------------------------------------------------------------------------------
 
-    public void add(double value) {
-        this.count++;
-        this.sumValues += value;
-        this.sumSquares += value * value;
+    public void add(double coef, double value) {
+        final double complCoef = 1.0 - coef;
+        this.sumCoefs = coef + complCoef * sumCoefs;
+        this.sumCoefValues = coef * value + complCoef * sumCoefValues;
+        this.sumCoefSquareValues = coef * value * value + complCoef * sumCoefSquareValues;
     }
 
-    public MeanAndStddev toMeanAndStddev() {
-        if (count > 1) {
-            val mean = sumValues / count;
-            val stddev = MeanAndStddev.stdDevFromSums(count, sumValues, sumSquares);
-            return new MeanAndStddev(count, mean, stddev);
+    public WeightedMeanAndStddev toMeanAndStddev() {
+        if (sumCoefs != 0.0) {
+            val mean = sumCoefValues / sumCoefs;
+            val stddev = MeanAndStddev.stdDevFromSumCoefs(sumCoefs, sumCoefValues, sumCoefSquareValues);
+            return new WeightedMeanAndStddev(sumCoefs, mean, stddev);
         } else {
-            return new MeanAndStddev(count, 0, 0);
+            return new WeightedMeanAndStddev(0, 0, 0);
         }
     }
 

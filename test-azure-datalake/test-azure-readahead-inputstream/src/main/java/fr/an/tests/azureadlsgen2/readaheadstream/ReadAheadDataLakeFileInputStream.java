@@ -211,7 +211,6 @@ public class ReadAheadDataLakeFileInputStream extends InputStream {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(count);
         FileRange range = new FileRange(filePos, (long)count);
         DataLakeRequestConditions blockReadRequestConditions = null; // lease, ifModified..
-        // Context context
         long readStartTime = System.currentTimeMillis();
 
         FileReadResponse resp = this.underlyingFileClient.readWithResponse(buffer, range, //

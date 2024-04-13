@@ -58,13 +58,6 @@
 			<artifactId>springdoc-openapi-ui</artifactId>
 			<version>1.5.2</version>
 		</dependency>
-<!-- 
-		<dependency>
-		    <groupId>org.springdoc</groupId>
-		    <artifactId>springdoc-openapi-webflux-ui</artifactId>
-		    <version>1.5.2</version>
-		</dependency>
- -->
 
 
 		<dependency>
@@ -116,6 +109,11 @@
 					    <version>1.3</version>
 					    <configuration>
 					    	<apiDocsUrl>http://localhost:8080/v3/api-docs</apiDocsUrl>
+							<language>typescript-angular</language>
+							<output>${basedir}/target/generated-typescript-angular7</output>
+							<configOptions>
+								<ngVersion>7.2.12</ngVersion>
+							</configOptions>
 					    </configuration>
 					    <executions>
 					        <execution>
@@ -125,11 +123,6 @@
 									<goal>generate</goal>
 								</goals>
 								<configuration>
-									<language>typescript-angular</language>
-									<output>${basedir}/target/generated-typescript-angular7</output>
-									<configOptions>
-										<ngVersion>7.2.12</ngVersion>
-									</configOptions>
 								</configuration>
 					        </execution>
 					    </executions>
@@ -145,9 +138,14 @@
 					<plugin>
 					    <groupId>io.swagger.codegen.v3</groupId>
 					    <artifactId>swagger-codegen-maven-plugin</artifactId>
-					    <version>3.0.25</version>
+					    <version>3.0.47</version>
 						<configuration>
 							<inputSpec>http://localhost:8080/v3/api-docs</inputSpec>
+							<language>typescript-angular</language>
+							<output>${basedir}/target/generated-typescript-angular7</output>
+							<configOptions>
+								<ngVersion>7.2.12</ngVersion>
+							</configOptions>
 						</configuration>
 						<executions>
 							<execution>
@@ -156,13 +154,6 @@
 								<goals>
 									<goal>generate</goal>
 								</goals>
-								<configuration>
-									<language>typescript-angular</language>
-									<output>${basedir}/target/generated-typescript-angular7</output>
-									<configOptions>
-										<ngVersion>7.2.12</ngVersion>
-									</configOptions>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>

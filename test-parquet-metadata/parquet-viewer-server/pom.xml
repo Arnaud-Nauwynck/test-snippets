@@ -64,9 +64,7 @@
 		to generate:
 		
 		rm -rf ../parquet-viewer-ui/src/app/ext/*; rm -rf target/generated-typescript-angular7; mvn -Pswagger-gen swagger-codegen:generate; cp -rf target/generated-typescript-angular7/* ../parquet-viewer-ui/src/app/ext/ 
-		
-		
-		
+
 		 -->
 		<profile>
 			<id>swagger-gen</id>

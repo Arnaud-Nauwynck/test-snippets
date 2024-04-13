@@ -90,7 +90,19 @@ public class RecentDatePointTrackerTest {
             tracker.addPoint(currDate, currValue);
         }
 
+
         System.out.println(testName);
+
+        MeanAndStddev valueStats = tracker.getValueStats();
+        MeanAndStddev dateDelayStats = tracker.getDateDelayStats();
+
+        WeightedMeanAndStddev valueEMAMeanAndStddev = tracker.getValueEMAMeanAndStddev();
+        WeightedMeanAndStddev dateDelayEMAMeanAndStddev = tracker.getDateDelayEMAMeanAndStddev();
+        System.out.println("value stats: " + valueStats);
+        System.out.println("value ExponentialMovingAverage stats: " + valueEMAMeanAndStddev);
+        System.out.println("dateDelay stats: " + dateDelayStats);
+        System.out.println("dateDelay ExponentialMovingAverage stats: " + dateDelayEMAMeanAndStddev);
+
         val datePoints = tracker.getDatePoints();
         int datePointCount = datePoints.size();
         for(int i = 0; i < datePointCount; i++) {

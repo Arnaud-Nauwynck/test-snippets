@@ -1,13 +1,14 @@
 package fr.an.test.storage.inventory;
 
-import fr.an.test.storage.inventory.TreeNodeInventoryStatus.*;
+import fr.an.test.storage.inventory.TreeNodeInventoryKnowledge.*;
 
 import java.util.Map;
 
 public abstract class TreeNodeInventoryChange {
 
-    public abstract TreeNodeInventoryStatus getPrevStatus();
-    public abstract TreeNodeInventoryStatus getNextStatus();
+    public abstract TreeNodeInventoryKnowledge getPrevKnowledge();
+
+    public abstract TreeNodeInventoryKnowledge getNextKnowledge();
 
     public abstract void visit(TreeNodeInventoryChangeVisitor visitor);
 
@@ -24,13 +25,13 @@ public abstract class TreeNodeInventoryChange {
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
-            return NonExistingTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
+            return NonExistingTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
-            return new FileWithLenTreeNodeInventoryStatus(fileLen);
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
+            return new FileWithLenTreeNodeInventoryKnowledge(fileLen);
         }
 
         @Override
@@ -40,18 +41,18 @@ public abstract class TreeNodeInventoryChange {
     }
 
     /**
-     * None -> File(?)
+     * None -> File(? unknown len)
      */
     public static class FileUnknownLenCreatedTreeNodeInventoryChange extends TreeNodeInventoryChange {
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
-            return NonExistingTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
+            return NonExistingTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
-            return FileUnknownLenTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
+            return FileUnknownLenTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
@@ -73,13 +74,13 @@ public abstract class TreeNodeInventoryChange {
         }
 
         @Override
-        public AbstractFileTreeNodeInventoryStatus getPrevStatus() {
-            return new FileWithLenTreeNodeInventoryStatus(prevFileLen);
+        public AbstractFileTreeNodeInventoryStatus getPrevKnowledge() {
+            return new FileWithLenTreeNodeInventoryKnowledge(prevFileLen);
         }
 
         @Override
-        public AbstractFileTreeNodeInventoryStatus getNextStatus() {
-            return new FileWithLenTreeNodeInventoryStatus(nextFileLen);
+        public AbstractFileTreeNodeInventoryStatus getNextKnowledge() {
+            return new FileWithLenTreeNodeInventoryKnowledge(nextFileLen);
         }
 
         @Override
@@ -99,13 +100,13 @@ public abstract class TreeNodeInventoryChange {
         }
 
         @Override
-        public AbstractFileTreeNodeInventoryStatus getPrevStatus() {
-            return FileUnknownLenTreeNodeInventoryStatus.INSTANCE;
+        public AbstractFileTreeNodeInventoryStatus getPrevKnowledge() {
+            return FileUnknownLenTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
-        public AbstractFileTreeNodeInventoryStatus getNextStatus() {
-            return new FileWithLenTreeNodeInventoryStatus(nextFileLen);
+        public AbstractFileTreeNodeInventoryStatus getNextKnowledge() {
+            return new FileWithLenTreeNodeInventoryKnowledge(nextFileLen);
         }
 
         @Override
@@ -125,13 +126,13 @@ public abstract class TreeNodeInventoryChange {
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
-            return new FileWithLenTreeNodeInventoryStatus(prevFileLen);
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
+            return new FileWithLenTreeNodeInventoryKnowledge(prevFileLen);
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
-            return NonExistingTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
+            return NonExistingTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
@@ -146,19 +147,19 @@ public abstract class TreeNodeInventoryChange {
      * None -> Dir
      */
     public static class DirCreatedTreeNodeInventoryChange extends TreeNodeInventoryChange {
-        public final DirTreeNodeInventoryStatus nextStatus;
+        public final DirTreeNodeInventoryKnowledge nextStatus;
 
-        public DirCreatedTreeNodeInventoryChange(DirTreeNodeInventoryStatus nextStatus) {
+        public DirCreatedTreeNodeInventoryChange(DirTreeNodeInventoryKnowledge nextStatus) {
             this.nextStatus = nextStatus;
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
-            return NonExistingTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
+            return NonExistingTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
             return nextStatus;
         }
 
@@ -179,12 +180,12 @@ public abstract class TreeNodeInventoryChange {
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
             throw NotImpl.throwNotImpl(); // TODO
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
             throw NotImpl.throwNotImpl(); // TODO
         }
 
@@ -198,20 +199,20 @@ public abstract class TreeNodeInventoryChange {
      * Dir -> None
      */
     public static class DirDeletedTreeNodeInventoryChange extends TreeNodeInventoryChange {
-        public final DirTreeNodeInventoryStatus prevStatus;
+        public final DirTreeNodeInventoryKnowledge prevStatus;
 
-        public DirDeletedTreeNodeInventoryChange(DirTreeNodeInventoryStatus prevStatus) {
+        public DirDeletedTreeNodeInventoryChange(DirTreeNodeInventoryKnowledge prevStatus) {
             this.prevStatus = prevStatus;
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
             return prevStatus;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
-            return NonExistingTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
+            return NonExistingTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
@@ -227,20 +228,20 @@ public abstract class TreeNodeInventoryChange {
      */
     public static class MutatedFileToDirTreeNodeInventoryChange extends TreeNodeInventoryChange {
         public final AbstractFileTreeNodeInventoryStatus prevStatus;
-        public final DirTreeNodeInventoryStatus nextStatus;
+        public final DirTreeNodeInventoryKnowledge nextStatus;
 
-        public MutatedFileToDirTreeNodeInventoryChange(AbstractFileTreeNodeInventoryStatus prevStatus, DirTreeNodeInventoryStatus nextStatus) {
+        public MutatedFileToDirTreeNodeInventoryChange(AbstractFileTreeNodeInventoryStatus prevStatus, DirTreeNodeInventoryKnowledge nextStatus) {
             this.prevStatus = prevStatus;
             this.nextStatus = nextStatus;
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
             return prevStatus;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
             return nextStatus;
         }
 
@@ -254,21 +255,21 @@ public abstract class TreeNodeInventoryChange {
      * Dir -> File
      */
     public static abstract class MutatedDirToFileTreeNodeInventoryChange extends TreeNodeInventoryChange {
-        public final DirTreeNodeInventoryStatus prevStatus;
+        public final DirTreeNodeInventoryKnowledge prevStatus;
         public final AbstractFileTreeNodeInventoryStatus nextStatus;
 
-        public MutatedDirToFileTreeNodeInventoryChange(DirTreeNodeInventoryStatus prevStatus, AbstractFileTreeNodeInventoryStatus nextStatus) {
+        public MutatedDirToFileTreeNodeInventoryChange(DirTreeNodeInventoryKnowledge prevStatus, AbstractFileTreeNodeInventoryStatus nextStatus) {
             this.prevStatus = prevStatus;
             this.nextStatus = nextStatus;
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
             return prevStatus;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
             return nextStatus;
         }
 
@@ -290,13 +291,13 @@ public abstract class TreeNodeInventoryChange {
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
-            return UnknownTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
+            return UnknownTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
-            return NonExistingTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
+            return NonExistingTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
@@ -309,19 +310,19 @@ public abstract class TreeNodeInventoryChange {
      * Unknown -> Dir
      */
     public static class MutatedUnknownToDirTreeNodeInventoryChange extends TreeNodeInventoryChange {
-        public final DirTreeNodeInventoryStatus nextStatus;
+        public final DirTreeNodeInventoryKnowledge nextStatus;
 
-        public MutatedUnknownToDirTreeNodeInventoryChange(DirTreeNodeInventoryStatus nextStatus) {
+        public MutatedUnknownToDirTreeNodeInventoryChange(DirTreeNodeInventoryKnowledge nextStatus) {
             this.nextStatus = nextStatus;
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
-            return UnknownTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
+            return UnknownTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
             return nextStatus;
         }
 
@@ -342,12 +343,12 @@ public abstract class TreeNodeInventoryChange {
         }
 
         @Override
-        public TreeNodeInventoryStatus getPrevStatus() {
-            return UnknownTreeNodeInventoryStatus.INSTANCE;
+        public TreeNodeInventoryKnowledge getPrevKnowledge() {
+            return UnknownTreeNodeInventoryKnowledge.INSTANCE;
         }
 
         @Override
-        public TreeNodeInventoryStatus getNextStatus() {
+        public TreeNodeInventoryKnowledge getNextKnowledge() {
             return nextStatus;
         }
 

@@ -6,17 +6,22 @@ import lombok.val;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * hierarchical node for storage inventory,
+ * splittable to synthesize info in whole subtrees instead of having billions of nodes
+ */
 public class SplittableTreeNodeInventory {
+
     protected static final int MASK_NEED_SPLIT = 0x1;
     protected static final int MASK_FORCE_SPLIT = 0x2;
     protected static final int MASK_NEED_MERGE = 0x3;
     protected static final int MASK_NEED_RESCAN = 0x4;
 
-    protected final SplittableTreeInventory tree; // could be implicit.. cf parent.parent.... then RootSplittableTreeNodeInventory.tree
+    protected final SplittableTreeInventory tree; // could be implicit, cf parent.parent(^N) up to RootSplittableTreeNodeInventory.tree
     public final SplittableTreeNodeInventory parent;
     public final String name;
 
-    protected Map<String, SplittableTreeNodeInventory> splitChildMap = new TreeMap<>();
+    protected Map<String, SplittableTreeNodeInventory> splitChildMap; // = new TreeMap<>();
 
     protected int flags;
 
@@ -33,7 +38,7 @@ public class SplittableTreeNodeInventory {
 
     /**
      * cached of computation recursively on splitChild
-     * when modyfing any field, the cache computations should be cleared up to root ancestors
+     * when modifying any field, the cache computations should be cleared up to root ancestors
      */
     protected SplittableTreeInventorySynthetizedAttrs cachedSynthetizedAttrs;
 
@@ -79,6 +84,9 @@ public class SplittableTreeNodeInventory {
     }
 
     public SplittableTreeNodeInventory getOrCreateChild(String name) {
+        if (splitChildMap == null) {
+            splitChildMap = new TreeMap<>();
+        }
         SplittableTreeNodeInventory res = splitChildMap.get(name);
         if (res == null) {
             res = new SplittableTreeNodeInventory(tree, this, name);
@@ -134,7 +142,7 @@ public class SplittableTreeNodeInventory {
         protected int needMergeCount;
         protected int needRescanCount;
 
-        void add(SplittableTreeInventorySynthetizedAttrs p) {
+        private void add(SplittableTreeInventorySynthetizedAttrs p) {
             this.fileCount += p.fileCount;
             this.fileTotalSize += p.fileTotalSize;
             this.dirCount += p.dirCount;
@@ -148,7 +156,8 @@ public class SplittableTreeNodeInventory {
             this.needMergeCount += p.needMergeCount;
             this.needRescanCount += p.needRescanCount;
         }
-        void addMergedPart(SplittableTreeNodeInventory p) {
+
+        private void addMergedPart(SplittableTreeNodeInventory p) {
             this.fileCount += p.mergeFileCount;
             this.fileTotalSize += p.mergeFileTotalSize;
             this.dirCount += p.mergeDirCount;

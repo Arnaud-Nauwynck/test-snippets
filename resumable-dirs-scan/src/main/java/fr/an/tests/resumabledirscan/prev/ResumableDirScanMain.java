@@ -1,4 +1,4 @@
-package fr.an.tests.resumabledirscan;
+package fr.an.tests.resumabledirscan.prev;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;

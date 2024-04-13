@@ -2,8 +2,8 @@ package fr.an.test.storage.inventory.splittableaggr;
 
 public class SplittableTreeInventory {
 
-    private static long MEGA = 1024*1024;
-    private static long GIGA = 1024*MEGA;
+    private static long MEGA = 1024 * 1024;
+    private static long GIGA = 1024 * MEGA;
 
     public final long splitPreferredSize;
 

@@ -1,7 +1,6 @@
 package fr.an.tests.datapointzscore;
 
 import lombok.Getter;
-import lombok.Value;
 import lombok.val;
 
 import java.time.LocalDate;
@@ -19,8 +18,19 @@ public class RecentDatePointTracker {
 
     @Getter
     private final List<DatePoint> datePoints;
-    private int maxDataPoints;
+    private final int maxDataPoints;
 
+    private final double amortizedCoef;
+
+
+    // mean and standard deviation for last N * datePoints value and date delay
+    @Getter
+    private MeanAndStddev dateDelayStats;
+    @Getter
+    private MeanAndStddev valueStats;
+
+    private final EMAStatsAccumulator dateDelayEMAStatsAccumulator;
+    private final EMAStatsAccumulator valueEMAStatsAccumulator;
 
     @Getter
     public static class DatePoint {
@@ -40,15 +50,18 @@ public class RecentDatePointTracker {
     }
 
 
-    // Track the mean and standard deviation for value and date delay
-    private MeanAndStddev valueStats;
-    private MeanAndStddev dateDelayStats;
-
     //---------------------------------------------------------------------------------------------
 
     public RecentDatePointTracker(int maxDataPoints) {
+        this(maxDataPoints, 0.3);
+    }
+
+    public RecentDatePointTracker(int maxDataPoints, double amortizedCoef) {
         this.maxDataPoints = maxDataPoints;
         this.datePoints = new ArrayList<>(maxDataPoints);
+        this.amortizedCoef = amortizedCoef;
+        this.valueEMAStatsAccumulator = new EMAStatsAccumulator();
+        this.dateDelayEMAStatsAccumulator = new EMAStatsAccumulator();
     }
 
     //---------------------------------------------------------------------------------------------
@@ -101,6 +114,8 @@ public class RecentDatePointTracker {
             this.valueStats = calculateValueStatistics();
             this.dateDelayStats = calculateDateDelayStatistics();
 
+            valueEMAStatsAccumulator.add(amortizedCoef, value);
+
             if (datePoints.size() > 2 && prevValueStats != null) {
                 // Calculate ZScores
                 double valueZScore = prevValueStats.zscoreFor(newPoint.getValue());
@@ -109,6 +124,8 @@ public class RecentDatePointTracker {
                 if (dataPointBefore != null) {
                     int dateDelay = (int) ChronoUnit.DAYS.between(dataPointBefore.getDate(), newPoint.getDate());
                     dateZScore = prevDateDelayStatsOnAdd.zscoreFor(dateDelay);
+
+                    dateDelayEMAStatsAccumulator.add(amortizedCoef, dateDelay);
                 }
                 newPoint.dateDelayZScore = dateZScore;
 
@@ -122,6 +139,15 @@ public class RecentDatePointTracker {
             }
         }
     }
+
+    public WeightedMeanAndStddev getValueEMAMeanAndStddev() {
+        return valueEMAStatsAccumulator.toMeanAndStddev();
+    }
+
+    public WeightedMeanAndStddev getDateDelayEMAMeanAndStddev() {
+        return dateDelayEMAStatsAccumulator.toMeanAndStddev();
+    }
+
 
     private void classify(DatePoint newPoint, int newPointPos) {
         val valueZScore = newPoint.valueZScore;
@@ -161,6 +187,15 @@ public class RecentDatePointTracker {
         return MeanAndStddev.fromSum(count, sum, sumSquares);
     }
 
+    // idem calculateValueStatistics()
+    private MeanAndStddev calculateValueStatistics2() {
+        val acc = new BaseStatsAccumulator();
+        for (DatePoint point : datePoints) {
+            acc.add(point.getValue());
+        }
+        return acc.toMeanAndStddev();
+    }
+
     // Calculate mean and standard deviation for date delays
     private MeanAndStddev calculateDateDelayStatistics() {
         int count = 0;
@@ -174,40 +209,6 @@ public class RecentDatePointTracker {
             sumSquares += dateDelay * dateDelay;
         }
         return MeanAndStddev.fromSum(count, sum, sumSquares);
-    }
-
-    @Value
-    public static class MeanAndStddev {
-        public final int count;
-        public final double average;
-        public final double stddev;
-
-        public static MeanAndStddev fromSum(int count, double sum, double sumSquares) {
-            if (count > 1) {
-                val mean = sum / count;
-                val stddev = stdDevFromSums(count, sum, sumSquares);
-                return new MeanAndStddev(count, mean, stddev);
-            } else {
-                return new MeanAndStddev(count, 0, 0);
-            }
-        }
-
-        protected static double stdDevFromSums(int n, double sum, double sumOfSquares) {
-            double variance = (sumOfSquares - (sum * sum / n)) / (n - 1);
-            return Math.sqrt(variance);
-        }
-
-        public double zscoreFor(double value) {
-            if (count < 3) {
-                return 0;
-            }
-            if (stddev == 0.0) {
-                if (value == average) return 0.0;
-                return (value < average)? -1.0 : 1.0;
-            }
-            return (value - average) / stddev;
-        }
-
     }
 
 }

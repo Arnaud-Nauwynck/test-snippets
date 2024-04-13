@@ -1,99 +1,95 @@
 package fr.an.test.storage.inventory;
 
 import com.google.common.collect.ImmutableMap;
-import lombok.AllArgsConstructor;
 
-import java.util.Map;
-import java.util.TreeMap;
+public abstract class TreeNodeInventoryKnowledge {
 
-public abstract class TreeNodeInventoryStatus {
+    public abstract void visit(TreeNodeInventoryKnowledgeVisitor visitor);
 
-    public abstract void visit(TreeNodeInventoryStatusVisitor visitor);
-
-    public static NonExistingTreeNodeInventoryStatus ofNonExisting() {
-        return NonExistingTreeNodeInventoryStatus.INSTANCE;
+    public static NonExistingTreeNodeInventoryKnowledge ofNonExisting() {
+        return NonExistingTreeNodeInventoryKnowledge.INSTANCE;
     }
-    public static UnknownTreeNodeInventoryStatus ofUnknown() {
-        return UnknownTreeNodeInventoryStatus.INSTANCE;
+    public static UnknownTreeNodeInventoryKnowledge ofUnknown() {
+        return UnknownTreeNodeInventoryKnowledge.INSTANCE;
     }
-    public static FileUnknownLenTreeNodeInventoryStatus ofFileUnknownLen() {
-        return FileUnknownLenTreeNodeInventoryStatus.INSTANCE;
+    public static FileUnknownLenTreeNodeInventoryKnowledge ofFileUnknownLen() {
+        return FileUnknownLenTreeNodeInventoryKnowledge.INSTANCE;
     }
-    public static FileWithLenTreeNodeInventoryStatus ofFile(long len) {
-        return new FileWithLenTreeNodeInventoryStatus(len);
+    public static FileWithLenTreeNodeInventoryKnowledge ofFile(long len) {
+        return new FileWithLenTreeNodeInventoryKnowledge(len);
     }
-    public static DirTreeNodeInventoryStatus ofDir(ImmutableMap<String, TreeNodeInventoryStatus> child, boolean childMapComplete) {
-        return new DirTreeNodeInventoryStatus(child, childMapComplete);
+    public static DirTreeNodeInventoryKnowledge ofDir(ImmutableMap<String, TreeNodeInventoryKnowledge> child, boolean childMapComplete) {
+        return new DirTreeNodeInventoryKnowledge(child, childMapComplete);
     }
 
     //---------------------------------------------------------------------------------------------
 
-    public static class NonExistingTreeNodeInventoryStatus extends TreeNodeInventoryStatus {
-        public static final NonExistingTreeNodeInventoryStatus INSTANCE = new NonExistingTreeNodeInventoryStatus();
+    public static class NonExistingTreeNodeInventoryKnowledge extends TreeNodeInventoryKnowledge {
+        public static final NonExistingTreeNodeInventoryKnowledge INSTANCE = new NonExistingTreeNodeInventoryKnowledge();
 
-        private NonExistingTreeNodeInventoryStatus() {
+        private NonExistingTreeNodeInventoryKnowledge() {
         }
 
         @Override
-        public void visit(TreeNodeInventoryStatusVisitor visitor) {
+        public void visit(TreeNodeInventoryKnowledgeVisitor visitor) {
             visitor.caseDeleted(this);
         }
 
     }
 
-    public static class UnknownTreeNodeInventoryStatus extends TreeNodeInventoryStatus {
-        public static final UnknownTreeNodeInventoryStatus INSTANCE = new UnknownTreeNodeInventoryStatus();
+    public static class UnknownTreeNodeInventoryKnowledge extends TreeNodeInventoryKnowledge {
+        public static final UnknownTreeNodeInventoryKnowledge INSTANCE = new UnknownTreeNodeInventoryKnowledge();
 
-        private UnknownTreeNodeInventoryStatus() {
+        private UnknownTreeNodeInventoryKnowledge() {
         }
 
         @Override
-        public void visit(TreeNodeInventoryStatusVisitor visitor) {
+        public void visit(TreeNodeInventoryKnowledgeVisitor visitor) {
             visitor.caseUnknown(this);
         }
 
     }
 
-    public static abstract class AbstractFileTreeNodeInventoryStatus extends TreeNodeInventoryStatus {
+    public static abstract class AbstractFileTreeNodeInventoryStatus extends TreeNodeInventoryKnowledge {
     }
 
-    public static class FileUnknownLenTreeNodeInventoryStatus extends AbstractFileTreeNodeInventoryStatus {
-        public static final FileUnknownLenTreeNodeInventoryStatus INSTANCE = new FileUnknownLenTreeNodeInventoryStatus();
+    public static class FileUnknownLenTreeNodeInventoryKnowledge extends AbstractFileTreeNodeInventoryStatus {
+        public static final FileUnknownLenTreeNodeInventoryKnowledge INSTANCE = new FileUnknownLenTreeNodeInventoryKnowledge();
 
-        private FileUnknownLenTreeNodeInventoryStatus() {
+        private FileUnknownLenTreeNodeInventoryKnowledge() {
         }
 
         @Override
-        public void visit(TreeNodeInventoryStatusVisitor visitor) {
+        public void visit(TreeNodeInventoryKnowledgeVisitor visitor) {
             visitor.caseFileUnknownLen(this);
         }
 
     }
 
-    public static class FileWithLenTreeNodeInventoryStatus extends AbstractFileTreeNodeInventoryStatus {
+    public static class FileWithLenTreeNodeInventoryKnowledge extends AbstractFileTreeNodeInventoryStatus {
         public final long fileLen;
-        public FileWithLenTreeNodeInventoryStatus(long fileLen) {
+        public FileWithLenTreeNodeInventoryKnowledge(long fileLen) {
             this.fileLen = fileLen;
         }
         @Override
-        public void visit(TreeNodeInventoryStatusVisitor visitor) {
+        public void visit(TreeNodeInventoryKnowledgeVisitor visitor) {
             visitor.caseFile(this);
         }
 
     }
 
 
-    public static class DirTreeNodeInventoryStatus extends TreeNodeInventoryStatus {
-        public final ImmutableMap<String,TreeNodeInventoryStatus> child;
+    public static class DirTreeNodeInventoryKnowledge extends TreeNodeInventoryKnowledge {
+        public final ImmutableMap<String, TreeNodeInventoryKnowledge> child;
         public final boolean childMapComplete;
 
-        public DirTreeNodeInventoryStatus(ImmutableMap<String, TreeNodeInventoryStatus> child, boolean childMapComplete) {
+        public DirTreeNodeInventoryKnowledge(ImmutableMap<String, TreeNodeInventoryKnowledge> child, boolean childMapComplete) {
             this.child = child;
             this.childMapComplete = childMapComplete;
         }
 
         @Override
-        public void visit(TreeNodeInventoryStatusVisitor visitor) {
+        public void visit(TreeNodeInventoryKnowledgeVisitor visitor) {
             visitor.caseDir(this);
         }
 

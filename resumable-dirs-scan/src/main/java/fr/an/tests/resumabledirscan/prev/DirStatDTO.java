@@ -1,4 +1,4 @@
-package fr.an.tests.resumabledirscan;
+package fr.an.tests.resumabledirscan.prev;
 
 public class DirStatDTO {
 	public int fileCount;

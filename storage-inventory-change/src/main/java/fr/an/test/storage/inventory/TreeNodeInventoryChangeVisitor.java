@@ -2,11 +2,17 @@ package fr.an.test.storage.inventory;
 
 import fr.an.test.storage.inventory.TreeNodeInventoryChange.*;
 
+/**
+ * Visitor design-pattern (aka object-oriented switch-case) on TreeNodeInventoryChange AST classes
+ */
 public abstract class TreeNodeInventoryChangeVisitor {
+
     public abstract void caseFileCreated(FileCreatedTreeNodeInventoryChange change);
+
     public abstract void caseFileUnknownLenCreated(FileUnknownLenCreatedTreeNodeInventoryChange change);
 
     public abstract void caseFileModified(FileModifiedTreeNodeInventoryChange change);
+
     public abstract void caseUnknownFileToFileModified(UnknownFileToFileWithLenModifiedTreeNodeInventoryChange change);
 
     public abstract void caseFileDeleted(FileDeletedTreeNodeInventoryChange change);
