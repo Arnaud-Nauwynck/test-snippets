@@ -1,0 +1,192 @@
+INFO  [main] o.s.j.u.log: Logging initialized @4062ms to org.sparkproject.jetty.util.log.Slf4jLog
+INFO  [main] o.s.j.s.Server: jetty-9.4.46.v20220331; built: 2022-03-31T16:38:08.030Z; git: bc17a0369a11ecf40bb92c839b9ef0a8ac50ea18; jvm 20.0.1+9
+INFO  [main] o.s.j.s.Server: Started @4234ms
+INFO  [main] o.s.j.s.AbstractConnector: Started ServerConnector@2f4ba1ae{HTTP/1.1, (http/1.1)}{0.0.0.0:4040}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@d2291de{/,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Stopped o.s.j.s.ServletContextHandler@d2291de{/,null,STOPPED,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@f557c37{/jobs,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@5856dbe4{/jobs/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@5a058be5{/jobs/job,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@20c812c8{/jobs/job/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@7061622{/stages,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@52ea0269{/stages/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@43ecfeb5{/stages/stage,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@45e6d1e0{/stages/stage/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@4da1f38a{/stages/pool,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@707e4fe4{/stages/pool/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@377874b4{/storage,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@16c1519e{/storage/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@5eabff6b{/storage/rdd,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@4751e8b9{/storage/rdd/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@7b25ab31{/environment,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@68ddd415{/environment/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@664632e9{/executors,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@4f379769{/executors/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@4b515eab{/executors/threadDump,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@1536ea40{/executors/threadDump/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@7792d851{/static,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@25a94b55{/,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@19c1820d{/api,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@4aa31ffc{/jobs/job/kill,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@7d42542{/stages/stage/kill,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@1946384{/metrics/json,null,AVAILABLE,@Spark}
+Dataset<Integer> intDataset = spark.createDataset(intList, Encoders.INT()).repartition(2)
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@10d905c1{/SQL,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@62883f8a{/SQL/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@1da5c19d{/SQL/execution,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@e706aa{/SQL/execution/json,null,AVAILABLE,@Spark}
+INFO  [main] o.s.j.s.h.ContextHandler: Started o.s.j.s.ServletContextHandler@62ab5e63{/static/sql,null,AVAILABLE,@Spark}
+intDataset.show()
++-----+
+|value|
++-----+
+|    0|
+|    1|
+|    2|
++-----+
+only showing top 3 rows
+
+calling intDataset.map(new FooJavaMapFunction()))
++-----+
+|value|
++-----+
+|    0|
+|    2|
+|    4|
++-----+
+only showing top 3 rows
+
+calling intDataset.map(new FooJavaMapFunction_ReadResolve()))
+called [1] readResolve() from implicit java.io.Serializable
+ showing current stack trace only for first call (first evaluation on VM 'executor')
+java.lang.Exception
+	at fr.an.sample.impl.FooJavaMapFunction_ReadResolve.readResolve(FooJavaMapFunction_ReadResolve.java:91)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+	at java.base/java.io.ObjectStreamClass.invokeReadResolve(ObjectStreamClass.java:1190)
+	at java.base/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2289)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1760)
+	at java.base/java.io.ObjectInputStream.readArray(ObjectInputStream.java:2182)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1748)
+	at java.base/java.io.ObjectInputStream.readArray(ObjectInputStream.java:2182)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1748)
+	at java.base/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2614)
+	at java.base/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2465)
+	at java.base/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2280)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1760)
+	at java.base/java.io.ObjectInputStream.readArray(ObjectInputStream.java:2182)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1748)
+	at java.base/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2614)
+	at java.base/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2465)
+	at java.base/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2280)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1760)
+	at java.base/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2614)
+	at java.base/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2465)
+	at java.base/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2280)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1760)
+	at java.base/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2614)
+	at java.base/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2465)
+	at java.base/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2280)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1760)
+	at java.base/java.io.ObjectInputStream.readObject(ObjectInputStream.java:538)
+	at java.base/java.io.ObjectInputStream.readObject(ObjectInputStream.java:496)
+	at scala.collection.immutable.List$SerializationProxy.readObject(List.scala:527)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:578)
+	at java.base/java.io.ObjectStreamClass.invokeReadObject(ObjectStreamClass.java:1100)
+	at java.base/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2440)
+	at java.base/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2280)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1760)
+	at java.base/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2614)
+	at java.base/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2465)
+	at java.base/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2280)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1760)
+	at java.base/java.io.ObjectInputStream$FieldValues.<init>(ObjectInputStream.java:2614)
+	at java.base/java.io.ObjectInputStream.readSerialData(ObjectInputStream.java:2465)
+	at java.base/java.io.ObjectInputStream.readOrdinaryObject(ObjectInputStream.java:2280)
+	at java.base/java.io.ObjectInputStream.readObject0(ObjectInputStream.java:1760)
+	at java.base/java.io.ObjectInputStream.readObject(ObjectInputStream.java:538)
+	at java.base/java.io.ObjectInputStream.readObject(ObjectInputStream.java:496)
+	at org.apache.spark.serializer.JavaDeserializationStream.readObject(JavaSerializer.scala:87)
+	at org.apache.spark.serializer.JavaSerializerInstance.deserialize(JavaSerializer.scala:129)
+	at org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:83)
+	at org.apache.spark.scheduler.Task.run(Task.scala:136)
+	at org.apache.spark.executor.Executor$TaskRunner.$anonfun$run$3(Executor.scala:548)
+	at org.apache.spark.util.Utils$.tryWithSafeFinally(Utils.scala:1504)
+	at org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:551)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1623)
++-----+
+|value|
++-----+
+|    0|
+|    2|
+|    4|
++-----+
+only showing top 3 rows
+
+calling intDataset.map((MapFunction<Integer, Integer>) x -> FooUtils.foo(x))
++-----+
+|value|
++-----+
+|    0|
+|    2|
+|    4|
++-----+
+only showing top 3 rows
+
+calling intDataset.map((MapFunction<Integer, Integer>) FooUtils::foo)
++-----+
+|value|
++-----+
+|    0|
+|    2|
+|    4|
++-----+
+only showing top 3 rows
+
+test serializing Lambda with ObjectOutputStream, and deserializing
+new ObjectOutputStream(buffer).writeObject((MapFunction) FooUtils::foo)
+serialized bytes for MapFunction: 629 len
+got different MapFunction after serializing/deserializing lambda method ref
+mapFuncObj class: fr.an.sample.MainApp$$Lambda$3278/0x0000000801e97338
+deserialized class: fr.an.sample.MainApp$$Lambda$3277/0x0000000801e97128
+got different MapFunction classes after deserializing lambda method ref
+test Lambda with writeReplace() to SerializedLambda, then readResolve
+serializedLambda: SerializedLambda[capturingClass=class fr.an.sample.impl.FooWithDeserializingLambda, functionalInterfaceMethod=org/apache/spark/api/java/function/MapFunction.call:(Ljava/lang/Object;)Ljava/lang/Object;, implementation=invokeStatic fr/an/sample/impl/FooUtils.foo:(Ljava/lang/Integer;)Ljava/lang/Integer;, instantiatedMethodType=(Ljava/lang/Integer;)Ljava/lang/Integer;, numCaptured=0]
+serializedLambda impl
+  class: fr/an/sample/impl/FooUtils
+  methodName: foo
+  methodSignature: (Ljava/lang/Integer;)Ljava/lang/Integer;
+  methodKind: 6
+SerializedLambda for an inlined code (x -> 2345*x)
+serializedLambda: SerializedLambda[capturingClass=class fr.an.sample.impl.FooWithDeserializingLambda, functionalInterfaceMethod=org/apache/spark/api/java/function/MapFunction.call:(Ljava/lang/Object;)Ljava/lang/Object;, implementation=invokeStatic fr/an/sample/impl/FooWithDeserializingLambda.lambda$testLambda_SerializedLambda_for_inline$c9da406d$1:(Ljava/lang/Integer;)Ljava/lang/Integer;, instantiatedMethodType=(Ljava/lang/Integer;)Ljava/lang/Integer;, numCaptured=0]
+serializedLambda impl
+  class: fr/an/sample/impl/FooWithDeserializingLambda
+  methodName: lambda$testLambda_SerializedLambda_for_inline$c9da406d$1
+  methodSignature: (Ljava/lang/Integer;)Ljava/lang/Integer;
+  methodKind: 6
+calling intDataset.map((MapFunction<Integer, Integer>) FooUtilWithReadResolve::foo)
++-----+
+|value|
++-----+
+|    0|
+|    2|
+|    4|
++-----+
+only showing top 3 rows
+
+calling intDataset.map((MapFunction<Integer, Integer>) FooObjWithReadResolve::non_static_foo)
+called readResolve() from implicit java.io.Serializable on FooObjWithReadResolve with 'this' instance
++-----+
+|value|
++-----+
+|    0|
+|    2|
+|    4|
++-----+
+only showing top 3 rows
+
+INFO  [main] o.s.j.s.AbstractConnector: Stopped Spark@2f4ba1ae{HTTP/1.1, (http/1.1)}{0.0.0.0:4040}
+Finished .. exiting(0)
