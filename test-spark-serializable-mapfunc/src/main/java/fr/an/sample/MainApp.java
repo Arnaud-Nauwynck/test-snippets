@@ -77,7 +77,6 @@ public class MainApp {
         testMapLambdaMethodReference();
         testSerializeLambda();
         FooWithDeserializingLambda.testLambda_writeReplace_to_SerializedLambda_then_readResolve();
-        testMapLambda_ReadResolveOwnerClass();
         FooUtilWithReadResolve.testMap(intDataset);
         new FooObjWithReadResolve().non_static_testMap(intDataset);
     }
@@ -185,9 +184,6 @@ public class MainApp {
         } catch(Exception ex) {
             throw new RuntimeException("should not occur", ex);
         }
-    }
-
-    private void testMapLambda_ReadResolveOwnerClass() {
     }
 
 }
