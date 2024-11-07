@@ -1,0 +1,704 @@
+Classfile /C:/arn/devPerso/test-snippets/test-spark-serializable-mapfunc/target/classes/fr/an/sample/FooWithDeserializingLambda.class
+  Last modified 7 nov. 2024; size 6524 bytes
+  SHA-256 checksum c9b4e69c86f3f257b42171bf4e5be11d7bd2b3d07719c91cba4a1205fc2f189d
+  Compiled from "FooWithDeserializingLambda.java"
+public class fr.an.sample.FooWithDeserializingLambda
+  minor version: 0
+  major version: 61
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #35                         // fr/an/sample/FooWithDeserializingLambda
+  super_class: #2                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 6, attributes: 3
+Constant pool:
+    #1 = Methodref          #2.#3         // java/lang/Object."<init>":()V
+    #2 = Class              #4            // java/lang/Object
+    #3 = NameAndType        #5:#6         // "<init>":()V
+    #4 = Utf8               java/lang/Object
+    #5 = Utf8               <init>
+    #6 = Utf8               ()V
+    #7 = Fieldref           #8.#9         // java/lang/System.out:Ljava/io/PrintStream;
+    #8 = Class              #10           // java/lang/System
+    #9 = NameAndType        #11:#12       // out:Ljava/io/PrintStream;
+   #10 = Utf8               java/lang/System
+   #11 = Utf8               out
+   #12 = Utf8               Ljava/io/PrintStream;
+   #13 = Methodref          #14.#15       // java/lang/String.valueOf:(Ljava/lang/Object;)Ljava/lang/String;
+   #14 = Class              #16           // java/lang/String
+   #15 = NameAndType        #17:#18       // valueOf:(Ljava/lang/Object;)Ljava/lang/String;
+   #16 = Utf8               java/lang/String
+   #17 = Utf8               valueOf
+   #18 = Utf8               (Ljava/lang/Object;)Ljava/lang/String;
+   #19 = InvokeDynamic      #0:#20        // #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+   #20 = NameAndType        #21:#22       // makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+   #21 = Utf8               makeConcatWithConstants
+   #22 = Utf8               (Ljava/lang/String;)Ljava/lang/String;
+   #23 = Methodref          #24.#25       // java/io/PrintStream.println:(Ljava/lang/String;)V
+   #24 = Class              #26           // java/io/PrintStream
+   #25 = NameAndType        #27:#28       // println:(Ljava/lang/String;)V
+   #26 = Utf8               java/io/PrintStream
+   #27 = Utf8               println
+   #28 = Utf8               (Ljava/lang/String;)V
+   #29 = Methodref          #30.#31       // java/lang/invoke/SerializedLambda.getCapturingClass:()Ljava/lang/String;
+   #30 = Class              #32           // java/lang/invoke/SerializedLambda
+   #31 = NameAndType        #33:#34       // getCapturingClass:()Ljava/lang/String;
+   #32 = Utf8               java/lang/invoke/SerializedLambda
+   #33 = Utf8               getCapturingClass
+   #34 = Utf8               ()Ljava/lang/String;
+   #35 = Class              #36           // fr/an/sample/FooWithDeserializingLambda
+   #36 = Utf8               fr/an/sample/FooWithDeserializingLambda
+   #37 = Methodref          #38.#39       // java/lang/Class.getName:()Ljava/lang/String;
+   #38 = Class              #40           // java/lang/Class
+   #39 = NameAndType        #41:#34       // getName:()Ljava/lang/String;
+   #40 = Utf8               java/lang/Class
+   #41 = Utf8               getName
+   #42 = Methodref          #14.#43       // java/lang/String.replace:(CC)Ljava/lang/String;
+   #43 = NameAndType        #44:#45       // replace:(CC)Ljava/lang/String;
+   #44 = Utf8               replace
+   #45 = Utf8               (CC)Ljava/lang/String;
+   #46 = Methodref          #14.#47       // java/lang/String.equals:(Ljava/lang/Object;)Z
+   #47 = NameAndType        #48:#49       // equals:(Ljava/lang/Object;)Z
+   #48 = Utf8               equals
+   #49 = Utf8               (Ljava/lang/Object;)Z
+   #50 = Methodref          #30.#51       // java/lang/invoke/SerializedLambda.getCapturedArgCount:()I
+   #51 = NameAndType        #52:#53       // getCapturedArgCount:()I
+   #52 = Utf8               getCapturedArgCount
+   #53 = Utf8               ()I
+   #54 = Methodref          #30.#55       // java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodName:()Ljava/lang/String;
+   #55 = NameAndType        #56:#34       // getFunctionalInterfaceMethodName:()Ljava/lang/String;
+   #56 = Utf8               getFunctionalInterfaceMethodName
+   #57 = Class              #58           // org/apache/spark/api/java/function/MapFunction
+   #58 = Utf8               org/apache/spark/api/java/function/MapFunction
+   #59 = InvokeDynamic      #1:#60        // #1:call:()Lorg/apache/spark/api/java/function/MapFunction;
+   #60 = NameAndType        #61:#62       // call:()Lorg/apache/spark/api/java/function/MapFunction;
+   #61 = Utf8               call
+   #62 = Utf8               ()Lorg/apache/spark/api/java/function/MapFunction;
+   #63 = String             #64           // should not occur: unrecognized lambda??
+   #64 = Utf8               should not occur: unrecognized lambda??
+   #65 = String             #66           // test Lambda with writeReplace() to SerializedLambda, then readResolve
+   #66 = Utf8               test Lambda with writeReplace() to SerializedLambda, then readResolve
+   #67 = Methodref          #35.#68       // fr/an/sample/FooWithDeserializingLambda.invokeWriteReplaceLambda:(Ljava/io/Serializable;)Ljava/lang/invoke/SerializedLambda;
+   #68 = NameAndType        #69:#70       // invokeWriteReplaceLambda:(Ljava/io/Serializable;)Ljava/lang/invoke/SerializedLambda;
+   #69 = Utf8               invokeWriteReplaceLambda
+   #70 = Utf8               (Ljava/io/Serializable;)Ljava/lang/invoke/SerializedLambda;
+   #71 = InvokeDynamic      #2:#20        // #2:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+   #72 = Methodref          #35.#73       // fr/an/sample/FooWithDeserializingLambda.invokeReadResolveSerializedLambda:(Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+   #73 = NameAndType        #74:#75       // invokeReadResolveSerializedLambda:(Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+   #74 = Utf8               invokeReadResolveSerializedLambda
+   #75 = Utf8               (Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+   #76 = String             #77           // should not occur: expecting 2 different instances after readResolve
+   #77 = Utf8               should not occur: expecting 2 different instances after readResolve
+   #78 = String             #79           // should not occur: expecting SAME instance after readResolve again
+   #79 = Utf8               should not occur: expecting SAME instance after readResolve again
+   #80 = Methodref          #81.#82       // java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+   #81 = Class              #83           // java/lang/Integer
+   #82 = NameAndType        #17:#84       // valueOf:(I)Ljava/lang/Integer;
+   #83 = Utf8               java/lang/Integer
+   #84 = Utf8               (I)Ljava/lang/Integer;
+   #85 = InterfaceMethodref #57.#86       // org/apache/spark/api/java/function/MapFunction.call:(Ljava/lang/Object;)Ljava/lang/Object;
+   #86 = NameAndType        #61:#87       // call:(Ljava/lang/Object;)Ljava/lang/Object;
+   #87 = Utf8               (Ljava/lang/Object;)Ljava/lang/Object;
+   #88 = Methodref          #81.#89       // java/lang/Integer.intValue:()I
+   #89 = NameAndType        #90:#53       // intValue:()I
+   #90 = Utf8               intValue
+   #91 = Methodref          #92.#93       // fr/an/sample/impl/FooUtils.foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+   #92 = Class              #94           // fr/an/sample/impl/FooUtils
+   #93 = NameAndType        #95:#96       // foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+   #94 = Utf8               fr/an/sample/impl/FooUtils
+   #95 = Utf8               foo
+   #96 = Utf8               (Ljava/lang/Integer;)Ljava/lang/Integer;
+   #97 = Class              #98           // java/lang/RuntimeException
+   #98 = Utf8               java/lang/RuntimeException
+   #99 = String             #100          // should not occur.. different results
+  #100 = Utf8               should not occur.. different results
+  #101 = Methodref          #97.#102      // java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+  #102 = NameAndType        #5:#28        // "<init>":(Ljava/lang/String;)V
+  #103 = Class              #104          // java/lang/Exception
+  #104 = Utf8               java/lang/Exception
+  #105 = String             #106          // should not occur
+  #106 = Utf8               should not occur
+  #107 = Methodref          #97.#108      // java/lang/RuntimeException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+  #108 = NameAndType        #5:#109       // "<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+  #109 = Utf8               (Ljava/lang/String;Ljava/lang/Throwable;)V
+  #110 = InterfaceMethodref #111.#112     // java/io/Serializable.getClass:()Ljava/lang/Class;
+  #111 = Class              #113          // java/io/Serializable
+  #112 = NameAndType        #114:#115     // getClass:()Ljava/lang/Class;
+  #113 = Utf8               java/io/Serializable
+  #114 = Utf8               getClass
+  #115 = Utf8               ()Ljava/lang/Class;
+  #116 = String             #117          // writeReplace
+  #117 = Utf8               writeReplace
+  #118 = Methodref          #38.#119      // java/lang/Class.getDeclaredMethod:(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;
+  #119 = NameAndType        #120:#121     // getDeclaredMethod:(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;
+  #120 = Utf8               getDeclaredMethod
+  #121 = Utf8               (Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;
+  #122 = Class              #123          // java/lang/NoSuchMethodException
+  #123 = Utf8               java/lang/NoSuchMethodException
+  #124 = Methodref          #125.#126     // java/lang/reflect/Method.setAccessible:(Z)V
+  #125 = Class              #127          // java/lang/reflect/Method
+  #126 = NameAndType        #128:#129     // setAccessible:(Z)V
+  #127 = Utf8               java/lang/reflect/Method
+  #128 = Utf8               setAccessible
+  #129 = Utf8               (Z)V
+  #130 = Methodref          #125.#131     // java/lang/reflect/Method.invoke:(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
+  #131 = NameAndType        #132:#133     // invoke:(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
+  #132 = Utf8               invoke
+  #133 = Utf8               (Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
+  #134 = Class              #135          // java/lang/IllegalAccessException
+  #135 = Utf8               java/lang/IllegalAccessException
+  #136 = Class              #137          // java/lang/reflect/InvocationTargetException
+  #137 = Utf8               java/lang/reflect/InvocationTargetException
+  #138 = String             #139          // /
+  #139 = Utf8               /
+  #140 = String             #141          // .
+  #141 = Utf8               .
+  #142 = Methodref          #14.#143      // java/lang/String.replace:(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+  #143 = NameAndType        #44:#144      // replace:(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+  #144 = Utf8               (Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+  #145 = Methodref          #146.#147     // java/lang/Thread.currentThread:()Ljava/lang/Thread;
+  #146 = Class              #148          // java/lang/Thread
+  #147 = NameAndType        #149:#150     // currentThread:()Ljava/lang/Thread;
+  #148 = Utf8               java/lang/Thread
+  #149 = Utf8               currentThread
+  #150 = Utf8               ()Ljava/lang/Thread;
+  #151 = Methodref          #146.#152     // java/lang/Thread.getContextClassLoader:()Ljava/lang/ClassLoader;
+  #152 = NameAndType        #153:#154     // getContextClassLoader:()Ljava/lang/ClassLoader;
+  #153 = Utf8               getContextClassLoader
+  #154 = Utf8               ()Ljava/lang/ClassLoader;
+  #155 = Methodref          #156.#157     // java/lang/ClassLoader.loadClass:(Ljava/lang/String;)Ljava/lang/Class;
+  #156 = Class              #158          // java/lang/ClassLoader
+  #157 = NameAndType        #159:#160     // loadClass:(Ljava/lang/String;)Ljava/lang/Class;
+  #158 = Utf8               java/lang/ClassLoader
+  #159 = Utf8               loadClass
+  #160 = Utf8               (Ljava/lang/String;)Ljava/lang/Class;
+  #161 = Class              #162          // java/lang/ClassNotFoundException
+  #162 = Utf8               java/lang/ClassNotFoundException
+  #163 = String             #164          // $deserializeLambda$
+  #164 = Utf8               $deserializeLambda$
+  #165 = Methodref          #30.#166      // java/lang/invoke/SerializedLambda.getImplMethodName:()Ljava/lang/String;
+  #166 = NameAndType        #167:#34      // getImplMethodName:()Ljava/lang/String;
+  #167 = Utf8               getImplMethodName
+  #168 = Methodref          #14.#169      // java/lang/String.hashCode:()I
+  #169 = NameAndType        #170:#53      // hashCode:()I
+  #170 = Utf8               hashCode
+  #171 = String             #95           // foo
+  #172 = Methodref          #30.#173      // java/lang/invoke/SerializedLambda.getImplMethodKind:()I
+  #173 = NameAndType        #174:#53      // getImplMethodKind:()I
+  #174 = Utf8               getImplMethodKind
+  #175 = Methodref          #30.#176      // java/lang/invoke/SerializedLambda.getFunctionalInterfaceClass:()Ljava/lang/String;
+  #176 = NameAndType        #177:#34      // getFunctionalInterfaceClass:()Ljava/lang/String;
+  #177 = Utf8               getFunctionalInterfaceClass
+  #178 = String             #58           // org/apache/spark/api/java/function/MapFunction
+  #179 = Methodref          #2.#47        // java/lang/Object.equals:(Ljava/lang/Object;)Z
+  #180 = String             #61           // call
+  #181 = Methodref          #30.#182      // java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodSignature:()Ljava/lang/String;
+  #182 = NameAndType        #183:#34      // getFunctionalInterfaceMethodSignature:()Ljava/lang/String;
+  #183 = Utf8               getFunctionalInterfaceMethodSignature
+  #184 = String             #87           // (Ljava/lang/Object;)Ljava/lang/Object;
+  #185 = Methodref          #30.#186      // java/lang/invoke/SerializedLambda.getImplClass:()Ljava/lang/String;
+  #186 = NameAndType        #187:#34      // getImplClass:()Ljava/lang/String;
+  #187 = Utf8               getImplClass
+  #188 = String             #94           // fr/an/sample/impl/FooUtils
+  #189 = Methodref          #30.#190      // java/lang/invoke/SerializedLambda.getImplMethodSignature:()Ljava/lang/String;
+  #190 = NameAndType        #191:#34      // getImplMethodSignature:()Ljava/lang/String;
+  #191 = Utf8               getImplMethodSignature
+  #192 = String             #96           // (Ljava/lang/Integer;)Ljava/lang/Integer;
+  #193 = Class              #194          // java/lang/IllegalArgumentException
+  #194 = Utf8               java/lang/IllegalArgumentException
+  #195 = String             #196          // Invalid lambda deserialization
+  #196 = Utf8               Invalid lambda deserialization
+  #197 = Methodref          #193.#102     // java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+  #198 = Utf8               Code
+  #199 = Utf8               LineNumberTable
+  #200 = Utf8               LocalVariableTable
+  #201 = Utf8               this
+  #202 = Utf8               Lfr/an/sample/FooWithDeserializingLambda;
+  #203 = Utf8               ____$deserializeLambda$
+  #204 = Utf8               ser
+  #205 = Utf8               Ljava/lang/invoke/SerializedLambda;
+  #206 = Utf8               StackMapTable
+  #207 = Utf8               testLambda_writeReplace_to_SerializedLambda_then_readResolve
+  #208 = Utf8               res1
+  #209 = Utf8               I
+  #210 = Utf8               checkRes1
+  #211 = Utf8               checkRes2
+  #212 = Utf8               ex
+  #213 = Utf8               Ljava/lang/Exception;
+  #214 = Utf8               mapFuncObj
+  #215 = Utf8               Lorg/apache/spark/api/java/function/MapFunction;
+  #216 = Utf8               serializedLambda
+  #217 = Utf8               readResolvedObject
+  #218 = Utf8               Ljava/lang/Object;
+  #219 = Utf8               resolvedMapFunc
+  #220 = Utf8               readResolvedAgainObject
+  #221 = Utf8               resolvedAgainMapFunc
+  #222 = Utf8               LocalVariableTypeTable
+  #223 = Utf8               Lorg/apache/spark/api/java/function/MapFunction<Ljava/lang/Integer;Ljava/lang/Integer;>;
+  #224 = Utf8               writeReplaceMeth
+  #225 = Utf8               Ljava/lang/reflect/Method;
+  #226 = Utf8               e
+  #227 = Utf8               Ljava/lang/NoSuchMethodException;
+  #228 = Utf8               Ljava/lang/ReflectiveOperationException;
+  #229 = Utf8               lambda
+  #230 = Utf8               Ljava/io/Serializable;
+  #231 = Class              #232          // java/lang/ReflectiveOperationException
+  #232 = Utf8               java/lang/ReflectiveOperationException
+  #233 = Utf8               capturingClass
+  #234 = Utf8               Ljava/lang/Class;
+  #235 = Utf8               Ljava/lang/ClassNotFoundException;
+  #236 = Utf8               deserializeLambdaMeth
+  #237 = Utf8               Ljava/lang/IllegalAccessException;
+  #238 = Utf8               Ljava/lang/reflect/InvocationTargetException;
+  #239 = Utf8               capturingClassName
+  #240 = Utf8               Ljava/lang/String;
+  #241 = Utf8               cl
+  #242 = Utf8               Ljava/lang/ClassLoader;
+  #243 = Utf8               Ljava/lang/Class<*>;
+  #244 = Utf8               SourceFile
+  #245 = Utf8               FooWithDeserializingLambda.java
+  #246 = Utf8               BootstrapMethods
+  #247 = MethodHandle       6:#248        // REF_invokeStatic java/lang/invoke/StringConcatFactory.makeConcatWithConstants:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #248 = Methodref          #249.#250     // java/lang/invoke/StringConcatFactory.makeConcatWithConstants:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #249 = Class              #251          // java/lang/invoke/StringConcatFactory
+  #250 = NameAndType        #21:#252      // makeConcatWithConstants:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #251 = Utf8               java/lang/invoke/StringConcatFactory
+  #252 = Utf8               (Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #253 = String             #254          // PSEUDO CODE that <<could>> be called by introspection $deserializeLambda$(obj: \u0001) => return lambda \'singleton\' if identical to FooUtil::foo
+  #254 = Utf8               PSEUDO CODE that <<could>> be called by introspection $deserializeLambda$(obj: \u0001) => return lambda \'singleton\' if identical to FooUtil::foo
+  #255 = MethodHandle       6:#256        // REF_invokeStatic java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #256 = Methodref          #257.#258     // java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #257 = Class              #259          // java/lang/invoke/LambdaMetafactory
+  #258 = NameAndType        #260:#261     // altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #259 = Utf8               java/lang/invoke/LambdaMetafactory
+  #260 = Utf8               altMetafactory
+  #261 = Utf8               (Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #262 = MethodType         #87           //  (Ljava/lang/Object;)Ljava/lang/Object;
+  #263 = MethodHandle       6:#91         // REF_invokeStatic fr/an/sample/impl/FooUtils.foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+  #264 = MethodType         #96           //  (Ljava/lang/Integer;)Ljava/lang/Integer;
+  #265 = Integer            5
+  #266 = Integer            0
+  #267 = String             #268          // serializedLambda: \u0001
+  #268 = Utf8               serializedLambda: \u0001
+  #269 = Utf8               InnerClasses
+  #270 = Class              #271          // java/lang/invoke/MethodHandles$Lookup
+  #271 = Utf8               java/lang/invoke/MethodHandles$Lookup
+  #272 = Class              #273          // java/lang/invoke/MethodHandles
+  #273 = Utf8               java/lang/invoke/MethodHandles
+  #274 = Utf8               Lookup
+{
+  public fr.an.sample.FooWithDeserializingLambda();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 12: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lfr/an/sample/FooWithDeserializingLambda;
+
+  protected static java.lang.Object ____$deserializeLambda$(java.lang.invoke.SerializedLambda);
+    descriptor: (Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+    flags: (0x000c) ACC_PROTECTED, ACC_STATIC
+    Code:
+      stack=4, locals=1, args_size=1
+         0: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: aload_0
+         4: invokestatic  #13                 // Method java/lang/String.valueOf:(Ljava/lang/Object;)Ljava/lang/String;
+         7: invokedynamic #19,  0             // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+        12: invokevirtual #23                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        15: aload_0
+        16: invokevirtual #29                 // Method java/lang/invoke/SerializedLambda.getCapturingClass:()Ljava/lang/String;
+        19: ldc           #35                 // class fr/an/sample/FooWithDeserializingLambda
+        21: invokevirtual #37                 // Method java/lang/Class.getName:()Ljava/lang/String;
+        24: bipush        46
+        26: bipush        47
+        28: invokevirtual #42                 // Method java/lang/String.replace:(CC)Ljava/lang/String;
+        31: invokevirtual #46                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+        34: ifeq          65
+        37: aload_0
+        38: invokevirtual #50                 // Method java/lang/invoke/SerializedLambda.getCapturedArgCount:()I
+        41: ifne          65
+        44: aload_0
+        45: invokevirtual #54                 // Method java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodName:()Ljava/lang/String;
+        48: ldc           #57                 // class org/apache/spark/api/java/function/MapFunction
+        50: invokevirtual #37                 // Method java/lang/Class.getName:()Ljava/lang/String;
+        53: invokevirtual #46                 // Method java/lang/String.equals:(Ljava/lang/Object;)Z
+        56: ifeq          65
+        59: invokedynamic #59,  0             // InvokeDynamic #1:call:()Lorg/apache/spark/api/java/function/MapFunction;
+        64: areturn
+        65: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        68: ldc           #63                 // String should not occur: unrecognized lambda??
+        70: invokevirtual #23                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        73: aconst_null
+        74: areturn
+      LineNumberTable:
+        line 114: 0
+        line 116: 15
+        line 117: 38
+        line 118: 45
+        line 120: 59
+        line 122: 65
+        line 123: 73
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      75     0   ser   Ljava/lang/invoke/SerializedLambda;
+      StackMapTable: number_of_entries = 1
+        frame_type = 251 /* same_frame_extended */
+          offset_delta = 65
+
+  public static void testLambda_writeReplace_to_SerializedLambda_then_readResolve();
+    descriptor: ()V
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=4, locals=9, args_size=0
+         0: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #65                 // String test Lambda with writeReplace() to SerializedLambda, then readResolve
+         5: invokevirtual #23                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: invokedynamic #59,  0             // InvokeDynamic #1:call:()Lorg/apache/spark/api/java/function/MapFunction;
+        13: astore_0
+        14: aload_0
+        15: invokestatic  #67                 // Method invokeWriteReplaceLambda:(Ljava/io/Serializable;)Ljava/lang/invoke/SerializedLambda;
+        18: astore_1
+        19: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        22: aload_1
+        23: invokestatic  #13                 // Method java/lang/String.valueOf:(Ljava/lang/Object;)Ljava/lang/String;
+        26: invokedynamic #71,  0             // InvokeDynamic #2:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+        31: invokevirtual #23                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        34: aload_1
+        35: invokestatic  #72                 // Method invokeReadResolveSerializedLambda:(Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+        38: astore_2
+        39: aload_2
+        40: checkcast     #57                 // class org/apache/spark/api/java/function/MapFunction
+        43: astore_3
+        44: aload_0
+        45: aload_3
+        46: if_acmpne     57
+        49: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        52: ldc           #76                 // String should not occur: expecting 2 different instances after readResolve
+        54: invokevirtual #23                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        57: aload_1
+        58: invokestatic  #72                 // Method invokeReadResolveSerializedLambda:(Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+        61: astore        4
+        63: aload         4
+        65: checkcast     #57                 // class org/apache/spark/api/java/function/MapFunction
+        68: astore        5
+        70: aload         5
+        72: aload_3
+        73: if_acmpeq     84
+        76: getstatic     #7                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        79: ldc           #78                 // String should not occur: expecting SAME instance after readResolve again
+        81: invokevirtual #23                 // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        84: aload_0
+        85: iconst_1
+        86: invokestatic  #80                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+        89: invokeinterface #85,  2           // InterfaceMethod org/apache/spark/api/java/function/MapFunction.call:(Ljava/lang/Object;)Ljava/lang/Object;
+        94: checkcast     #81                 // class java/lang/Integer
+        97: invokevirtual #88                 // Method java/lang/Integer.intValue:()I
+       100: istore        6
+       102: aload_3
+       103: iconst_1
+       104: invokestatic  #80                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+       107: invokeinterface #85,  2           // InterfaceMethod org/apache/spark/api/java/function/MapFunction.call:(Ljava/lang/Object;)Ljava/lang/Object;
+       112: checkcast     #81                 // class java/lang/Integer
+       115: invokevirtual #88                 // Method java/lang/Integer.intValue:()I
+       118: istore        7
+       120: iconst_1
+       121: invokestatic  #80                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+       124: invokestatic  #91                 // Method fr/an/sample/impl/FooUtils.foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+       127: invokevirtual #88                 // Method java/lang/Integer.intValue:()I
+       130: istore        8
+       132: iload         6
+       134: iload         7
+       136: if_icmpne     146
+       139: iload         6
+       141: iload         8
+       143: if_icmpeq     156
+       146: new           #97                 // class java/lang/RuntimeException
+       149: dup
+       150: ldc           #99                 // String should not occur.. different results
+       152: invokespecial #101                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+       155: athrow
+       156: goto          173
+       159: astore        6
+       161: new           #97                 // class java/lang/RuntimeException
+       164: dup
+       165: ldc           #105                // String should not occur
+       167: aload         6
+       169: invokespecial #107                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+       172: athrow
+       173: return
+      Exception table:
+         from    to  target type
+            84   156   159   Class java/lang/Exception
+      LineNumberTable:
+        line 128: 0
+        line 129: 8
+        line 131: 14
+        line 133: 19
+        line 135: 34
+        line 136: 39
+        line 138: 44
+        line 139: 49
+        line 142: 57
+        line 143: 63
+        line 144: 70
+        line 145: 76
+        line 150: 84
+        line 152: 102
+        line 154: 120
+        line 155: 132
+        line 156: 146
+        line 160: 156
+        line 158: 159
+        line 159: 161
+        line 161: 173
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+          102      54     6  res1   I
+          120      36     7 checkRes1   I
+          132      24     8 checkRes2   I
+          161      12     6    ex   Ljava/lang/Exception;
+           14     160     0 mapFuncObj   Lorg/apache/spark/api/java/function/MapFunction;
+           19     155     1 serializedLambda   Ljava/lang/invoke/SerializedLambda;
+           39     135     2 readResolvedObject   Ljava/lang/Object;
+           44     130     3 resolvedMapFunc   Lorg/apache/spark/api/java/function/MapFunction;
+           63     111     4 readResolvedAgainObject   Ljava/lang/Object;
+           70     104     5 resolvedAgainMapFunc   Lorg/apache/spark/api/java/function/MapFunction;
+      LocalVariableTypeTable:
+        Start  Length  Slot  Name   Signature
+           14     160     0 mapFuncObj   Lorg/apache/spark/api/java/function/MapFunction<Ljava/lang/Integer;Ljava/lang/Integer;>;
+           44     130     3 resolvedMapFunc   Lorg/apache/spark/api/java/function/MapFunction<Ljava/lang/Integer;Ljava/lang/Integer;>;
+           70     104     5 resolvedAgainMapFunc   Lorg/apache/spark/api/java/function/MapFunction<Ljava/lang/Integer;Ljava/lang/Integer;>;
+      StackMapTable: number_of_entries = 6
+        frame_type = 255 /* full_frame */
+          offset_delta = 57
+          locals = [ class org/apache/spark/api/java/function/MapFunction, class java/lang/invoke/SerializedLambda, class java/lang/Object, class org/apache/spark/api/java/function/MapFunction ]
+          stack = []
+        frame_type = 253 /* append */
+          offset_delta = 26
+          locals = [ class java/lang/Object, class org/apache/spark/api/java/function/MapFunction ]
+        frame_type = 254 /* append */
+          offset_delta = 61
+          locals = [ int, int, int ]
+        frame_type = 248 /* chop */
+          offset_delta = 9
+        frame_type = 66 /* same_locals_1_stack_item */
+          stack = [ class java/lang/Exception ]
+        frame_type = 13 /* same */
+
+  public static java.lang.invoke.SerializedLambda invokeWriteReplaceLambda(java.io.Serializable);
+    descriptor: (Ljava/io/Serializable;)Ljava/lang/invoke/SerializedLambda;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=4, locals=3, args_size=1
+         0: aload_0
+         1: invokeinterface #110,  1          // InterfaceMethod java/io/Serializable.getClass:()Ljava/lang/Class;
+         6: ldc           #116                // String writeReplace
+         8: iconst_0
+         9: anewarray     #38                 // class java/lang/Class
+        12: invokevirtual #118                // Method java/lang/Class.getDeclaredMethod:(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;
+        15: astore_1
+        16: goto          31
+        19: astore_2
+        20: new           #97                 // class java/lang/RuntimeException
+        23: dup
+        24: ldc           #105                // String should not occur
+        26: aload_2
+        27: invokespecial #107                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+        30: athrow
+        31: aload_1
+        32: iconst_1
+        33: invokevirtual #124                // Method java/lang/reflect/Method.setAccessible:(Z)V
+        36: aload_1
+        37: aload_0
+        38: iconst_0
+        39: anewarray     #2                  // class java/lang/Object
+        42: invokevirtual #130                // Method java/lang/reflect/Method.invoke:(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
+        45: checkcast     #30                 // class java/lang/invoke/SerializedLambda
+        48: areturn
+        49: astore_2
+        50: new           #97                 // class java/lang/RuntimeException
+        53: dup
+        54: ldc           #105                // String should not occur
+        56: aload_2
+        57: invokespecial #107                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+        60: athrow
+      Exception table:
+         from    to  target type
+             0    16    19   Class java/lang/NoSuchMethodException
+            36    48    49   Class java/lang/IllegalAccessException
+            36    48    49   Class java/lang/reflect/InvocationTargetException
+      LineNumberTable:
+        line 167: 0
+        line 170: 16
+        line 168: 19
+        line 169: 20
+        line 171: 31
+        line 173: 36
+        line 174: 49
+        line 175: 50
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           16       3     1 writeReplaceMeth   Ljava/lang/reflect/Method;
+           20      11     2     e   Ljava/lang/NoSuchMethodException;
+           50      11     2     e   Ljava/lang/ReflectiveOperationException;
+            0      61     0 lambda   Ljava/io/Serializable;
+           31      30     1 writeReplaceMeth   Ljava/lang/reflect/Method;
+      StackMapTable: number_of_entries = 3
+        frame_type = 83 /* same_locals_1_stack_item */
+          stack = [ class java/lang/NoSuchMethodException ]
+        frame_type = 252 /* append */
+          offset_delta = 11
+          locals = [ class java/lang/reflect/Method ]
+        frame_type = 81 /* same_locals_1_stack_item */
+          stack = [ class java/lang/ReflectiveOperationException ]
+
+  public static java.lang.Object invokeReadResolveSerializedLambda(java.lang.invoke.SerializedLambda);
+    descriptor: (Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=6, locals=6, args_size=1
+         0: aload_0
+         1: invokevirtual #29                 // Method java/lang/invoke/SerializedLambda.getCapturingClass:()Ljava/lang/String;
+         4: ldc           #138                // String /
+         6: ldc           #140                // String .
+         8: invokevirtual #142                // Method java/lang/String.replace:(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+        11: astore_1
+        12: invokestatic  #145                // Method java/lang/Thread.currentThread:()Ljava/lang/Thread;
+        15: invokevirtual #151                // Method java/lang/Thread.getContextClassLoader:()Ljava/lang/ClassLoader;
+        18: astore_2
+        19: aload_2
+        20: aload_1
+        21: invokevirtual #155                // Method java/lang/ClassLoader.loadClass:(Ljava/lang/String;)Ljava/lang/Class;
+        24: astore_3
+        25: goto          42
+        28: astore        4
+        30: new           #97                 // class java/lang/RuntimeException
+        33: dup
+        34: ldc           #105                // String should not occur
+        36: aload         4
+        38: invokespecial #107                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+        41: athrow
+        42: aload_3
+        43: ldc           #163                // String $deserializeLambda$
+        45: iconst_1
+        46: anewarray     #38                 // class java/lang/Class
+        49: dup
+        50: iconst_0
+        51: ldc           #30                 // class java/lang/invoke/SerializedLambda
+        53: aastore
+        54: invokevirtual #118                // Method java/lang/Class.getDeclaredMethod:(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;
+        57: astore        4
+        59: goto          76
+        62: astore        5
+        64: new           #97                 // class java/lang/RuntimeException
+        67: dup
+        68: ldc           #105                // String should not occur
+        70: aload         5
+        72: invokespecial #107                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+        75: athrow
+        76: aload         4
+        78: iconst_1
+        79: invokevirtual #124                // Method java/lang/reflect/Method.setAccessible:(Z)V
+        82: aload         4
+        84: aconst_null
+        85: iconst_1
+        86: anewarray     #2                  // class java/lang/Object
+        89: dup
+        90: iconst_0
+        91: aload_0
+        92: aastore
+        93: invokevirtual #130                // Method java/lang/reflect/Method.invoke:(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
+        96: areturn
+        97: astore        5
+        99: new           #97                 // class java/lang/RuntimeException
+       102: dup
+       103: ldc           #105                // String should not occur
+       105: aload         5
+       107: invokespecial #107                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+       110: athrow
+       111: astore        5
+       113: new           #97                 // class java/lang/RuntimeException
+       116: dup
+       117: ldc           #105                // String should not occur
+       119: aload         5
+       121: invokespecial #107                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+       124: athrow
+      Exception table:
+         from    to  target type
+            19    25    28   Class java/lang/ClassNotFoundException
+            42    59    62   Class java/lang/NoSuchMethodException
+            82    96    97   Class java/lang/IllegalAccessException
+            82    96   111   Class java/lang/reflect/InvocationTargetException
+      LineNumberTable:
+        line 180: 0
+        line 181: 12
+        line 184: 19
+        line 187: 25
+        line 185: 28
+        line 186: 30
+        line 190: 42
+        line 193: 59
+        line 191: 62
+        line 192: 64
+        line 194: 76
+        line 197: 82
+        line 198: 97
+        line 199: 99
+        line 200: 111
+        line 201: 113
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           25       3     3 capturingClass   Ljava/lang/Class;
+           30      12     4     e   Ljava/lang/ClassNotFoundException;
+           59       3     4 deserializeLambdaMeth   Ljava/lang/reflect/Method;
+           64      12     5     e   Ljava/lang/NoSuchMethodException;
+           99      12     5     e   Ljava/lang/IllegalAccessException;
+          113      12     5     e   Ljava/lang/reflect/InvocationTargetException;
+            0     125     0   ser   Ljava/lang/invoke/SerializedLambda;
+           12     113     1 capturingClassName   Ljava/lang/String;
+           19     106     2    cl   Ljava/lang/ClassLoader;
+           42      83     3 capturingClass   Ljava/lang/Class;
+           76      49     4 deserializeLambdaMeth   Ljava/lang/reflect/Method;
+      LocalVariableTypeTable:
+        Start  Length  Slot  Name   Signature
+           25       3     3 capturingClass   Ljava/lang/Class<*>;
+           42      83     3 capturingClass   Ljava/lang/Class<*>;
+      StackMapTable: number_of_entries = 6
+        frame_type = 255 /* full_frame */
+          offset_delta = 28
+          locals = [ class java/lang/invoke/SerializedLambda, class java/lang/String, class java/lang/ClassLoader ]
+          stack = [ class java/lang/ClassNotFoundException ]
+        frame_type = 252 /* append */
+          offset_delta = 13
+          locals = [ class java/lang/Class ]
+        frame_type = 83 /* same_locals_1_stack_item */
+          stack = [ class java/lang/NoSuchMethodException ]
+        frame_type = 252 /* append */
+          offset_delta = 13
+          locals = [ class java/lang/reflect/Method ]
+        frame_type = 84 /* same_locals_1_stack_item */
+          stack = [ class java/lang/IllegalAccessException ]
+        frame_type = 77 /* same_locals_1_stack_item */
+          stack = [ class java/lang/reflect/InvocationTargetException ]
+}
+SourceFile: "FooWithDeserializingLambda.java"
+BootstrapMethods:
+  0: #247 REF_invokeStatic java/lang/invoke/StringConcatFactory.makeConcatWithConstants:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #253 PSEUDO CODE that <<could>> be called by introspection $deserializeLambda$(obj: \u0001) => return lambda \'singleton\' if identical to FooUtil::foo
+  1: #255 REF_invokeStatic java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #262 (Ljava/lang/Object;)Ljava/lang/Object;
+      #263 REF_invokeStatic fr/an/sample/impl/FooUtils.foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+      #264 (Ljava/lang/Integer;)Ljava/lang/Integer;
+      #265 5
+      #266 0
+  2: #247 REF_invokeStatic java/lang/invoke/StringConcatFactory.makeConcatWithConstants:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #267 serializedLambda: \u0001
+InnerClasses:
+  public static final #274= #270 of #272; // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles

@@ -1,0 +1,218 @@
+Classfile /C:/arn/devPerso/test-snippets/test-spark-serializable-mapfunc/target/classes/fr/an/sample/impl/FooLambdaFactory.class
+  Last modified 7 nov. 2024; size 2853 bytes
+  SHA-256 checksum 5ed09e92fced3572e0bc945f3566f4af59f976b0832d2aca64e336b590e8d77d
+  Compiled from "FooLambdaFactory.java"
+public class fr.an.sample.impl.FooLambdaFactory
+  minor version: 0
+  major version: 61
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #84                         // fr/an/sample/impl/FooLambdaFactory
+  super_class: #2                         // java/lang/Object
+  interfaces: 0, fields: 0, methods: 7, attributes: 3
+Constant pool:
+    #1 = Methodref          #2.#3         // java/lang/Object."<init>":()V
+    #2 = Class              #4            // java/lang/Object
+    #3 = NameAndType        #5:#6         // "<init>":()V
+    #4 = Utf8               java/lang/Object
+    #5 = Utf8               <init>
+    #6 = Utf8               ()V
+    #7 = InvokeDynamic      #0:#8         // #0:call:()Lorg/apache/spark/api/java/function/MapFunction;
+    #8 = NameAndType        #9:#10        // call:()Lorg/apache/spark/api/java/function/MapFunction;
+    #9 = Utf8               call
+   #10 = Utf8               ()Lorg/apache/spark/api/java/function/MapFunction;
+   #11 = InvokeDynamic      #1:#8         // #1:call:()Lorg/apache/spark/api/java/function/MapFunction;
+   #12 = InvokeDynamic      #2:#8         // #2:call:()Lorg/apache/spark/api/java/function/MapFunction;
+   #13 = Methodref          #14.#15       // java/lang/invoke/SerializedLambda.getImplMethodName:()Ljava/lang/String;
+   #14 = Class              #16           // java/lang/invoke/SerializedLambda
+   #15 = NameAndType        #17:#18       // getImplMethodName:()Ljava/lang/String;
+   #16 = Utf8               java/lang/invoke/SerializedLambda
+   #17 = Utf8               getImplMethodName
+   #18 = Utf8               ()Ljava/lang/String;
+   #19 = Methodref          #20.#21       // java/lang/String.hashCode:()I
+   #20 = Class              #22           // java/lang/String
+   #21 = NameAndType        #23:#24       // hashCode:()I
+   #22 = Utf8               java/lang/String
+   #23 = Utf8               hashCode
+   #24 = Utf8               ()I
+   #25 = String             #26           // foo
+   #26 = Utf8               foo
+   #27 = Methodref          #20.#28       // java/lang/String.equals:(Ljava/lang/Object;)Z
+   #28 = NameAndType        #29:#30       // equals:(Ljava/lang/Object;)Z
+   #29 = Utf8               equals
+   #30 = Utf8               (Ljava/lang/Object;)Z
+   #31 = String             #32           // lambda$mapFuncInlined$6dc8c998$1
+   #32 = Utf8               lambda$mapFuncInlined$6dc8c998$1
+   #33 = String             #34           // lambda$mapFunc$6dc8c998$1
+   #34 = Utf8               lambda$mapFunc$6dc8c998$1
+   #35 = Methodref          #14.#36       // java/lang/invoke/SerializedLambda.getImplMethodKind:()I
+   #36 = NameAndType        #37:#24       // getImplMethodKind:()I
+   #37 = Utf8               getImplMethodKind
+   #38 = Methodref          #14.#39       // java/lang/invoke/SerializedLambda.getFunctionalInterfaceClass:()Ljava/lang/String;
+   #39 = NameAndType        #40:#18       // getFunctionalInterfaceClass:()Ljava/lang/String;
+   #40 = Utf8               getFunctionalInterfaceClass
+   #41 = String             #42           // org/apache/spark/api/java/function/MapFunction
+   #42 = Utf8               org/apache/spark/api/java/function/MapFunction
+   #43 = Methodref          #2.#28        // java/lang/Object.equals:(Ljava/lang/Object;)Z
+   #44 = Methodref          #14.#45       // java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodName:()Ljava/lang/String;
+   #45 = NameAndType        #46:#18       // getFunctionalInterfaceMethodName:()Ljava/lang/String;
+   #46 = Utf8               getFunctionalInterfaceMethodName
+   #47 = String             #9            // call
+   #48 = Methodref          #14.#49       // java/lang/invoke/SerializedLambda.getFunctionalInterfaceMethodSignature:()Ljava/lang/String;
+   #49 = NameAndType        #50:#18       // getFunctionalInterfaceMethodSignature:()Ljava/lang/String;
+   #50 = Utf8               getFunctionalInterfaceMethodSignature
+   #51 = String             #52           // (Ljava/lang/Object;)Ljava/lang/Object;
+   #52 = Utf8               (Ljava/lang/Object;)Ljava/lang/Object;
+   #53 = Methodref          #14.#54       // java/lang/invoke/SerializedLambda.getImplClass:()Ljava/lang/String;
+   #54 = NameAndType        #55:#18       // getImplClass:()Ljava/lang/String;
+   #55 = Utf8               getImplClass
+   #56 = String             #57           // fr/an/sample/impl/FooUtils
+   #57 = Utf8               fr/an/sample/impl/FooUtils
+   #58 = Methodref          #14.#59       // java/lang/invoke/SerializedLambda.getImplMethodSignature:()Ljava/lang/String;
+   #59 = NameAndType        #60:#18       // getImplMethodSignature:()Ljava/lang/String;
+   #60 = Utf8               getImplMethodSignature
+   #61 = String             #62           // (Ljava/lang/Integer;)Ljava/lang/Integer;
+   #62 = Utf8               (Ljava/lang/Integer;)Ljava/lang/Integer;
+   #63 = String             #64           // fr/an/sample/impl/FooLambdaFactory
+   #64 = Utf8               fr/an/sample/impl/FooLambdaFactory
+   #65 = Class              #66           // java/lang/IllegalArgumentException
+   #66 = Utf8               java/lang/IllegalArgumentException
+   #67 = String             #68           // Invalid lambda deserialization
+   #68 = Utf8               Invalid lambda deserialization
+   #69 = Methodref          #65.#70       // java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+   #70 = NameAndType        #5:#71        // "<init>":(Ljava/lang/String;)V
+   #71 = Utf8               (Ljava/lang/String;)V
+   #72 = Methodref          #73.#74       // java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+   #73 = Class              #75           // java/lang/Integer
+   #74 = NameAndType        #76:#77       // valueOf:(I)Ljava/lang/Integer;
+   #75 = Utf8               java/lang/Integer
+   #76 = Utf8               valueOf
+   #77 = Utf8               (I)Ljava/lang/Integer;
+   #78 = Methodref          #73.#79       // java/lang/Integer.intValue:()I
+   #79 = NameAndType        #80:#24       // intValue:()I
+   #80 = Utf8               intValue
+   #81 = Methodref          #82.#83       // fr/an/sample/impl/FooUtils.foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+   #82 = Class              #57           // fr/an/sample/impl/FooUtils
+   #83 = NameAndType        #26:#62       // foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+   #84 = Class              #64           // fr/an/sample/impl/FooLambdaFactory
+   #85 = Utf8               Code
+   #86 = Utf8               LineNumberTable
+   #87 = Utf8               LocalVariableTable
+   #88 = Utf8               this
+   #89 = Utf8               Lfr/an/sample/impl/FooLambdaFactory;
+   #90 = Utf8               mapFuncRef
+   #91 = Utf8               Signature
+   #92 = Utf8               ()Lorg/apache/spark/api/java/function/MapFunction<Ljava/lang/Integer;Ljava/lang/Integer;>;
+   #93 = Utf8               mapFunc
+   #94 = Utf8               mapFuncInlined
+   #95 = Utf8               $deserializeLambda$
+   #96 = Utf8               (Ljava/lang/invoke/SerializedLambda;)Ljava/lang/Object;
+   #97 = Utf8               lambda
+   #98 = Utf8               Ljava/lang/invoke/SerializedLambda;
+   #99 = Utf8               StackMapTable
+  #100 = Utf8               x
+  #101 = Utf8               Ljava/lang/Integer;
+  #102 = Utf8               value
+  #103 = Utf8               I
+  #104 = Utf8               Exceptions
+  #105 = Class              #106          // java/lang/Exception
+  #106 = Utf8               java/lang/Exception
+  #107 = Utf8               SourceFile
+  #108 = Utf8               FooLambdaFactory.java
+  #109 = Utf8               BootstrapMethods
+  #110 = MethodHandle       6:#111        // REF_invokeStatic java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #111 = Methodref          #112.#113     // java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #112 = Class              #114          // java/lang/invoke/LambdaMetafactory
+  #113 = NameAndType        #115:#116     // altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #114 = Utf8               java/lang/invoke/LambdaMetafactory
+  #115 = Utf8               altMetafactory
+  #116 = Utf8               (Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+  #117 = MethodType         #52           //  (Ljava/lang/Object;)Ljava/lang/Object;
+  #118 = MethodHandle       6:#81         // REF_invokeStatic fr/an/sample/impl/FooUtils.foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+  #119 = MethodType         #62           //  (Ljava/lang/Integer;)Ljava/lang/Integer;
+  #120 = Integer            5
+  #121 = Integer            0
+  #122 = MethodHandle       6:#123        // REF_invokeStatic fr/an/sample/impl/FooLambdaFactory.lambda$mapFunc$6dc8c998$1:(Ljava/lang/Integer;)Ljava/lang/Integer;
+  #123 = Methodref          #84.#124      // fr/an/sample/impl/FooLambdaFactory.lambda$mapFunc$6dc8c998$1:(Ljava/lang/Integer;)Ljava/lang/Integer;
+  #124 = NameAndType        #34:#62       // lambda$mapFunc$6dc8c998$1:(Ljava/lang/Integer;)Ljava/lang/Integer;
+  #125 = MethodHandle       6:#126        // REF_invokeStatic fr/an/sample/impl/FooLambdaFactory.lambda$mapFuncInlined$6dc8c998$1:(Ljava/lang/Integer;)Ljava/lang/Integer;
+  #126 = Methodref          #84.#127      // fr/an/sample/impl/FooLambdaFactory.lambda$mapFuncInlined$6dc8c998$1:(Ljava/lang/Integer;)Ljava/lang/Integer;
+  #127 = NameAndType        #32:#62       // lambda$mapFuncInlined$6dc8c998$1:(Ljava/lang/Integer;)Ljava/lang/Integer;
+  #128 = Utf8               InnerClasses
+  #129 = Class              #130          // java/lang/invoke/MethodHandles$Lookup
+  #130 = Utf8               java/lang/invoke/MethodHandles$Lookup
+  #131 = Class              #132          // java/lang/invoke/MethodHandles
+  #132 = Utf8               java/lang/invoke/MethodHandles
+  #133 = Utf8               Lookup
+{
+  public fr.an.sample.impl.FooLambdaFactory();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 9: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lfr/an/sample/impl/FooLambdaFactory;
+
+  public static org.apache.spark.api.java.function.MapFunction<java.lang.Integer, java.lang.Integer> mapFuncRef();
+    descriptor: ()Lorg/apache/spark/api/java/function/MapFunction;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         0: invokedynamic #7,  0              // InvokeDynamic #0:call:()Lorg/apache/spark/api/java/function/MapFunction;
+         5: areturn
+      LineNumberTable:
+        line 12: 0
+    Signature: #92                          // ()Lorg/apache/spark/api/java/function/MapFunction<Ljava/lang/Integer;Ljava/lang/Integer;>;
+
+  public static org.apache.spark.api.java.function.MapFunction<java.lang.Integer, java.lang.Integer> mapFunc();
+    descriptor: ()Lorg/apache/spark/api/java/function/MapFunction;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         0: invokedynamic #11,  0             // InvokeDynamic #1:call:()Lorg/apache/spark/api/java/function/MapFunction;
+         5: areturn
+      LineNumberTable:
+        line 16: 0
+    Signature: #92                          // ()Lorg/apache/spark/api/java/function/MapFunction<Ljava/lang/Integer;Ljava/lang/Integer;>;
+
+  public static org.apache.spark.api.java.function.MapFunction<java.lang.Integer, java.lang.Integer> mapFuncInlined();
+    descriptor: ()Lorg/apache/spark/api/java/function/MapFunction;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         0: invokedynamic #12,  0             // InvokeDynamic #2:call:()Lorg/apache/spark/api/java/function/MapFunction;
+         5: areturn
+      LineNumberTable:
+        line 20: 0
+    Signature: #92                          // ()Lorg/apache/spark/api/java/function/MapFunction<Ljava/lang/Integer;Ljava/lang/Integer;>;
+}
+SourceFile: "FooLambdaFactory.java"
+BootstrapMethods:
+  0: #110 REF_invokeStatic java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #117 (Ljava/lang/Object;)Ljava/lang/Object;
+      #118 REF_invokeStatic fr/an/sample/impl/FooUtils.foo:(Ljava/lang/Integer;)Ljava/lang/Integer;
+      #119 (Ljava/lang/Integer;)Ljava/lang/Integer;
+      #120 5
+      #121 0
+  1: #110 REF_invokeStatic java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #117 (Ljava/lang/Object;)Ljava/lang/Object;
+      #122 REF_invokeStatic fr/an/sample/impl/FooLambdaFactory.lambda$mapFunc$6dc8c998$1:(Ljava/lang/Integer;)Ljava/lang/Integer;
+      #119 (Ljava/lang/Integer;)Ljava/lang/Integer;
+      #120 5
+      #121 0
+  2: #110 REF_invokeStatic java/lang/invoke/LambdaMetafactory.altMetafactory:(Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;[Ljava/lang/Object;)Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #117 (Ljava/lang/Object;)Ljava/lang/Object;
+      #125 REF_invokeStatic fr/an/sample/impl/FooLambdaFactory.lambda$mapFuncInlined$6dc8c998$1:(Ljava/lang/Integer;)Ljava/lang/Integer;
+      #119 (Ljava/lang/Integer;)Ljava/lang/Integer;
+      #120 5
+      #121 0
+InnerClasses:
+  public static final #133= #129 of #131; // Lookup=class java/lang/invoke/MethodHandles$Lookup of class java/lang/invoke/MethodHandles

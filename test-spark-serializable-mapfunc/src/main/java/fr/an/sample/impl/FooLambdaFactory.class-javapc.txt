@@ -1,0 +1,23 @@
+Compiled from "FooLambdaFactory.java"
+public class fr.an.sample.impl.FooLambdaFactory {
+  public fr.an.sample.impl.FooLambdaFactory();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static org.apache.spark.api.java.function.MapFunction<java.lang.Integer, java.lang.Integer> mapFuncRef();
+    Code:
+       0: invokedynamic #7,  0              // InvokeDynamic #0:call:()Lorg/apache/spark/api/java/function/MapFunction;
+       5: areturn
+
+  public static org.apache.spark.api.java.function.MapFunction<java.lang.Integer, java.lang.Integer> mapFunc();
+    Code:
+       0: invokedynamic #11,  0             // InvokeDynamic #1:call:()Lorg/apache/spark/api/java/function/MapFunction;
+       5: areturn
+
+  public static org.apache.spark.api.java.function.MapFunction<java.lang.Integer, java.lang.Integer> mapFuncInlined();
+    Code:
+       0: invokedynamic #12,  0             // InvokeDynamic #2:call:()Lorg/apache/spark/api/java/function/MapFunction;
+       5: areturn
+}
