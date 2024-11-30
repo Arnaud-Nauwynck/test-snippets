@@ -1,0 +1,30 @@
+<nav class="navbar navbar-expand-sm navbar-light bg-light">
+  <a class="navbar-brand" href="#">Home</a>
+
+  <ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/cities">Cities</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/street-names">Street-Names</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/streets">Streets</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" routerLink="/addresses">Addresses</a>
+    </li>
+
+    <li ngbDropdown class="nav-item">
+      <a ngbDropdownToggle id="navbarMenu1" class="nav-link" role="button">
+        Other
+      </a>
+      <div ngbDropdownMenu aria-labelledby="navbarMenu1" class="dropdown-menu">
+        <a class="dropdown-item" routerLink="/first-names">First Names</a>
+        <a class="dropdown-item" routerLink="/about">About</a>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<router-outlet></router-outlet>

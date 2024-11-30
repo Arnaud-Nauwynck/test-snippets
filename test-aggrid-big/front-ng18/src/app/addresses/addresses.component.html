@@ -1,0 +1,28 @@
+<H2>Addresses</H2>
+
+<div class="container-fluid">
+  <div class="row">
+    <label class="col-md-1">Filter</label>
+    <span class="col-md-2">{{filteredAddresses$().length}} / {{addresses$().length}}</span>
+  </div>
+  <div class="row">
+    <label class="col-1">City</label>
+    <input class="col-2" [(ngModel)]="cityName" (ngModelChange)="onFilterChange()"/>
+    <label class="col-1">ZipCode</label>
+    <input class="col-1" [(ngModel)]="zipCode" (ngModelChange)="onFilterChange()"/>
+  </div>
+  <div class="row">
+    <label class="col-1">Number</label>
+    <input type="number" class="col-1" [(ngModel)]="streetNumber" (ngModelChange)="onFilterChange()"/>
+    <label class="col-1">Suffix</label>
+    <input class="col-1" [(ngModel)]="streetNumberSuffix" (ngModelChange)="onFilterChange()"/>
+    <label class="col-1">Street</label>
+    <input class="col-2" [(ngModel)]="streetName" (ngModelChange)="onFilterChange()"/>
+  </div>
+</div>
+
+<ag-grid-angular
+  class="ag-theme-quartz"
+  style="height: 480px;"
+  [rowData]="filteredAddresses$()"
+  [columnDefs]="colDefs" />

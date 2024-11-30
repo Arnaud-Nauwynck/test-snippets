@@ -1,0 +1,34 @@
+
+# debug: true
+
+springdoc:
+#  pathsToMatch: /api/v1/**
+  packagesToScan: fr.an.tests.testaggridbig.rest
+
+  swagger-ui:
+#    path: /swagger-ui.html
+
+    config-url: /v3/api-docs
+    url: /v3/api-docs
+#  spring.web.resources.add-mappings=false
+
+app:
+  opendata:
+    bal:
+      format: 'multiCsvGzFiles'
+      path: 'C:/data/OpenData-gouv.fr/bal/adresses-france.csv'
+      # path: './addresses-1M.csv'
+      # path: './addresses-2M.csv'
+
+      # files downloaded using
+      # for i in $( seq 1 9 ); do echo $i;wget https://adresse.data.gouv.fr/data/ban/adresses/latest/csv-bal/adresses-0$i.csv.gz; done
+      # for i in $( seq 10 99 ); do echo $i;wget https://adresse.data.gouv.fr/data/ban/adresses/latest/csv-bal/adresses-$i.csv.gz; done
+      # for i in $( seq 971 989 ); do echo $i;wget https://adresse.data.gouv.fr/data/ban/adresses/latest/csv-bal/adresses-$i.csv.gz; done
+      multiCsvGzPath: 'C:/data/OpenData-gouv.fr/bal-multiCsvGz'
+
+      filterDepts: 75,77,78,91,92,93,94,95
+
+
+    firstname:
+      path: 'src/main/resources/Prenoms.csv'
+    
