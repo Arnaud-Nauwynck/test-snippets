@@ -3,9 +3,23 @@ import {
   CityLightDTO,
   CityStreetLightDTO,
   CoordDTO,
-  FirstnameDTO,
+  FirstnameDTO, PrefixStreetTypeDTO,
   StreetNameDTO
 } from '../generated/rest-bal';
+
+export class CoordModel {
+  public readonly lng: number;
+  public readonly lat: number;
+
+  constructor(src: CoordDTO) {
+    this.lng = src.lg!;
+    this.lat = src.la!;
+  }
+
+  toString(): string {
+    return this.lat + ', ' + this.lng;
+  }
+}
 
 export class StringCriteria {
   public contains?: string;
@@ -74,12 +88,14 @@ export class CityModel {
   public readonly name: string;
   public readonly zip: string;
   public readonly count: number;
+  public readonly midCoord: CoordModel;
 
   constructor(src: CityLightDTO) {
     this.id = src.id!!;
     this.name = src.n!!;
     this.zip = src.z!!;
     this.count = src.c!!;
+    this.midCoord = new CoordModel(src.midCoord!);
   }
 
 }
@@ -87,9 +103,15 @@ export class CityModel {
 
 
 export class StreetNameCriteria {
+  public preCrit?: StringCriteria;
+  public streetTypeCrit?: StringCriteria;
+  public determinantCrit?: StringCriteria;
   public nameCrit?: StringCriteria;
 
-  constructor(opts: {name?: string}) {
+  constructor(opts: {pre?: string, streetType?: string, determinant?: string, name?: string}) {
+    this.preCrit = StringCriteria.of(opts.pre);
+    this.streetTypeCrit = StringCriteria.of(opts.streetType);
+    this.determinantCrit = StringCriteria.of(opts.determinant);
     this.nameCrit = StringCriteria.of(opts.name);
   }
 
@@ -98,6 +120,15 @@ export class StreetNameCriteria {
   }
 
   match(src: StreetNameModel) {
+    if (this.preCrit && (!src.pre || ! this.preCrit.match(src.pre))) {
+      return false;
+    }
+    if (this.streetTypeCrit && ! this.streetTypeCrit.match(src.streetType?.streetType)) {
+      return false;
+    }
+    if (this.determinantCrit && ! this.determinantCrit.match(src.streetType?.determinant)) {
+      return false;
+    }
     if (this.nameCrit && ! this.nameCrit.match(src.name)) {
       return false;
     }
@@ -106,19 +137,41 @@ export class StreetNameCriteria {
 
 }
 
+export class PrefixStreetTypeModel {
+  public readonly id: number;
+  public readonly streetType: string;
+  public readonly determinant: string;
+  // redundant, useless?
+  // public readonly streetTypeAndDeterminant: string;
+
+  constructor(src: PrefixStreetTypeDTO) {
+    this.id = src.id!;
+    this.streetType = src.streetType!;
+    this.determinant = src.addressPrefix!;
+    // this.streetTypeAndDeterminant = src.streetTypeAndPrefix!;
+  }
+}
+
 /**
  * immutable model for Street Name
  */
 export class StreetNameModel {
   public readonly id: number;
+  public readonly pre?: string;
+  public readonly streetType: PrefixStreetTypeModel;
   public readonly name: string;
-  public readonly countAddress: number;
+
+  private readonly _c: number;
+
+  public get countAddress(): number { return this._c };
 //  countByCityZipCode?: { [key: string]: number; };
 
-  constructor(src: StreetNameDTO) {
+  constructor(src: StreetNameDTO, streetType: PrefixStreetTypeModel) {
     this.id = src.id!!;
+    this.pre = src.pre;
+    this.streetType = streetType;
     this.name = src.name!!;
-    this.countAddress = src.countAddress!!;
+    this._c = src.countAddress!!;
   }
 }
 
@@ -153,6 +206,7 @@ export class StreetCriteria {
 export class StreetModel {
   public readonly city: CityModel;
   public readonly street: StreetNameModel;
+  public readonly midCoord: CoordModel;
 
   constructor(src: CityStreetLightDTO,
               cityById: Map<number,CityModel>,
@@ -160,6 +214,7 @@ export class StreetModel {
   ) {
     this.city = cityById.get(src.c!!)!!;
     this.street = streetById.get(src.s!!)!!;
+    this.midCoord = new CoordModel({lg: src.lng!, la: src.lat!});
   }
 
 }
@@ -205,7 +260,7 @@ export class AddressModel {
   public readonly street: StreetNameModel;
   public readonly n: number;
   public readonly ns?: string;
-  // coord?: CoordDTO;
+  // public readonly coord: CoordDTO;
 
   constructor(src: AddressDTO,
               cityById: Map<number,CityModel>,

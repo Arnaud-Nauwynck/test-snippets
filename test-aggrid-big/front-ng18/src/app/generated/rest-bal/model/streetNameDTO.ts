@@ -12,6 +12,8 @@
 
 export interface StreetNameDTO { 
     id?: number;
+    pre?: string;
+    typeId?: number;
     name?: string;
     countAddress?: number;
     countByCityZipCode?: { [key: string]: number; };

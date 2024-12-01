@@ -15,4 +15,6 @@ export interface CityStreetLightDTO {
     c?: number;
     s?: number;
     add?: number;
+    lat?: number;
+    lng?: number;
 }

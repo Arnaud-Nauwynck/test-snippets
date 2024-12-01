@@ -42,7 +42,11 @@ export class CitiesComponent implements OnInit {
     },
     { headerName: "#Addresses", headerTooltip: "Number of Addresses in City", width: 130,
       valueGetter: p => p.data?.count,
-    }
+    },
+    { headerName: "Coord", width: 200, minWidth: 100, maxWidth: 300,
+      // field: "name",
+      valueGetter: p => p.data?.midCoord.toString(),
+    },
   ];
 
   ngOnInit(): void {

@@ -32,6 +32,7 @@ public class CoordSetDTO {
         maxCoord.lattitude = Math.max(src.longitude, maxCoord.lattitude);
         sumCoord.longitude += src.longitude;
         sumCoord.lattitude += src.lattitude;
+        addressCount++;
     }
 
 }

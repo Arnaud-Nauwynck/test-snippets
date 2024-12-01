@@ -14,7 +14,7 @@ public class CityStreetDTO {
     public int addressCount;
 
     public CityStreetLightDTO toLightDTO() {
-        return new CityStreetLightDTO(id, cityId, streetNameId, addressCount);
+        return new CityStreetLightDTO(id, cityId, streetNameId, addressCount, coordSet.getAvgCoord());
     }
 
 }

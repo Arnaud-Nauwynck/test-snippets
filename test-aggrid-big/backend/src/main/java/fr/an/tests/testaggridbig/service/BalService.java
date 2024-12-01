@@ -45,8 +45,8 @@ public class BalService {
     @Value("${app.opendata.bal.multiCsvGzPath}")
     private String openDataBalMultiCsvGzPath;
 
-    @Value("${app.opendata.bal.filterDepts}")
-    private String filterDepts;
+    @Value("${app.opendata.bal.filterDeptRanges}")
+    private String filterDeptRanges;
     private Set<Integer> filterDeptsSet;
 
     @Value("${app.csv.lib:fastcsv}") // TODO "chunk-fastcsv", "fastcsv", "opencsv", "chunk-opencsv"
@@ -66,6 +66,9 @@ public class BalService {
         }
         return res;
     }
+
+    @Getter
+    private List<PrefixStreetTypeDTO> prefixStreetTypes = new ArrayList<>();
 
     @Getter
     private List<StreetNameDTO> streetNames = new ArrayList<>();
@@ -94,13 +97,32 @@ public class BalService {
      */
     @PostConstruct
     public void init() {
+        registerPrefixStreetTypes();
         log.info("init -> async load all addresses");
 
-        filterDeptsSet = new HashSet();
-        for (String dept : filterDepts.split(",")) {
-            filterDeptsSet.add(Integer.parseInt(dept));
+        this.filterDeptsSet = new HashSet();
+        if (filterDeptRanges.isEmpty()) {
+            for (int dept = 1; dept <= 99; dept++) {
+                filterDeptsSet.add(dept);
+            }
+            for (int dept = 901; dept <= 999; dept++) {
+                filterDeptsSet.add(dept);
+            }
+        } else {
+            for (String deptRange : filterDeptRanges.split(",")) {
+                if (deptRange.contains("-")) {
+                    val fromTo = deptRange.split("-");
+                    int from = Integer.parseInt(fromTo[0]);
+                    int to = Integer.parseInt(fromTo[1]);
+                    for (int dept = from; dept <= to; dept++) {
+                        filterDeptsSet.add(dept);
+                    }
+                } else {
+                    filterDeptsSet.add(Integer.parseInt(deptRange));
+                }
+            }
         }
-        log.info("Filter addresses with dept in " + filterDeptsSet);
+        log.info("Filter addresses with dept ranges in '" + filterDeptRanges + "' => expanded depts set: " + filterDeptsSet);
 
         new Thread(() -> {
             log.info("load all addresses");
@@ -114,7 +136,8 @@ public class BalService {
             int millis = (int) (System.currentTimeMillis() - start);
             log.info("done loaded all addresses, took " + millis + " ms,"
                     + " summary:" + balSummary
-                    + ", filteredAddresses:" + currentFilteredAddresses);
+                    + ", filteredAddresses:" + currentFilteredAddresses
+                    + ", skipped files:" + currentFilteredFiles);
         }).start();
     }
 
@@ -289,6 +312,17 @@ public class BalService {
         }
     }
 
+    private static boolean isNumber(String text) {
+        if (text == null || text.isEmpty()) return false;
+        int len = text.length();
+        for(int i = 0; i < len; i++) {
+            if (!Character.isDigit(text.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void registerAddress(AddressCsvBean src) {
         String zipCode = src.commune_insee;
         if (zipCode == null || zipCode.length() < 5) {
@@ -319,18 +353,68 @@ public class BalService {
         city.addressCount++;
 
         // register street name + count
-        String streetNameText = src.voie_nom;
+        val streetNameTextFull = src.voie_nom;
+        String streetNameText = streetNameTextFull;
         // extract common street type ("Rue", "Avenue", "Voie", "Place", ...)
         // and prefix "Rue de la", "Rue du", "Rue des", ...
+        String streetNameLowerText = streetNameText.toLowerCase();
+        // ex "7S1 Place du"... => need first prefix before "Place du" ??!  or fix invalid BAL database
+        String streetPrefix = null;
+        if (streetNameLowerText.length() > 0 && Character.isDigit(streetNameLowerText.charAt(0))) {
+            int sep = streetNameLowerText.indexOf(' ');
+            streetPrefix = streetNameLowerText.substring(0, sep);
+            streetNameLowerText = streetNameLowerText.substring(sep+1);
+            streetNameText = streetNameText.substring(sep+1);
 
-        StreetNameDTO streetNameEntry = streetByName.get(streetNameText);
+            if (isNumber(streetPrefix)) {
+                int num = Integer.parseInt(streetPrefix);
+                if (src.numero == 0) {
+                    src.numero = num;
+                    streetPrefix = null;
+                } else if (num == src.numero) {
+                    // duplicate!
+                    streetPrefix = null;
+                }
+            }
+        }
+        PrefixStreetTypeDTO originPrefixStreetType = findPrefixStreetFor(streetNameLowerText);
+        PrefixStreetTypeDTO prefixStreetType = originPrefixStreetType;
+        if (prefixStreetType != null && prefixStreetType.renormEntry != null) {
+            // replace by renorm
+            prefixStreetType = prefixStreetType.renormEntry;
+        }
+        if (prefixStreetType == null || prefixStreetType.streetTypeAndPrefix.isEmpty()) {
+            if (streetNameLowerText.indexOf(' ') != -1
+                    && !( streetNameLowerText.startsWith("le ") || streetNameLowerText.startsWith("la ")  || streetNameLowerText.startsWith("les ")
+                    )
+            ) {
+                // debug?
+                int dbg = 0;
+                // prefixStreetType = findPrefixStreetFor(streetNameLowerText);
+            }
+        }
+        String renormStreetTypeAndName;
+        String streetName;
+        if (originPrefixStreetType != null && ! originPrefixStreetType.renormStreetTypeAndPrefix.isEmpty()) {
+            streetName = streetNameText.substring(originPrefixStreetType.streetTypeAndPrefix.length());
+            renormStreetTypeAndName = prefixStreetType.renormStreetTypeAndPrefix + streetName;
+        } else {
+            streetName = streetNameText;
+            renormStreetTypeAndName = streetNameText;
+        }
+
+        renormStreetTypeAndName = renormStreetTypeAndName.toLowerCase(); // ??
+
+        StreetNameDTO streetNameEntry = streetByName.get(renormStreetTypeAndName); // streetNameText); ???
         if (streetNameEntry == null) {
             streetNameEntry = new StreetNameDTO();
             streetNameEntry.id = streetNames.size() + 1;
-            streetNameEntry.name = streetNameText;
+            streetNameEntry.pre = streetPrefix;
+            streetNameEntry.typeId = (prefixStreetType!=null)? prefixStreetType.id : 0;
+            streetNameEntry.name = streetName;
 
             streetNames.add(streetNameEntry);
-            streetByName.put(streetNameText, streetNameEntry);
+            streetByName.put(renormStreetTypeAndName, streetNameEntry);
         }
         streetNameEntry.countAddress++;
         Integer prevCountByCity = streetNameEntry.countByCityZipCode.get(cityCode);
@@ -365,6 +449,389 @@ public class BalService {
                     + ")");
             progressNextDisplayLoadedAddresses = freqProgressLoadedAddresss;
         }
+    }
+
+    protected void registerPrefixStreetTypes() {
+        // invalid id: 0
+        val type0 = new PrefixStreetTypeDTO();
+        type0.id = 0;
+        type0.streetType = "";
+        type0.renormStreetType = "";
+        type0.addressPrefix = null;
+        type0.streetTypeAndPrefix = "??";
+        type0.renormStreetTypeAndPrefix = "??";
+        prefixStreetTypes.add(type0);
+
+        registerStreetType("rue ");
+        registerStreetType("rues ");
+        registerStreetTypeRenorm("r ", "rue ");
+        registerStreetType("route départementale ");
+        registerStreetTypeRenorm("rd ", "route départementale ");
+        registerStreetType("route nationale ");
+        registerStreetTypeRenorm("rn ", "route nationale ");
+        registerStreetType("route ");
+        registerStreetTypeRenorm("rte ", "route ");
+        registerStreetType("routes ");
+        registerStreetType("avenue ");
+        registerStreetType("avenues ");
+        registerStreetTypeRenorm("av ", "avenue ");
+        registerStreetType("boulevard ");
+        registerStreetType("boulevards ");
+        registerStreetTypeRenorm("bvd ", "boulevard ");
+        registerStreetTypeRenorm("bd ", "boulevard ");
+        registerStreetType("allée ");
+        registerStreetTypeRenorm("all ", "allée ");
+        registerStreetTypeRenorm("alleé ", "allée ");
+        registerStreetTypeRenorm("allee ", "allée ");
+        registerStreetType("allées ");
+        registerStreetTypeRenorm("allees ", "allées ");
+        registerStreetType("contre allée ");
+
+        registerStreetType("place ");
+        registerStreetType("places ");
+        registerStreetTypeRenorm("pl ", "place");
+        registerStreetTypeRenorm("pl. ", "place");
+        registerStreetType("rond-point ");
+        registerStreetTypeRenorm("rond point ", "rond-point ");
+        registerStreetType("carrefour ");
+        registerStreetTypeRenorm("carefour ", "carrefour ");
+        registerStreetType("square ");
+        registerStreetType("squares ");
+        registerStreetTypeRenorm("sq. ", "square");
+        registerStreetType("bel air ");
+
+        registerStreetType("ruelle ");
+        registerStreetType("ruelles ");
+        registerStreetType("sentier ");
+        registerStreetType("sentiers ");
+        registerStreetType("sente "); // ?
+        registerStreetType("voie ");
+        registerStreetType("voies ");
+        registerStreetType("voirie ");
+        registerStreetType("impasse ");
+        registerStreetType("petite impasse ");
+        registerStreetType("enclave ");
+        // registerStreetType("impasses ");
+        registerStreetType("traverse ");
+        registerStreetType("ruette ");
+        registerStreetTypeRenorm("imp ", "impasse ");
+        registerStreetType("bout ");
+        registerStreetType("chemin ");
+        registerStreetType("chemins ");
+        registerStreetType("cheminement ");
+        registerStreetType("passage ");
+        registerStreetType("passages ");
+        registerStreetType("chaussée ");
+        registerStreetTypeRenorm("chaussee ", "chaussée ");
+        registerStreetType("promenade ");
+        registerStreetType("deviation chem ");
+        registerStreetTypeRenorm("deviation ", "déviation ");
+        registerStreetType("autoroute ");
+        registerStreetType("aire de repos ");
+        registerStreetType("rocade ");
+
+        registerStreetType("parvis ");
+        registerStreetType("souterrain ");
+        registerStreetType("parking ");
+        registerStreetType("esplanade ");
+        registerStreetType("terrasse ");
+        registerStreetType("espace ");
+        registerStreetType("galerie ");
+        registerStreetType("galeries ");
+
+        registerStreetType("ancienne route ");
+        registerStreetType("vieille route ");
+        registerStreetType("petite route ");
+        registerStreetType("grande avenue ");
+        registerStreetType("ancienne rue ");
+        registerStreetType("vielle rue ");
+        registerStreetType("petite rue ");
+        registerStreetType("grand-rue ");
+        registerStreetTypeRenorm("grande rue ", "grand-rue ");
+        registerStreetTypeRenorm("grand rue ", "grand-rue ");
+        registerStreetTypeRenorm("grand'rue ", "grand-rue ");
+        registerStreetType("basse rue ");
+        registerStreetType("sur le chemin ");
+        registerStreetType("grand chemin ");
+        registerStreetType("petit chemin ");
+        registerStreetType("ancien chemin ");
+        registerStreetType("vieux chemin ");
+
+        registerStreetType("hameau ");
+        registerStreetTypeRenorm("ham ", "hameau ");
+        registerStreetType("hameaux ");
+        registerStreetType("cité ");
+        registerStreetType("cités ");
+        registerStreetTypeRenorm("cite ", "cité ");
+        registerStreetTypeRenorm("citee ", "cité ");
+        registerStreetType("camp ");
+        registerStreetType("vers ");
+        registerStreetType("quartier ");
+        // registerStreetType("quartiers ");
+
+        registerStreetType("quai ");
+        registerStreetType("quais ");
+        registerStreetType("passerelle ");
+        registerStreetType("pont ");
+        registerStreetType("ponts ");
+        registerStreetType("île ");
+        registerStreetTypeRenorm("ile ", "île ");
+        registerStreetType("port ");
+        registerStreetType("digue ");
+        registerStreetType("bassin ");
+        registerStreetType("fond ");
+        registerStreetType("fonds ");
+        registerStreetType("corniche ");
+        registerStreetType("mare ");
+        registerStreetType("fontaine ");
+        registerStreetType("écluse ");
+        registerStreetTypeRenorm("ecluse ", "écluse ");
+        registerStreetType("lac ");
+        registerStreetType("puit ");
+        registerStreetType("puits ");
+        registerStreetType("etang ");
+        registerStreetType("fosse ");
+        registerStreetType("haute fosse ");
+        registerStreetType("traversin ");
+        registerStreetType("traversière ");
+        registerStreetType("barrage ");
+        registerStreetType("pointe ");
+
+        registerStreetType("triage ");
+        registerStreetType("échangeur ");
+        registerStreetTypeRenorm("echangeur ", "échangeur ");
+        registerStreetType("rpa "); // ?
+        registerStreetType("zac ");
+        registerStreetType("za ");
+        registerStreetType("zi ");
+        registerStreetType("zone industrielle ");
+        registerStreetType("zone artisanale ");
+        registerStreetTypeRenorm("zone a.i. ", "zone d'activité industrielle");
+        registerStreetTypeRenorm("zone a.e. ", "zone d'activité économique");
+        registerStreetType("zone d'activité ");
+        registerStreetTypeRenorm("zone d'activite ", "zone d'activité ");
+        registerStreetTypeRenorm("zone d'activités ", "zone d'activité ");
+        registerStreetType("zone ");
+        registerStreetType("centre commercial ");
+        registerStreetTypeRenorm("ctre commercial ", "centre commercial ");
+        registerStreetTypeRenorm("centre comm ", "centre commercial ");
+        registerStreetType("mail "); // "mail du centre commercial"?
+
+        registerStreetType("groupe scolaire ");
+        registerStreetType("école élémentaire");
+        registerStreetType("école primaire");
+        registerStreetType("école secondaire");
+        registerStreetType("école ");
+        registerStreetTypeRenorm("ecole ", "école ");
+        registerStreetType("arrêt de bus ");
+        registerStreetType("centre de loisirs ");
+        registerStreetType("bibliothèque ");
+        registerStreetType("mairie ");
+        registerStreetType("église ");
+        registerStreetType("eglise ");
+        registerStreetType("cimetière ");
+        registerStreetType("centre ");
+
+        registerStreetType("péristyle ");
+        registerStreetType("lieu dit ");
+        registerStreetTypeRenorm("lieudit ", "lieu dit ");
+        registerStreetType("résidence ");
+        registerStreetType("résidences ");
+        registerStreetTypeRenorm("residence ", "résidence ");
+        registerStreetTypeRenorm("residences ", "résidences ");
+        registerStreetType("immeuble ");
+        registerStreetType("immeubles ");
+        registerStreetTypeRenorm("imm ", "immeuble ");
+        registerStreetType("batiment ");
+        registerStreetTypeRenorm("bat ", "batiment ");
+        registerStreetType("cave ");
+        registerStreetType("caves ");
+        registerStreetType("cavée ");
+        registerStreetTypeRenorm("cavee ", "cavée ");
+        registerStreetType("camping ");
+        registerStreetType("château ");
+        registerStreetType("chateau ");
+        registerStreetType("haras ");
+        registerStreetType("domaine ");
+        registerStreetType("faubourg ");
+        registerStreetType("pavillon ");
+        registerStreetType("villa ");
+        registerStreetType("villas ");
+        registerStreetType("salle ");
+        registerStreetType("porte ");
+        registerStreetType("portes ");
+        registerStreetType("tour ");
+        registerStreetType("ferme ");
+        registerStreetType("fermes ");
+        registerStreetType("grange ");
+        registerStreetType("cour ");
+        registerStreetType("cours ");
+        registerStreetType("clos ");
+        registerStreetType("res du clos ");
+        registerStreetType("cabanne ");
+        registerStreetType("métairie ");
+        registerStreetType("rampe ");
+        registerStreetType("escalier ");
+        registerStreetType("escaliers ");
+        registerStreetType("grille ");
+        registerStreetType("grilles ");
+        registerStreetType("arcade ");
+        registerStreetType("arcades ");
+        registerStreetType("cote ");
+        registerStreetType("côte ");
+        registerStreetType("plaine ");
+        registerStreetType("petite plaine ");
+        registerStreetType("parc ");
+        registerStreetType("prés ");
+        registerStreetType("res "); // ?
+        registerStreetType("pres "); // typo?
+        registerStreetType("pre "); // typo?
+        registerStreetType("pr ");
+        registerStreetType("mesnil ");
+        registerStreetType("jardin ");
+        registerStreetType("grand jardin ");
+        registerStreetType("petit jardin ");
+        registerStreetType("champs ");
+        registerStreetType("champ ");
+        registerStreetType("terre ");
+        registerStreetType("terres ");
+        registerStreetType("prairie ");
+        registerStreetType("prairies ");
+        registerStreetType("grande prairie ");
+        registerStreetType("petite prairie ");
+        registerStreetType("clairière ");
+        registerStreetType("enclos ");
+        registerStreetType("lotissement ");
+        registerStreetType("village ");
+        registerStreetType("canton ");
+        registerStreetType("croix ");
+        registerStreetType("val ");
+        registerStreetType("vallon ");
+        registerStreetType("vallée ");
+        registerStreetType("vallées ");
+        registerStreetType("haut ");
+        registerStreetType("bas ");
+        registerStreetType("descente ");
+        registerStreetType("montée ");
+        registerStreetType("mont ");
+        registerStreetType("monts ");
+        registerStreetType("butte ");
+        registerStreetType("coteaux ");
+        registerStreetType("coteau "); // typo?
+        registerStreetType("plateau ");
+        registerStreetType("col ");
+        registerStreetType("forêt ");
+        registerStreetType("forêts ");
+        registerStreetTypeRenorm("foret ", "forêt ");
+        registerStreetType("bois ");
+        registerStreetType("bosc ");
+        registerStreetType("boscs ");
+        registerStreetType("maison forestière ");
+        registerStreetTypeRenorm("maison forestiere ", "maison forestière ");
+        registerStreetTypeRenorm("mf ", "maison forestière ");
+        registerStreetType("venelle ");
+        registerStreetType("relais ");
+        registerStreetType("moulin ");
+        // registerStreetType("moulins ");
+        registerStreetType("manoir ");
+        registerStreetType("hétraie ");
+
+        // street type with no trailing space?
+        if (false) {
+            // no trailing space!
+            registerStreetType("grande avenue");
+            registerStreetType("petite rue");
+            registerStreetType("grande rue");
+            registerStreetType("grand rue");
+            registerStreetType("basse rue");
+            registerStreetType("haute fosse");
+            registerStreetType("zone industrielle");
+            registerStreetType("zone artisanale");
+            registerStreetType("grand jardin");
+            registerStreetType("petit jardin");
+            registerStreetType("grande prairie");
+            registerStreetType("petite prairie");
+        }
+
+        // registerStreetType(""); // ?
+
+        // resolve all corresponding renorm entries
+        for(val prefixStreetType: prefixStreetTypes) {
+            if (! prefixStreetType.renormStreetTypeAndPrefix.equals(prefixStreetType.streetTypeAndPrefix)) {
+                PrefixStreetTypeDTO renormEntry = findPrefixStreetFor(prefixStreetType.renormStreetTypeAndPrefix);
+                if (renormEntry == null) {
+                    log.warn("should not occur");
+                    renormEntry = prefixStreetType;
+                }
+                prefixStreetType.renormEntry = renormEntry;
+            }
+        }
+
+
+        checkFindPrefixStreetFor("rte de la chapelle");
+        checkFindPrefixStreetFor("butte de ");
+    }
+
+    protected void checkFindPrefixStreetFor(String text) {
+        String lowerText = text.toLowerCase();
+        val prefixStreet = findPrefixStreetFor(lowerText);
+        if (null == prefixStreet || prefixStreet.streetTypeAndPrefix.isEmpty()) {
+            log.info("should not occur: streetType not found for '" + lowerText + "'");
+        }
+    }
+
+    protected void registerStreetType(String streetType) {
+        registerStreetTypeRenorm(streetType, streetType);
+    }
+    protected void registerStreetTypeRenorm(String streetType, String renormStreetType) {
+        registerStreetType_allDeterminants(streetType, renormStreetType);
+        // TOOCHECK TODO
+//        if (streetType.contains("'")) {
+//            registerStreetType_allDeterminants(streetType.replace("'", "’"), renormStreetType.replace("'", "’"));
+//        }
+    }
+
+    protected void registerStreetType_allDeterminants(String streetType, String renormStreetType) {
+        registerPrefixStreetType(streetType, renormStreetType, "de la ");
+        registerPrefixStreetType(streetType, renormStreetType, "de l'");
+        registerPrefixStreetType(streetType, renormStreetType, "de l’"); // change ' by ’
+        registerPrefixStreetType(streetType, renormStreetType, "de ");
+        registerPrefixStreetType(streetType, renormStreetType, "du ");
+        registerPrefixStreetType(streetType, renormStreetType, "des ");
+        registerPrefixStreetType(streetType, renormStreetType, "le ");
+        registerPrefixStreetType(streetType, renormStreetType, "les ");
+        registerPrefixStreetType(streetType, renormStreetType, "l'");
+        registerPrefixStreetType(streetType, renormStreetType, "l’"); // change ' by ’
+        registerPrefixStreetType(streetType, renormStreetType, "la ");
+        registerPrefixStreetType(streetType, renormStreetType, "dans ");
+        registerPrefixStreetType(streetType, renormStreetType, "à la ");
+        registerPrefixStreetType(streetType, renormStreetType, "à ");
+        registerPrefixStreetType(streetType, renormStreetType, "aux ");
+        registerPrefixStreetType(streetType, renormStreetType, "");
+    }
+
+    protected PrefixStreetTypeDTO registerPrefixStreetType(String streetType, String renormStreetType,
+                                                           String addressPrefix) {
+        val res = new PrefixStreetTypeDTO();
+        res.id = prefixStreetTypes.size(); // no need +1, list contains id 0
+        res.streetType = streetType;
+        res.renormStreetType = renormStreetType;
+        res.addressPrefix = addressPrefix;
+        res.streetTypeAndPrefix = streetType + addressPrefix;
+        res.renormStreetTypeAndPrefix = renormStreetType + addressPrefix;
+
+        prefixStreetTypes.add(res);
+        return res;
+    }
+
+    protected PrefixStreetTypeDTO findPrefixStreetFor(String text) {
+        for(val prefixStreetType : prefixStreetTypes) {
+            if (text.startsWith(prefixStreetType.streetTypeAndPrefix)) {
+                if (prefixStreetType.id == 0) continue; // ignore id 0
+                return prefixStreetType;
+            }
+        }
+        return null;
     }
 
 }

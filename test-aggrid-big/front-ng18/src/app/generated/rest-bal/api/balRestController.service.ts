@@ -23,6 +23,8 @@ import { CityDTO } from '../model/cityDTO';
 import { CityLightDTO } from '../model/cityLightDTO';
 import { CityStreetLightDTO } from '../model/cityStreetLightDTO';
 import { FirstnameDTO } from '../model/firstnameDTO';
+import { PrefixStreetTypeDTO } from '../model/prefixStreetTypeDTO';
+import { StreetNameAndPrefixTypes } from '../model/streetNameAndPrefixTypes';
 import { StreetNameDTO } from '../model/streetNameDTO';
 
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -262,6 +264,78 @@ export class BalRestControllerService {
         ];
 
         return this.httpClient.request<Array<FirstnameDTO>>('get',`${this.basePath}/api/v1/bal/first-names`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * get prefix street types
+     * 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getPrefixStreetTypes(observe?: 'body', reportProgress?: boolean): Observable<Array<PrefixStreetTypeDTO>>;
+    public getPrefixStreetTypes(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<Array<PrefixStreetTypeDTO>>>;
+    public getPrefixStreetTypes(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<Array<PrefixStreetTypeDTO>>>;
+    public getPrefixStreetTypes(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            '*/*'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.request<Array<PrefixStreetTypeDTO>>('get',`${this.basePath}/api/v1/bal/prefix-streets-types`,
+            {
+                withCredentials: this.configuration.withCredentials,
+                headers: headers,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * get street names and prefix types
+     * 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public getStreetNameAndPrefixTypes(observe?: 'body', reportProgress?: boolean): Observable<StreetNameAndPrefixTypes>;
+    public getStreetNameAndPrefixTypes(observe?: 'response', reportProgress?: boolean): Observable<HttpResponse<StreetNameAndPrefixTypes>>;
+    public getStreetNameAndPrefixTypes(observe?: 'events', reportProgress?: boolean): Observable<HttpEvent<StreetNameAndPrefixTypes>>;
+    public getStreetNameAndPrefixTypes(observe: any = 'body', reportProgress: boolean = false ): Observable<any> {
+
+        let headers = this.defaultHeaders;
+
+        // to determine the Accept header
+        let httpHeaderAccepts: string[] = [
+            '*/*'
+        ];
+        const httpHeaderAcceptSelected: string | undefined = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        if (httpHeaderAcceptSelected != undefined) {
+            headers = headers.set('Accept', httpHeaderAcceptSelected);
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+        ];
+
+        return this.httpClient.request<StreetNameAndPrefixTypes>('get',`${this.basePath}/api/v1/bal/streets-names-and-prefix-types`,
             {
                 withCredentials: this.configuration.withCredentials,
                 headers: headers,

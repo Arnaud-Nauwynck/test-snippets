@@ -7,6 +7,7 @@ import fr.an.tests.testaggridbig.util.LsUtils;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,10 +37,24 @@ public class BalRestController {
         return balService.getBalSummary();
     }
 
+    @GetMapping("/prefix-streets-types")
+    @Operation(summary = "get prefix street types")
+    public List<PrefixStreetTypeDTO> getPrefixStreetTypes() {
+        return balService.getPrefixStreetTypes();
+    }
+
     @GetMapping("/streets-names")
     @Operation(summary = "get street names")
     public List<StreetNameDTO> getStreetNames() {
         return balService.getStreetNames();
+    }
+
+    @GetMapping("/streets-names-and-prefix-types")
+    @Operation(summary = "get street names and prefix types")
+    public StreetNameAndPrefixTypes getStreetNameAndPrefixTypes() {
+        val prefixTypes = balService.getPrefixStreetTypes();
+        val streetNames = balService.getStreetNames();
+        return new StreetNameAndPrefixTypes(prefixTypes, streetNames);
     }
 
     @GetMapping("/cities-full")

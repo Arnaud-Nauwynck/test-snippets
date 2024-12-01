@@ -1,5 +1,6 @@
 package fr.an.tests.testaggridbig.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
 
@@ -16,4 +17,13 @@ public class CityStreetLightDTO {
 
     @JsonProperty("add#")
     public final int addressCount;
+
+    @JsonIgnore
+    public final CoordDTO midCoord;
+
+    @JsonProperty("lng")
+    public float getLongitude() { return midCoord.longitude; }
+    @JsonProperty("lat")
+    public float getLatitude() { return midCoord.lattitude; }
+
 }

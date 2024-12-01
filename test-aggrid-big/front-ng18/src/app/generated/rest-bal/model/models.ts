@@ -6,4 +6,6 @@ export * from './cityStreetLightDTO';
 export * from './coordDTO';
 export * from './coordSetDTO';
 export * from './firstnameDTO';
+export * from './prefixStreetTypeDTO';
+export * from './streetNameAndPrefixTypes';
 export * from './streetNameDTO';

@@ -9,12 +9,9 @@
  * https://github.com/swagger-api/swagger-codegen.git
  * Do not edit the class manually.
  */
-import { CoordDTO } from './coordDTO';
 
-export interface CityLightDTO { 
+export interface PrefixStreetTypeDTO { 
     id?: number;
-    midCoord?: CoordDTO;
-    n?: string;
-    z?: string;
-    c?: number;
+    streetType?: string;
+    addressPrefix?: string;
 }

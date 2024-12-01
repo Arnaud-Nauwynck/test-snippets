@@ -6,6 +6,15 @@
     <span class="col-md-2">{{filteredStreetNames$().length}} / {{streetNames$().length}}</span>
   </div>
   <div class="row">
+    <label class="col-1">Pre</label>
+    <input class="col-1" [(ngModel)]="pre" (ngModelChange)="onFilterChange()"/>
+
+    <label class="col-1">Street Type</label>
+    <input class="col-1" [(ngModel)]="streetType" (ngModelChange)="onFilterChange()"/>
+
+    <label class="col-1">Determinant</label>
+    <input class="col-1" [(ngModel)]="determinant" (ngModelChange)="onFilterChange()"/>
+
     <label class="col-1">Name</label>
     <input class="col-2" [(ngModel)]="streetName" (ngModelChange)="onFilterChange()"/>
   </div>

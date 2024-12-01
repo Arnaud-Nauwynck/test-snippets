@@ -26,7 +26,10 @@ app:
       # for i in $( seq 971 989 ); do echo $i;wget https://adresse.data.gouv.fr/data/ban/adresses/latest/csv-bal/adresses-$i.csv.gz; done
       multiCsvGzPath: 'C:/data/OpenData-gouv.fr/bal-multiCsvGz'
 
-      filterDepts: 75,77,78,91,92,93,94,95
+      #filterDeptRanges: 75,77,78,91,92,93,94,95
+      filterDeptRanges: 75-95  # take ~12s
+      # filterDeptRanges: 1-74 # ?? too slow... OutOfMemoryError... using 12g
+      # filterDeptRanges: 1-95,900-999 # ?? OutOfMemoryError... using 12g
 
 
     firstname:

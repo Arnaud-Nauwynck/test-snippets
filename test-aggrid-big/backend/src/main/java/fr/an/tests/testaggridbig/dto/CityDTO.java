@@ -25,6 +25,6 @@ public class CityDTO implements Serializable {
     public List<CityStreetDTO> streets = new ArrayList<CityStreetDTO>();
 
     public CityLightDTO toCityLightDTO() {
-        return new CityLightDTO(id, name, zipCode, addressCount);
+        return new CityLightDTO(id, name, zipCode, addressCount, coordSet.getAvgCoord());
     }
 }

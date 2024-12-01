@@ -21,4 +21,6 @@ public class CityLightDTO implements Serializable {
     @JsonProperty("c")
     public int addressCount;
 
+    public CoordDTO midCoord;
+
 }

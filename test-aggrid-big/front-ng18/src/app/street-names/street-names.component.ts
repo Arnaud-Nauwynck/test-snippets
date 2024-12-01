@@ -20,17 +20,36 @@ export class StreetNamesComponent {
   streetNames$ = signal(<StreetNameModel[]>[]);
 
   streetNameCriteria$: WritableSignal<StreetNameCriteria> = signal(new StreetNameCriteria({}));
+  pre = "";
+  streetType = "";
+  determinant = "";
   streetName = "";
 
   filteredStreetNames$ = computed(() => this.streetNameCriteria$().filter(this.streetNames$()));
 
   colDefs: ColDef<StreetNameModel>[] = [
-    { headerName: "Id", hide: true,
+    { headerName: "Id", width: 90,
+      // hide: true,
       valueGetter: p => p.data?.id,
     },
-    { headerName: "Name", minWidth: 500,
-      // field: "name",
+    { headerName: "PrefixTypeId", minWidth: 80,
+      hide: true,
+      valueGetter: p => p.data?.streetType?.id,
+    },
+    { headerName: "Pre", width: 80, minWidth: 80, maxWidth: 80,
+      valueGetter: p => p.data?.pre,
+    },
+    { headerName: "Street Type", width: 120, minWidth: 100, maxWidth: 150,
+      valueGetter: p => p.data?.streetType?.streetType,
+    },
+    { headerName: "Determinant", width: 80, minWidth: 90,
+      valueGetter: p => p.data?.streetType?.determinant,
+    },
+    { headerName: "Name", width: 350, minWidth: 350,
       valueGetter: p => p.data?.name,
+    },
+    { headerName: "Count Addresses", width: 100, minWidth: 100, maxWidth: 150,
+      valueGetter: p => p.data?.countAddress,
     },
   ];
 
@@ -45,7 +64,12 @@ export class StreetNamesComponent {
   }
 
   onFilterChange() {
-    const crit = new StreetNameCriteria({name: this.streetName});
+    const crit = new StreetNameCriteria({
+      pre: this.pre,
+      streetType: this.streetType,
+      determinant: this.determinant,
+      name: this.streetName
+    });
     this.streetNameCriteria$.set(crit);
   }
 

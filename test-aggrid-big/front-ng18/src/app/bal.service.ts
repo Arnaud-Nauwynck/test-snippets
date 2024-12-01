@@ -1,5 +1,12 @@
 import {inject, Injectable} from '@angular/core';
-import {AddressModel, CityModel, FirstNameModel, StreetModel, StreetNameModel} from './model/BALModel';
+import {
+  AddressModel,
+  CityModel,
+  FirstNameModel,
+  PrefixStreetTypeModel,
+  StreetModel,
+  StreetNameModel
+} from './model/BALModel';
 import {BehaviorSubject, combineLatest, map, Observable} from 'rxjs';
 import {AddressDTO, BalRestControllerService, CityStreetLightDTO} from './generated/rest-bal';
 import {CachedSubject} from './util/CachedSubject';
@@ -15,6 +22,9 @@ export class BalService {
 
   private cachedCities$: CachedSubject<CityModel[]> = new CachedSubject(
     () => this.doGetCities$());
+
+  // loading with same request as SteetNames
+  private cachedPrefixStreetTypes$ = new BehaviorSubject<PrefixStreetTypeModel[]>([]);
 
   private cachedStreetNames$: CachedSubject<StreetNameModel[]> = new CachedSubject(
     () => this.doGetStreetNames$());
@@ -48,9 +58,15 @@ export class BalService {
     return this.cachedCities$.asObservable();
   }
 
+
   private doGetStreetNames$(): Observable<StreetNameModel[]> {
-    return this.balRestApi.getStreetNames().pipe(map(
-      dtos => dtos.map(dto => new StreetNameModel(dto)))
+    return this.balRestApi.getStreetNameAndPrefixTypes().pipe(map(
+      resp => {
+        const prefixStreetTypes= resp.prefixStreetTypes!.map(
+          dto => new PrefixStreetTypeModel(dto));
+        this.cachedPrefixStreetTypes$.next(prefixStreetTypes);
+        return resp.streetNames!.map(dto => new StreetNameModel(dto, prefixStreetTypes[dto.typeId!]))
+      })
     );
   }
 
