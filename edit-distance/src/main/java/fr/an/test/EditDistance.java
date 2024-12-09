@@ -3,9 +3,6 @@ package fr.an.test;
 import java.util.Arrays;
 
 public class EditDistance {
-    public static int min(int x, int y, int z) {
-        return Math.min(Math.min(x, y), z);
-    }
 
     public static int editDistance(String str1, String str2) {
         int m = str1.length();
@@ -32,13 +29,13 @@ public class EditDistance {
         return dp[m][n];
     }
 
-    public static int editDistanceMax(CharSequence left, CharSequence right, final int threshold) { // NOPMD
+    public static int editDistanceLimitedTo(CharSequence left, CharSequence right, final int threshold) { // NOPMD
         int res = limitedCompare(left, right, threshold);
         if (res == -1) return threshold;
         return res;
     }
 
-    public static int limitedCompare(CharSequence left, CharSequence right, final int threshold) { // NOPMD
+    private static int limitedCompare(CharSequence left, CharSequence right, final int threshold) { // NOPMD
         if (left == null || right == null) {
             throw new IllegalArgumentException("CharSequences must not be null");
         }
@@ -183,4 +180,9 @@ public class EditDistance {
         }
         return -1;
     }
+
+    private static int min(int x, int y, int z) {
+        return Math.min(Math.min(x, y), z);
+    }
+
 }
