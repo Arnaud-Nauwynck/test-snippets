@@ -4,6 +4,7 @@ import {StreetNamesComponent} from './street-names/street-names.component';
 import {AddressesComponent} from './addresses/addresses.component';
 import {FirstNamesComponent} from './firstnames/first-names.component';
 import {StreetsComponent} from './streets/streets.component';
+import {TestHighchartsComponent} from './test-highcharts/test-highcharts.component';
 
 export const routes: Routes = [
   {path: 'cities', component: CitiesComponent},
@@ -11,4 +12,5 @@ export const routes: Routes = [
   {path: 'streets', component: StreetsComponent},
   {path: 'addresses', component: AddressesComponent},
   {path: 'first-names', component: FirstNamesComponent},
+  {path: 'test-highcharts', component: TestHighchartsComponent},
 ];
