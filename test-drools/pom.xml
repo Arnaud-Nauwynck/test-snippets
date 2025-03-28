@@ -14,7 +14,7 @@
    -->
   
   <properties>
-  	<drools.version>7.22.0.t042</drools.version>
+  	<drools.version>7.60.0.Final</drools.version>
   </properties>
   
   <dependencies>
