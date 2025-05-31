@@ -1,0 +1,109 @@
+import React from 'react';
+import { allocations, nodes } from './data';
+
+const SVG_WIDTH = 1000;
+const ROW_HEIGHT = 20; // Each allocation track height
+const NODE_PADDING = 10;
+const TRACK_GAP = 2;
+const TIME_SPAN = 25;
+
+const getTimeX = (time) => (time / TIME_SPAN) * SVG_WIDTH;
+
+// === Core logic to stack allocations ===
+function layoutAllocations(nodeAllocations) {
+    const tracks = [];
+
+    nodeAllocations.sort((a, b) => a.start - b.start);
+
+    const positioned = nodeAllocations.map((alloc) => {
+        for (let i = 0; ; i++) {
+            if (!tracks[i]) tracks[i] = [];
+            const lastInTrack = tracks[i][tracks[i].length - 1];
+            if (!lastInTrack || lastInTrack.end <= alloc.start) {
+                tracks[i].push(alloc);
+                return { ...alloc, track: i };
+            }
+        }
+    });
+
+    return { allocations: positioned, trackCount: tracks.length };
+}
+
+// === Main SVG chart ===
+function AllocationChart({ nodes, allocations }) {
+    const layoutPerNode = nodes.map((node) => {
+        const nodeAllocs = allocations.filter((a) => a.nodeId === node.id);
+        const { allocations: positioned, trackCount } = layoutAllocations(nodeAllocs);
+        return { node, allocations: positioned, trackCount };
+    });
+
+    const NODE_SPACING = 20;
+    const SVG_TOP_MARGIN = 20; // <-- Important!
+    const totalHeight = layoutPerNode.reduce(
+        (sum, { trackCount }) =>
+            sum + (trackCount * (ROW_HEIGHT + TRACK_GAP) + NODE_PADDING * 2 + NODE_SPACING),
+        SVG_TOP_MARGIN // <-- Start sum with top margin
+    );
+
+    let currentY = SVG_TOP_MARGIN;
+
+    return (
+        <svg width={SVG_WIDTH} height={totalHeight}>
+            {layoutPerNode.map(({ node, allocations, trackCount }) => {
+                const allocAreaHeight = trackCount * (ROW_HEIGHT + TRACK_GAP) + NODE_PADDING * 2;
+                const groupY = currentY;
+                currentY += allocAreaHeight + NODE_SPACING;
+
+                return (
+                    <g key={node.id} transform={`translate(0, ${groupY})`}>
+                        {/* Label safely above block */}
+                        <text x={5} y={-5} fontSize={12} fontWeight="bold">
+                            {node.id} ({node.memory} GB)
+                        </text>
+
+                        {/* Background area */}
+                        <rect width={SVG_WIDTH} height={allocAreaHeight} fill="#f0f0f0" stroke="#ccc" />
+
+                        {/* Allocations */}
+                        {allocations.map((alloc) => {
+                            const x = getTimeX(alloc.start);
+                            const width = getTimeX(alloc.end) - x;
+                            const y = NODE_PADDING + alloc.track * (ROW_HEIGHT + TRACK_GAP);
+                            return (
+                                <g key={alloc.id}>
+                                    <rect
+                                        x={x}
+                                        y={y}
+                                        width={width}
+                                        height={ROW_HEIGHT}
+                                        fill="#4a90e2"
+                                        opacity="0.85"
+                                        rx={3}
+                                        ry={3}
+                                    />
+                                    <text
+                                        x={x + 3}
+                                        y={y + 14}
+                                        fontSize={10}
+                                        fill="white"
+                                    >
+                                        {alloc.id}
+                                    </text>
+                                </g>
+                            );
+                        })}
+                    </g>
+                );
+            })}
+        </svg>
+    );
+}
+
+export default function App4() {
+    return (
+        <div style={{ padding: 20 }}>
+            <h2>Resource Allocation Visualization</h2>
+            <AllocationChart nodes={nodes} allocations={allocations} />
+        </div>
+    );
+}
